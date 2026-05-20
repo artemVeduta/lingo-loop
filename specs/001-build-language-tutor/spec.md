@@ -20,7 +20,7 @@ A learner installs the tutor, runs setup, records their native language, target 
 
 **Acceptance Scenarios**:
 
-1. **Given** no existing learner profile, **When** the learner starts setup, **Then** the tutor requests native language and target language as required fields and applies reasonable defaults for level, interests, feedback verbosity, and session length.
+1. **Given** no existing learner profile, **When** the learner starts setup, **Then** the tutor requests native language and target language as required fields and applies documented defaults for level, interests, constraints, feedback verbosity, review intensity, transliteration tolerance, session length, display fallback, and streak grace.
 2. **Given** setup is complete, **When** a new tutor session starts, **Then** the learner receives concise context that includes profile basics, current review status, weak-pattern summary if any, and first-session guidance when no history exists.
 3. **Given** the learner reruns setup, **When** they update preferences, **Then** editable profile data changes without deleting or rewriting prior learning history.
 4. **Given** local storage is unavailable or invalid, **When** setup or session start runs, **Then** the tutor shows a clear repair-oriented message and does not silently discard learner data.
@@ -99,6 +99,7 @@ A learner or contributor can verify installation health, inspect local data owne
 - No due vocabulary at session start.
 - Duplicate vocabulary items generated or added from multiple sessions.
 - Learner answers with "I don't know", blank input, transliteration, or mixed target/native language.
+- Learner changes editable profile or preference files by hand with unknown fields, invalid values, or a version mismatch.
 - Writing evaluator returns malformed, contradictory, unsupported-tag, or low-confidence feedback.
 - Slavic morphology errors where case, aspect, agreement, animacy, motion verbs, punctuation, or Russian/Ukrainian interference matter.
 - Session ends before analysis completes.
@@ -110,17 +111,17 @@ A learner or contributor can verify installation health, inspect local data owne
 
 ### Functional Requirements
 
-- **FR-001**: System MUST provide setup that captures learner native language, target language, level target, interests, constraints, session length, review intensity, and feedback verbosity.
+- **FR-001**: System MUST provide setup that requires only learner native language and target language, captures optional level target, interests, constraints, session length, review intensity, feedback verbosity, transliteration tolerance, display fallback, and streak grace, and applies documented defaults for omitted optional fields.
 - **FR-002**: System MUST allow setup to be rerun to edit profile and preferences without erasing learning history.
 - **FR-003**: System MUST keep learner profile and preferences as human-editable local data and keep transactional learning history as separate local state.
 - **FR-004**: System MUST avoid cloud sync, telemetry, authentication, multi-user accounts, and remote storage in v1.
-- **FR-005**: System MUST build a concise session-start learning context from profile, due reviews, weak patterns, recent summary, and cost/status data.
-- **FR-006**: System MUST keep session-start context deterministic and bounded to 6,000 rendered characters so repeated reads of the same learner state produce the same concise result.
+- **FR-005**: System MUST build a concise session-start learning context from profile, due review counts, top weak patterns, latest session recap, current cost/status data, and first-session guidance when history is empty.
+- **FR-006**: System MUST keep session-start context deterministic, ordered by documented section priority, capped at 6,000 rendered characters, and free of raw event dumps so repeated reads of the same learner state produce the same concise result.
 - **FR-007**: System MUST provide a vocabulary practice flow that prioritizes due reviews, presents recall prompts, captures answers, shows immediate feedback, and uses session length plus review intensity to size the practice queue.
-- **FR-008**: System MUST evaluate vocabulary answers against accepted reference answers, apply transliteration tolerance only when the learner preference enables it, and distinguish correct, minor, important, blocking, and unanswered outcomes.
+- **FR-008**: System MUST evaluate vocabulary answers against accepted reference answers, treat blank and "I don't know" responses as unanswered, apply transliteration tolerance only when the learner preference enables it, and distinguish correct, minor, important, blocking, mixed-language, and unanswered outcomes.
 - **FR-009**: System MUST update future vocabulary review timing from a documented spaced-repetition rule after each graded vocabulary answer.
 - **FR-010**: System MUST record every vocabulary answer and review result exactly once, even when a session is interrupted.
-- **FR-011**: System MUST generate or select target-language practice content appropriate to the learner profile without requiring bundled curricula.
+- **FR-011**: System MUST generate or select target-language practice content without bundled curricula only when the content declares target language, level target, prompt, accepted-answer forms, learner-constraint fit, weak-pattern or interest rationale, and a normalized duplicate key; content missing those fields or conflicting with profile constraints MUST NOT be queued.
 - **FR-012**: System MUST provide a free-writing flow that offers level-appropriate prompts and accepts learner-provided passages.
 - **FR-013**: System MUST return writing feedback with a corrected version, exact error spans where possible, severity level, confidence level (`high`, `medium`, or `low`), controlled error tags, explanation in the learner's native language, a next-drill hint, and explanation detail shaped by feedback verbosity.
 - **FR-014**: System MUST leave corrected target-language forms and error tags in the target/controlled form while rendering explanations in the learner's native language.
@@ -129,12 +130,12 @@ A learner or contributor can verify installation health, inspect local data owne
 - **FR-017**: System MUST reject or safely downgrade malformed, unsupported-tag, contradictory, or low-confidence evaluator output before it is persisted or rendered as definitive correction; `low` or missing confidence MUST render as tentative and MUST NOT create a definitive high-severity correction.
 - **FR-018**: System MUST render feedback in stable markdown-style text with severity markers and an ASCII fallback when symbols are unavailable.
 - **FR-019**: System MUST create a short end-of-session summary that can be shown immediately and reused as the next session's recap; if session analysis is interrupted, recorded events MUST remain persisted and the summary status MUST be marked pending rather than blocking shutdown.
-- **FR-020**: System MUST provide progress that includes streak with grace handling, due review counts, weak patterns, item maturity, last-session recap, and month-to-date model cost.
-- **FR-021**: System MUST provide an install or health check that verifies local runtime readiness, plugin registration, data paths, schema health, and common setup problems.
+- **FR-020**: System MUST provide progress that includes streak with a documented one-day default grace policy, due review counts, weak patterns, item maturity, last-session recap, and month-to-date model cost.
+- **FR-021**: System MUST provide an install or health check that verifies local runtime readiness, plugin registration, data paths, stored data health, and common setup problems, with actionable repair messages that identify the failed area, whether learner data was changed, and the next safe step.
 - **FR-022**: System MUST install and run on macOS and Linux for v1.
-- **FR-023**: System MUST expose user-facing tutor actions as discoverable commands for setup, vocabulary, writing, and progress.
+- **FR-023**: System MUST expose user-facing tutor actions as discoverable commands for setup, vocabulary, writing, and progress, with each action mapped to a distinct learner intent and expected user value.
 - **FR-024**: System MUST keep setup, vocabulary, writing, progress, rendering, lifecycle analysis, and data ownership decoupled so each can be tested independently.
-- **FR-025**: System MUST exclude v1 anti-features: games, XP, leagues, push notifications, cloud sync, multi-device sync, rich dashboards, speaking/listening/reading modes, multi-user support, and additional host adapters.
+- **FR-025**: System MUST exclude v1 anti-features beyond the local tutor workflow: games, XP, leagues, push notifications, multi-device sync, rich dashboards, speaking/listening/reading modes, and additional host adapters.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -163,7 +164,7 @@ A learner or contributor can verify installation health, inspect local data owne
 ### Measurable Outcomes
 
 - **SC-001**: A fresh learner can complete setup and reach first-session context in under 60 seconds using only native language and target language as required setup inputs.
-- **SC-002**: 100% of normal session starts show a concise learner context that can be read in under 20 seconds, stays within 6,000 rendered characters, and includes current review status or clear first-session guidance.
+- **SC-002**: 100% of normal session starts show a concise learner context of no more than eight ordered sections and 6,000 rendered characters, including current review status or clear first-session guidance.
 - **SC-003**: In acceptance tests, 100% of graded vocabulary answers produce one visible feedback result, one recorded review event, and one future review decision with no duplicate state changes.
 - **SC-004**: In a curated fixture set of at least 20 non-empty writing submissions that pass input validation, at least 95% produce feedback containing corrected text, span or location guidance, severity, controlled tag, and native-language explanation.
 - **SC-005**: In curated Slavic evaluator fixtures, expected verdicts and core morphology tags are produced for at least 90% of cases, with no definitive high-severity correction shown for known-correct sentences.
@@ -171,16 +172,17 @@ A learner or contributor can verify installation health, inspect local data owne
 - **SC-007**: Re-rendering the same validated feedback or session-start context produces identical displayed text in 100% of deterministic fixtures.
 - **SC-008**: A learner can complete 30 consecutive days of local sessions without creating an account, enabling telemetry, using cloud storage, or manually repairing learning state.
 - **SC-009**: macOS and Linux fresh-machine checks identify missing prerequisites or corrupt local data with actionable messages in 100% of tested failure fixtures.
-- **SC-010**: Dogfood use reaches at least five completed tutor sessions per week for two consecutive weeks without losing history or requiring direct edits to derived learning state.
+- **SC-010**: Dogfood use reaches at least five completed tutor sessions per week for two consecutive weeks, measured from local session summaries where a completed session records at least one setup, vocabulary, writing, progress, or session-end outcome, without losing history or requiring direct edits to derived learning state.
 
 ## Assumptions
 
 - v1 is a single-learner, local-first tutor used from an agentic CLI environment.
-- Claude Code is the only host shipped in v1; adapter boundaries exist only where current Claude behavior needs them.
+- Claude Code is the only host supported in v1; support for other hosts is out of scope.
 - The learner brings access to host-provided model evaluation; the tutor itself does not add separate cloud accounts or remote storage.
+- Host-provided model evaluation is responsible for language-generation quality; the tutor is responsible for well-formed feedback, validation, display, local records, and safe downgrade behavior.
 - Exercise content is generated or selected on demand instead of bundled as a curated curriculum.
 - The initial daily-use surface is setup, vocabulary, writing, progress, session start context, and session end summary.
 - Russian/Ukrainian/Slavic dogfood drives evaluator quality requirements, but the learner profile can name any target language.
 - Native-language explanations are required; controlled tags remain stable and language-neutral.
-- First-run defaults are acceptable for level, interests, feedback verbosity, review intensity, and session length when the learner does not provide them.
+- First-run defaults are level target A2, empty interests and constraints, concise feedback verbosity, standard review intensity, transliteration tolerance off, 10-minute session length, automatic ASCII fallback, and one-day streak grace.
 - Local data may be manually inspected by the learner, but derived history is changed through tutor workflows rather than hand edits.

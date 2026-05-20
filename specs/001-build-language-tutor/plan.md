@@ -4,53 +4,42 @@
 
 **Input**: Feature specification from `specs/001-build-language-tutor/spec.md`
 
-**Note**: This plan is filled by `/speckit-plan`. Implementation tasks are generated later by `/speckit-tasks`.
+**Note**: This file is the `/speckit-plan` output. Phase 2 task generation is intentionally left to `/speckit-tasks`.
 
 ## Summary
 
-Build a local-first Claude Code language-tutor plugin with a synchronous Python 3.12+ core. Claude plugin hooks and user-facing skills shell out to one `bin/tutor` Click CLI; the core owns pedagogy, schemas, SM-2 scheduling, lifecycle, boot context, evaluator validation, and rendering; the DAL owns human-editable YAML profile/preferences and transactional SQLite learner history. v1 ships setup, vocabulary, writing, progress, boot context, session summary, health checks, and distribution scaffolding for macOS and Linux only.
+Build a local-first Claude Code language-tutor plugin with a synchronous Python 3.12+ core. The tutor exposes setup, vocabulary practice, writing feedback, progress, boot-context, session-end, and doctor commands through one `bin/tutor` CLI; Claude plugin hooks and skills only orchestrate. Human-editable learner profile and preferences live in YAML, while answer events, mistake events, SRS state, reviews, summaries, metrics, migrations, and costs live in SQLite. Pydantic contracts, deterministic renderers, SM-2 scheduling, and golden/contract/integration/semantic tests protect the core behavior.
 
 ## Technical Context
 
-**Language/Version**: Python 3.12 minimum, target-compatible with Python 3.13. Runtime remains synchronous.
+**Language/Version**: Python 3.12+ with a synchronous core.
 
-**Primary Dependencies**: Pydantic v2 for contracts and JSON Schema export; `ruamel.yaml` for comment-preserving profile/preferences edits; stdlib `sqlite3`; Click for `bin/tutor`; platformdirs for macOS/Linux paths. Dev dependencies: pytest, syrupy, freezegun, pytest-cov, pyright strict, ruff, hatchling, uv.
+**Primary Dependencies**: Pydantic v2 for contracts and schema export; `ruamel.yaml` for comment-preserving setup/edit YAML; Click for the `bin/tutor` CLI; platformdirs for macOS/Linux paths; stdlib `sqlite3` for local transactional state. Dev dependencies are pytest, syrupy, freezegun, pytest-cov, pyright, ruff, hatchling, uv, and pre-commit.
 
-**Storage**: Human-editable YAML for profile/preferences only; SQLite for transactional and derived state: lifecycle events, answer events, mistake events, SRS items/reviews, session summaries, skill metrics, migrations, and costs.
+**Storage**: YAML owns profile and preferences only. SQLite owns transactional and derived state only. Migrations are plain numbered SQL applied by an in-tree runner.
 
-**Testing**: pytest unit tests for schemas, SM-2, severity mapping, boot-context selection, YAML validation, and migrations; syrupy golden tests for boot context and markdown rendering; adapter contract tests for Claude hook/CLI JSON; integration tests for setup, vocabulary, writing, progress, lifecycle, and health checks; semantic evaluator fixtures for Slavic feedback quality.
+**Testing**: pytest for all tiers; syrupy for deterministic markdown/boot-context snapshots; freezegun for time-dependent SRS tests; pyright strict for types; ruff for lint/format. Semantic evaluator fixtures cover LLM-backed writing quality with explicit SC-004/SC-005 threshold gates separately from deterministic tests.
 
-**Target Platform**: Claude Code plugin on macOS and Linux. Windows, alternate hosts, cloud services, and multi-device sync are out of scope for v1.
+**Target Platform**: macOS and Linux, running as a Claude Code plugin. Windows and additional hosts are out of scope for v1.
 
-**Project Type**: Agentic-CLI plugin plus local Python package and CLI. No web service, MCP server, daemon, or terminal UI framework in v1.
+**Project Type**: Local Python package plus Claude Code plugin surface: manifest, hooks, skills, subagent, `bin/tutor`, schemas, migrations, and tests.
 
-**Performance Goals**: Fresh setup plus first-session context in under 60 seconds; session-start context readable in under 20 seconds and capped at 6,000 rendered characters; progress view under 5 seconds with one year of daily history; deterministic render output for identical validated inputs.
+**Performance Goals**: Setup to first usable context in under 60 seconds; boot context no more than 8 ordered sections and 6,000 rendered characters; progress view under 5 seconds with one year of daily history; deterministic renderers byte-identical for identical input.
 
-**Constraints**: Local-only data; no telemetry, auth, cloud sync, remote storage, ORM, async core, FSRS, bundled curriculum, games, dashboards, or speculative host adapters. Every state mutation persists immediately through a repository transaction. Evaluator confidence is a closed enum (`high`, `medium`, `low`), and definitive high-severity corrections require `high` confidence. Shell verification in this repository uses `rtk`.
+**Constraints**: No cloud sync, telemetry, auth, multi-user, remote storage, async core, ORM, MCP server, speculative host adapters, FSRS, bundled curricula, rich dashboards, games, XP, speaking/listening/reading modes, or extra host manifests in v1. Every state mutation persists immediately through one repository transaction. Definitive high-severity evaluator corrections require `confidence == "high"`. Shell verification in this repository uses the `rtk` command prefix.
 
-**Scale/Scope**: Single learner, daily local use, one Claude Code host adapter, four user-facing skills (`tutor-setup`, `tutor-vocab`, `tutor-writing`, `tutor-progress`), one judge subagent for writing evaluation, one install/health command, and one local SQLite database.
+**Scale/Scope**: Single local learner, local data paths, setup/vocabulary/writing/progress/session lifecycle/doctor workflows, Slavic-aware evaluator fixtures, and marketplace-ready plugin packaging.
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-### Pre-Design Gate
-
-- **Layered boundaries**: PASS. Affected layers are host adapter, core, DAL, renderer, user-facing skills, hooks, packaging, and tests. Hooks/skills call CLI only; CLI calls core; core calls repositories; DAL calls filesystem.
-- **Contracts and abstractions**: PASS. Inter-layer data crosses via Pydantic models, generated JSON schemas, narrow Protocols, SQL migrations, and documented CLI JSON. No catch-all dictionaries are allowed at persistence or renderer boundaries.
-- **Deterministic tests**: PASS. Required coverage includes unit, golden, contract, integration, migration, and semantic evaluator fixtures.
-- **Local-first data ownership**: PASS. YAML owns editable config only; SQLite owns transactional/derived state only; platformdirs resolves paths.
-- **Scope discipline**: PASS. Plan limits v1 to Claude Code, Python core, YAML/SQLite, vocab SRS, writing, feedback rendering, progress, session lifecycle, install checks, and packaging.
-- **DRY and composition**: PASS. Schemas, error tags, severity mapping, path rules, and prompt rubrics are single-source. Behavior composes services/repositories/adapters; no inheritance hierarchy is planned.
-
-### Post-Design Gate
-
-- **Layered boundaries**: PASS. `data-model.md` and `contracts/` preserve immediate-neighbor calls. No module reaches through adapter, core, or DAL internals.
-- **Contracts and abstractions**: PASS. CLI, plugin surface, evaluator output, lifecycle, and persistence contracts are documented in `contracts/` and backed by Pydantic/SQL schema ownership.
-- **Deterministic tests**: PASS. Quickstart and contracts name exact verification tiers; evaluator nondeterminism is isolated to semantic fixtures and schema validation.
-- **Local-first data ownership**: PASS. Data model explicitly splits YAML editable fields from SQLite event/state tables and forbids duplicate ownership.
-- **Scope discipline**: PASS. Research rejects MCP, alternate hosts, async, ORM, FSRS, cloud, dashboards, and bundled curricula for v1.
-- **DRY and composition**: PASS. Shared vocabularies and mappings remain centralized in core modules; skills are orchestration documents only.
+- **Layered boundaries**: PASS. Affected layers are plugin surface, host adapter, core, DAL, renderer, skills, hooks, agent, packaging, schemas, and tests. Plugin components invoke only the CLI; adapter normalizes host events; core owns pedagogy and validation; DAL owns files and transactions; renderers are pure.
+- **Contracts and abstractions**: PASS. Boundary data uses Pydantic models, JSON Schema mirrors, documented CLI JSON, SQL migrations, and a narrow Claude adapter Protocol. No catch-all dictionaries or DAL details cross module boundaries.
+- **Deterministic tests**: PASS. Plan requires unit tests for SM-2, severity mappings, schema validation, path rules, and YAML validation; golden tests for boot context and feedback markdown; contract tests for CLI/plugin/adapter JSON; integration tests for setup, vocab, writing, progress, lifecycle, and migration flows; semantic fixtures with threshold gates for evaluator quality.
+- **Local-first data ownership**: PASS. YAML is limited to human-editable profile/preferences; SQLite holds answer events, mistake events, SRS rows, reviews, summaries, metrics, costs, and migrations. Paths use platformdirs/XDG conventions.
+- **Scope discipline**: PASS. v1 ships Claude Code only with setup, vocab, writing, progress, session hooks, doctor, local storage, and packaging. Deferred hosts, modalities, FSRS, cloud, dashboards, and gamification remain excluded.
+- **DRY and composition**: PASS. Pydantic schemas, controlled tags, severity maps, path rules, prompt rubrics, migrations, and renderer mappings stay single-source. Behavior is composed through injected collaborators and repositories, not inheritance or globals.
 
 ## Project Structure
 
@@ -66,7 +55,7 @@ specs/001-build-language-tutor/
 │   ├── cli-json.md
 │   ├── evaluator.md
 │   └── plugin-surface.md
-└── tasks.md                 # Created later by /speckit-tasks
+└── tasks.md              # Created later by /speckit-tasks
 ```
 
 ### Source Code (repository root)
@@ -75,22 +64,31 @@ specs/001-build-language-tutor/
 .claude-plugin/
 └── plugin.json
 
-bin/
-└── tutor
-
 hooks/
 ├── hooks.json
 ├── session-start.sh
-└── session-end.sh
+├── session-end.sh
+└── README.md
 
 skills/
-├── tutor-setup/SKILL.md
-├── tutor-vocab/SKILL.md
-├── tutor-writing/SKILL.md
-└── tutor-progress/SKILL.md
+├── tutor-setup/
+│   ├── SKILL.md
+│   └── scripts/
+├── tutor-vocab/
+│   ├── SKILL.md
+│   └── scripts/
+├── tutor-writing/
+│   ├── SKILL.md
+│   └── scripts/
+└── tutor-progress/
+    ├── SKILL.md
+    └── scripts/
 
 agents/
 └── tutor-judge.md
+
+bin/
+└── tutor
 
 src/
 └── language_tutor/
@@ -100,9 +98,10 @@ src/
     ├── setup.py
     ├── lifecycle.py
     ├── boot_context.py
+    ├── feedback.py
     ├── vocab.py
     ├── srs.py
-    ├── feedback.py
+    ├── session.py
     ├── evaluators.py
     ├── writing.py
     ├── progress.py
@@ -120,11 +119,6 @@ src/
         ├── migrations.py
         └── repositories.py
 
-data/
-└── defaults/
-    ├── profile.yaml
-    └── preferences.yaml
-
 migrations/
 └── 001_initial.sql
 
@@ -134,20 +128,71 @@ schemas/
 ├── session_analysis.schema.json
 └── answer_event.schema.json
 
+data/defaults/
+├── profile.yaml
+└── preferences.yaml
+
 tests/
 ├── unit/
 ├── golden/
-├── integration/
+├── contract/
 ├── adapter_contract/
+├── integration/
+├── migration/
 └── fixtures/
 
 pyproject.toml
 pyrightconfig.json
 README.md
+LICENSE
 ```
 
-**Structure Decision**: Use one Python package under `src/language_tutor/` with module boundaries instead of separate core/adapter/DAL packages. v1 has one host and one wheel, so package splitting would add versioning and import complexity without current value. The Claude adapter remains a thin Protocol-backed module because the current host boundary needs contract tests.
+**Structure Decision**: Use one installable package under `src/language_tutor/` and enforce layer boundaries through modules, contracts, repositories, and tests. Separate packages for core/DAL/adapters are rejected for v1 because there is only one host adapter and one local runtime. Rendering and session analysis are Python modules/CLI commands, not separate LLM-invoked skills.
+
+## Phase 0: Research
+
+**Output**: `specs/001-build-language-tutor/research.md`
+
+All technical-context unknowns are resolved:
+
+- Runtime: Python 3.12+ synchronous package.
+- CLI boundary: one Click-powered `bin/tutor` with JSON input/output.
+- Contracts: Pydantic v2 as source of truth plus JSON Schema mirrors.
+- Persistence: `ruamel.yaml` for editable config; stdlib `sqlite3` for transactional state.
+- Paths: platformdirs for macOS/Linux.
+- SRS: in-tree SM-2 with explicit quality mapping.
+- Evaluation: `tutor-judge` only for writing; structured validation, retry, fallback, and semantic fixtures with SC-004/SC-005 threshold checks.
+- Rendering: deterministic Python markdown renderer with emoji and ASCII fallback.
+- Distribution: Claude plugin manifest, hooks, skills, agent, doctor command, and install checks.
+
+## Phase 1: Design And Contracts
+
+**Output**:
+
+- `specs/001-build-language-tutor/data-model.md`
+- `specs/001-build-language-tutor/contracts/cli-json.md`
+- `specs/001-build-language-tutor/contracts/evaluator.md`
+- `specs/001-build-language-tutor/contracts/plugin-surface.md`
+- `specs/001-build-language-tutor/quickstart.md`
+- `AGENTS.md` Speckit plan reference
+
+Design decisions:
+
+- Data model separates YAML entities (`LearnerProfile`, `LearnerPreferences`) from SQLite entities (`LifecycleEvent`, `VocabularyItem`, `VocabularyReview`, `AnswerEvent`, `MistakeEvent`, `SessionSummary`, `SessionAnalysis`, `SkillMetric`, `CostEvent`, `MigrationRecord`).
+- Contract entities are `BootContext`, `FeedbackEnvelope`, and frozen `ErrorTag` vocabulary.
+- CLI contract is the stable boundary for hooks, skills, tests, and contributors.
+- Evaluator contract is stateless and validates/downgrades before persistence or rendering.
+- Plugin surface contract forbids persistence, SM-2 math, tag duplication, and renderer logic inside `SKILL.md`.
+
+## Post-Design Constitution Check
+
+- **Layered boundaries**: PASS. Phase 1 contracts keep plugin, adapter, core, DAL, renderer, and agent responsibilities separate.
+- **Contracts and abstractions**: PASS. Data model and contracts define explicit Pydantic/JSON/SQL surfaces before tasks or implementation.
+- **Deterministic tests**: PASS. Quickstart and contracts identify required unit, golden, contract, adapter, integration, migration, and semantic gates.
+- **Local-first data ownership**: PASS. Ownership rules are documented in data model and CLI contract.
+- **Scope discipline**: PASS. Design excludes v2 hosts/modalities and anti-features named in the spec.
+- **DRY and composition**: PASS. Shared schemas/tags/maps remain centralized; behavior is assembled through CLI/core/DAL collaborators.
 
 ## Complexity Tracking
 
-No constitution violations accepted. No added complexity requires justification at this planning stage.
+No constitution violations. No complexity exceptions required.
