@@ -36,6 +36,12 @@ reaches depth; fuzzy checkpoints; violates focus).
   it can be used end-to-end.
 - **Every new contract** gets a Pydantic model + JSON-Schema mirror.
 - **No pedagogy code references a host** — host specifics live only in adapters.
+- **Skill-suite coherence audit (any phase that adds a skill):** when a new skill
+  lands, re-audit *every* existing skill for fit and sync — no overlapping or
+  conflicting `description` triggers, consistent CLI/contract conventions, shared
+  `FeedbackEnvelope`/boot-context usage, no duplicated pedagogy, and the combined
+  skill-listing stays within Claude Code's description budget. New skills must
+  slot into the suite, not fork it.
 
 ## Phases
 
@@ -53,26 +59,33 @@ Deepen the existing SRS loop. No host dependency.
 deck end-to-end.
 
 ### Phase 3 — Smarter Engine
-Core scheduling + analysis depth. No host dependency. Highest math risk.
+Core analysis depth. No host dependency. **SM-2 stays the only algorithm** —
+FSRS remains explicitly out of scope (per `REQUIREMENTS.md`); this phase makes
+the *existing* SM-2 loop smarter, not pluggable.
 
-- Scheduler behind a `Scheduler` Protocol; in-tree SM-2 stays the default.
-- **FSRS as opt-in second implementation** (composition, not replacement of SM-2).
 - Richer `SessionAnalysis`: cross-session weak-tag targeting feeds the next
-  due-queue; adaptive difficulty hint.
+  due-queue.
+- Adaptive item selection: weak-pattern signal biases which due items and which
+  new items surface (selection logic, not a new scheduling algorithm).
+- SM-2 parameter tuning surfaced through preferences (intensity already exists),
+  golden-tested.
 
-**Exit gate:** scheduler swap is config-only; FSRS golden-tested; weak-tag
-targeting demonstrably changes which cards surface; both schedulers pass one
-identical contract suite.
+**Exit gate:** weak-tag targeting demonstrably changes which cards surface;
+selection logic golden-tested deterministic; SM-2 math unchanged and still
+passes its existing golden suite.
 
 ### Phase 4 — Richer Feedback & Progress
-Renderer / analysis surface. No host dependency.
+Renderer / analysis surface. No host dependency. **Text/markdown only** — stays
+clear of the banned "rich analytics dashboard" (`REQUIREMENTS.md` Out of Scope):
+no charts, no GUI, no web view.
 
 - Per-tag mastery view.
-- Text trend / sparkline; last-N-session recap.
-- Exportable report (markdown / JSON).
+- Text trend / ASCII sparkline; last-N-session recap.
+- Exportable report (markdown / JSON, terminal-printable).
 
 **Exit gate:** progress views golden-tested deterministic; export round-trips;
-progress view <5s on one year of daily history (spec-001 perf bar preserved).
+output is text/markdown only (no graphical surface); progress view <5s on one
+year of daily history (spec-001 perf bar preserved).
 
 ### Phase 5 — Text Modalities
 First new exercise types. Text-only, runs on any host.
@@ -83,20 +96,29 @@ First new exercise types. Text-only, runs on any host.
 - Dictation / transcript drill as a text-based "listening" proxy.
 
 **Exit gate:** each new skill reuses `FeedbackEnvelope` + judge contract; emits
-`mistake_events`; introduces no new persistence path; two new skills live and
-dogfoodable.
+`mistake_events`; introduces no new persistence path; **skill-suite coherence
+audit passes** (existing tutor-vocab/writing/progress/setup re-checked for
+trigger overlap and convention sync); two new skills live and dogfoodable.
 
 ### Phase 6 — Host-Capability Layer + Adapter Framework
 Architecture only — no new host lands in this phase.
 
-- Add a capability descriptor to the adapter Protocol
+Two axes of capability, not one:
+
+- **I/O modality:** capability descriptor on the adapter Protocol
   (`supports: text | audio | image`, plus per-host I/O quirks).
+- **Lifecycle availability:** the existing `supports_lifecycle(event_name)` seam
+  formalized — not every host has Claude's SessionStart/SessionEnd hooks. Hosts
+  lacking hook-driven boot must declare it; core must build/persist boot context
+  through an alternate trigger (e.g. first-message, explicit command) without
+  assuming a hook fired. This is the real risk in Phase 6, above I/O.
 - Skills gate behavior on declared capabilities; pedagogy stays host-blind.
 - Generalize the adapter-contract test suite into a reusable **conformance kit**
-  every adapter must pass.
+  every adapter must pass (covers both axes).
 
 **Exit gate:** the existing Claude adapter is re-expressed through the
-capability layer with zero pedagogy change; conformance kit green.
+capability layer (both axes) with zero pedagogy change; conformance kit green;
+boot context provably builds on a host with no SessionStart hook (simulated).
 
 ### Phase 6.x — Adapter Rollout
 Four new adapters (Claude already shipped in Phase 1). Each is an independent
@@ -111,7 +133,13 @@ slice that passes the conformance kit; ship/dogfood per adapter — no big-bang.
 - **antigravity** — via Antigravity CLI.
 
 **Exit gate (per adapter):** passes the full lifecycle conformance kit; declares
-its real capabilities; the same pedagogy runs unchanged.
+its real capabilities (both axes); the same pedagogy runs unchanged; **ships a
+working per-host install/distribution path** (the Claude marketplace path does
+not apply to other hosts — hermess profile-distributions, codex plugin format,
+etc.) verified on a fresh environment, mirroring spec-001 `DIST-01/02` per host.
+
+Maps to `REQUIREMENTS.md` HOST-01 (codex), HOST-02 (openclaw), HOST-03
+(hermess), HOST-04 (antigravity).
 
 ### Phase 7 — Audio Modalities *(needs research)*
 Rides the Phase 6 capability layer and whichever adapters declared audio support
@@ -122,7 +150,9 @@ in Phase 6.x, not assumed here).
 - Audio / image cards.
 
 **Exit gate:** audio skills are capability-gated and degrade gracefully (hidden)
-on text-only hosts; semantic-eval set covers pronunciation / listening quality.
+on text-only hosts; **skill-suite coherence audit passes** (full suite re-checked
+with audio skills added); semantic-eval set covers pronunciation / listening
+quality.
 
 ## Dependency Spine
 
