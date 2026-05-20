@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "language-tutor"
+version = "0.1.0"
+description = "Local-first Claude Code language tutor"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "click>=8.1",
+  "platformdirs>=4.2",
+  "pydantic>=2.7",
+  "ruamel.yaml>=0.18",
+]
+
+[project.optional-dependencies]
+dev = [
+  "freezegun>=1.5",
+  "pyright>=1.1",
+  "pytest>=8.2",
+  "pytest-cov>=5.0",
+  "ruff>=0.5",
+  "syrupy>=4.6",
+]
+
+[project.scripts]
+tutor = "language_tutor.cli:main"
+
+[tool.hatch.build]
+include = [
+  "/src",
+  "/bin",
+  "/hooks",
+  "/skills",
+  "/agents",
+  "/data/defaults",
+  "/migrations",
+  "/schemas",
+  "/.claude-plugin/plugin.json",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/language_tutor"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=language_tutor --cov-report=term-missing --cov-fail-under=80"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.coverage.run]
+branch = true
+source = ["language_tutor"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
