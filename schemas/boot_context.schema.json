@@ -1,0 +1,202 @@
+{
+  "$defs": {
+    "BootSection": {
+      "additionalProperties": false,
+      "properties": {
+        "lines": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Lines",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "BootSection",
+      "type": "object"
+    },
+    "FeedbackVerbosity": {
+      "enum": [
+        "concise",
+        "standard",
+        "detailed"
+      ],
+      "title": "FeedbackVerbosity",
+      "type": "string"
+    },
+    "LearnerPreferences": {
+      "additionalProperties": false,
+      "properties": {
+        "ascii_fallback": {
+          "default": false,
+          "title": "Ascii Fallback",
+          "type": "boolean"
+        },
+        "feedback_verbosity": {
+          "$ref": "#/$defs/FeedbackVerbosity",
+          "default": "concise"
+        },
+        "review_intensity": {
+          "$ref": "#/$defs/ReviewIntensity",
+          "default": "normal"
+        },
+        "schema_version": {
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "session_length": {
+          "default": 10,
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Session Length",
+          "type": "integer"
+        },
+        "streak_grace_days": {
+          "default": 1,
+          "maximum": 14,
+          "minimum": 0,
+          "title": "Streak Grace Days",
+          "type": "integer"
+        },
+        "transliteration_tolerance": {
+          "default": false,
+          "title": "Transliteration Tolerance",
+          "type": "boolean"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        }
+      },
+      "title": "LearnerPreferences",
+      "type": "object"
+    },
+    "LearnerProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "interests": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Interests",
+          "type": "array"
+        },
+        "level_target": {
+          "default": "A1",
+          "title": "Level Target",
+          "type": "string"
+        },
+        "native_language": {
+          "title": "Native Language",
+          "type": "string"
+        },
+        "schema_version": {
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "target_language": {
+          "title": "Target Language",
+          "type": "string"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        }
+      },
+      "required": [
+        "native_language",
+        "target_language"
+      ],
+      "title": "LearnerProfile",
+      "type": "object"
+    },
+    "ReviewIntensity": {
+      "enum": [
+        "light",
+        "normal",
+        "heavy"
+      ],
+      "title": "ReviewIntensity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "max_rendered_chars": {
+      "default": 6000,
+      "title": "Max Rendered Chars",
+      "type": "integer"
+    },
+    "preferences": {
+      "$ref": "#/$defs/LearnerPreferences"
+    },
+    "profile": {
+      "$ref": "#/$defs/LearnerProfile"
+    },
+    "sections": {
+      "items": {
+        "$ref": "#/$defs/BootSection"
+      },
+      "title": "Sections",
+      "type": "array"
+    }
+  },
+  "required": [
+    "profile",
+    "preferences",
+    "sections"
+  ],
+  "title": "BootContext",
+  "type": "object"
+}

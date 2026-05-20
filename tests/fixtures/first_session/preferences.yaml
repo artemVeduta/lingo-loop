@@ -1,0 +1,8 @@
+schema_version: 1
+session_length: 10
+review_intensity: normal
+feedback_verbosity: concise
+transliteration_tolerance: false
+ascii_fallback: false
+streak_grace_days: 1
+updated_at: null

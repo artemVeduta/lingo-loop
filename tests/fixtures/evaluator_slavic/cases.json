@@ -1,0 +1,22 @@
+[
+  {"id": "case-01", "answer": "Я читаю книгу.", "expected_tags": []},
+  {"id": "case-02", "answer": "Я бачу кіт.", "expected_tags": ["case"]},
+  {"id": "case-03", "answer": "Вона писати лист.", "expected_tags": ["aspect"]},
+  {"id": "case-04", "answer": "Моя брат тут.", "expected_tags": ["agreement"]},
+  {"id": "case-05", "answer": "Я бачу стіл.", "expected_tags": []},
+  {"id": "case-06", "answer": "Я йду до школа.", "expected_tags": ["case"]},
+  {"id": "case-07", "answer": "Він ходить в Київ завтра.", "expected_tags": ["verbs_of_motion"]},
+  {"id": "case-08", "answer": "Привіт як справи", "expected_tags": ["punctuation"]},
+  {"id": "case-09", "answer": "Я маю двадцять років.", "expected_tags": ["interference"]},
+  {"id": "case-10", "answer": "Це дуже файний день.", "expected_tags": ["vocabulary"]},
+  {"id": "case-11", "answer": "Я люблю українську.", "expected_tags": []},
+  {"id": "case-12", "answer": "Ми були у магазині.", "expected_tags": []},
+  {"id": "case-13", "answer": "Вони бачить місто.", "expected_tags": ["agreement"]},
+  {"id": "case-14", "answer": "Я написав листа.", "expected_tags": []},
+  {"id": "case-15", "answer": "Ти читав ця книга.", "expected_tags": ["case"]},
+  {"id": "case-16", "answer": "Я їду пішки.", "expected_tags": ["verbs_of_motion"]},
+  {"id": "case-17", "answer": "Добрий ранок!", "expected_tags": []},
+  {"id": "case-18", "answer": "Я з Україна.", "expected_tags": ["case"]},
+  {"id": "case-19", "answer": "Вона красивий.", "expected_tags": ["agreement"]},
+  {"id": "case-20", "answer": "Я зробив домашнє завдання.", "expected_tags": []}
+]

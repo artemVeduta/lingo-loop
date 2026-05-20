@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "Confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "ErrorTag": {
+      "enum": [
+        "case",
+        "aspect",
+        "agreement",
+        "animacy",
+        "verbs_of_motion",
+        "punctuation",
+        "interference",
+        "vocabulary",
+        "spelling",
+        "word_order",
+        "uncategorized"
+      ],
+      "title": "ErrorTag",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "confidence": {
+      "$ref": "#/$defs/Confidence",
+      "default": "low"
+    },
+    "new_tags": {
+      "items": {
+        "$ref": "#/$defs/ErrorTag"
+      },
+      "title": "New Tags",
+      "type": "array"
+    },
+    "next_focus": {
+      "default": "review_due_items",
+      "title": "Next Focus",
+      "type": "string"
+    },
+    "repeated_tags": {
+      "items": {
+        "$ref": "#/$defs/ErrorTag"
+      },
+      "title": "Repeated Tags",
+      "type": "array"
+    },
+    "resolved_tags": {
+      "items": {
+        "$ref": "#/$defs/ErrorTag"
+      },
+      "title": "Resolved Tags",
+      "type": "array"
+    },
+    "severity_counts": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Severity Counts",
+      "type": "object"
+    },
+    "summary_for_next_boot": {
+      "default": "",
+      "title": "Summary For Next Boot",
+      "type": "string"
+    }
+  },
+  "title": "SessionAnalysis",
+  "type": "object"
+}

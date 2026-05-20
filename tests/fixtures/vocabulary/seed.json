@@ -1,0 +1,11 @@
+[
+  {
+    "id": "fixture-item",
+    "target_language": "uk",
+    "prompt": "hello",
+    "lemma": "привіт",
+    "accepted_answers": ["привіт", "privit"],
+    "hint": "greeting",
+    "tags": ["starter"]
+  }
+]
