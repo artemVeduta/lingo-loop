@@ -104,7 +104,7 @@ Aggregated learning and operational metric.
 
 **Fields**: `id`, `metric_date`, `metric_name`, `metric_value`, `dimensions_json`, `created_at`.
 
-**Validation**: Metric names are closed for v1: streak, due count, item maturity, weak pattern count, token usage, and month-to-date cost.
+**Validation**: Metric names are closed for v1: streak, due count, item maturity, weak pattern count, token usage, month-to-date estimated USD cost, and cost status (`available`, `partial`, `unavailable`).
 
 **Relationships**: Read by progress and boot-context status.
 
@@ -112,9 +112,9 @@ Aggregated learning and operational metric.
 
 Append-only model-cost record for host-provided evaluator or analyzer calls.
 
-**Fields**: `id`, `session_id`, `operation`, `model`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `estimated_cost`, `created_at`.
+**Fields**: `id`, `session_id`, `operation`, `model`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `estimated_cost_usd`, `pricing_source`, `source_event_id`, `created_at`.
 
-**Validation**: Token counts are non-negative; cost is stored as an estimate with source metadata.
+**Validation**: Token counts are non-negative; `operation` is closed for v1 (`writing_evaluator`, `session_analyzer`); `estimated_cost_usd` is optional and must be non-negative when present; `pricing_source` records `host_usage_metadata`, `local_pricing_table`, or `unavailable`; missing cost estimates are reported as unavailable instead of inferred.
 
 **Relationships**: Aggregated into month-to-date progress.
 

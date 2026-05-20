@@ -115,14 +115,14 @@ A learner or contributor can verify installation health, inspect local data owne
 - **FR-002**: System MUST allow setup to be rerun to edit profile and preferences without erasing learning history.
 - **FR-003**: System MUST keep learner profile and preferences as human-editable local data and keep transactional learning history as separate local state.
 - **FR-004**: System MUST avoid cloud sync, telemetry, authentication, multi-user accounts, and remote storage in v1.
-- **FR-005**: System MUST build a concise session-start learning context from profile, due review counts, top weak patterns, latest session recap, current cost/status data, and first-session guidance when history is empty.
+- **FR-005**: System MUST build a concise session-start learning context from profile, due review counts, top weak patterns, latest session recap, local cost/status data from `CostEvent` and `SkillMetric` records, and first-session guidance when history is empty; if cost data is unavailable, the context MUST state that status explicitly rather than estimating silently.
 - **FR-006**: System MUST keep session-start context deterministic, ordered by documented section priority, capped at 6,000 rendered characters, and free of raw event dumps so repeated reads of the same learner state produce the same concise result.
 - **FR-007**: System MUST provide a vocabulary practice flow that prioritizes due reviews, presents recall prompts, captures answers, shows immediate feedback, and uses session length plus review intensity to size the practice queue.
 - **FR-008**: System MUST evaluate vocabulary answers against accepted reference answers, treat blank and "I don't know" responses as unanswered, apply transliteration tolerance only when the learner preference enables it, and distinguish correct, minor, important, blocking, mixed-language, and unanswered outcomes.
 - **FR-009**: System MUST update future vocabulary review timing from a documented spaced-repetition rule after each graded vocabulary answer.
 - **FR-010**: System MUST record every vocabulary answer and review result exactly once, even when a session is interrupted.
 - **FR-011**: System MUST generate or select target-language practice content without bundled curricula only when the content declares target language, level target, prompt, accepted-answer forms, learner-constraint fit, weak-pattern or interest rationale, and a normalized duplicate key; content missing those fields or conflicting with profile constraints MUST NOT be queued.
-- **FR-012**: System MUST provide a free-writing flow that offers level-appropriate prompts and accepts learner-provided passages.
+- **FR-012**: System MUST provide a free-writing flow that offers prompts matching the learner's target language, level target, interests, and constraints when available, and accepts learner-provided passages when no generated prompt is wanted or no prompt candidate satisfies those fit rules.
 - **FR-013**: System MUST return writing feedback with a corrected version, exact error spans where possible, severity level, confidence level (`high`, `medium`, or `low`), controlled error tags, explanation in the learner's native language, a next-drill hint, and explanation detail shaped by feedback verbosity.
 - **FR-014**: System MUST leave corrected target-language forms and error tags in the target/controlled form while rendering explanations in the learner's native language.
 - **FR-015**: System MUST record writing mistakes as mistake history and weak-pattern inputs without changing vocabulary review schedules by default.
@@ -131,9 +131,9 @@ A learner or contributor can verify installation health, inspect local data owne
 - **FR-018**: System MUST render feedback in stable markdown-style text with severity markers and an ASCII fallback when symbols are unavailable.
 - **FR-019**: System MUST create a short end-of-session summary that can be shown immediately and reused as the next session's recap; if session analysis is interrupted, recorded events MUST remain persisted and the summary status MUST be marked pending rather than blocking shutdown.
 - **FR-020**: System MUST provide progress that includes streak with a documented one-day default grace policy, due review counts, weak patterns, item maturity, last-session recap, and month-to-date model cost.
-- **FR-021**: System MUST provide an install or health check that verifies local runtime readiness, plugin registration, data paths, stored data health, and common setup problems, with actionable repair messages that identify the failed area, whether learner data was changed, and the next safe step.
+- **FR-021**: System MUST provide an install or health check that verifies Python runtime readiness, `bin/tutor` executability, plugin manifest/hooks/skills/agent discovery, platform data path permissions, profile/preference YAML schema health, SQLite migration state, and common corrupt-profile or corrupt-history fixtures, with actionable repair messages that identify the failed area, whether learner data was changed, and the next safe step.
 - **FR-022**: System MUST install and run on macOS and Linux for v1.
-- **FR-023**: System MUST expose user-facing tutor actions as discoverable commands for setup, vocabulary, writing, and progress, with each action mapped to a distinct learner intent and expected user value.
+- **FR-023**: System MUST expose user-facing tutor actions as discoverable commands for setup, vocabulary, writing, progress, and doctor/health, with each action mapped to a distinct learner intent and expected user value.
 - **FR-024**: System MUST keep setup, vocabulary, writing, progress, rendering, lifecycle analysis, and data ownership decoupled so each can be tested independently.
 - **FR-025**: System MUST exclude v1 anti-features beyond the local tutor workflow: games, XP, leagues, push notifications, multi-device sync, rich dashboards, speaking/listening/reading modes, and additional host adapters.
 
@@ -141,14 +141,18 @@ A learner or contributor can verify installation health, inspect local data owne
 
 - **Learner Profile**: User-editable language-learning identity, including native language, target language, level target, interests, and constraints.
 - **Learner Preferences**: User-editable session and feedback choices, including session length, review intensity, feedback verbosity, and transliteration tolerance.
-- **Session Context**: Concise session-start view of profile, due reviews, weak patterns, latest recap, and status needed to guide the current interaction.
+- **Boot Context**: Canonical session-start context view of profile, due reviews, weak patterns, latest recap, and status needed to guide the current interaction.
 - **Vocabulary Item**: A target-language recall unit with accepted answer forms, prompt data, learning state, and maturity.
 - **Vocabulary Review**: A recorded answer attempt, verdict, quality outcome, and next-review decision for one vocabulary item.
 - **Answer Event**: Append-only record that a learner answered an exercise, including timing, skill, prompt reference, and outcome.
 - **Mistake Event**: Structured record of a writing or vocabulary issue, including span, severity, tag, explanation, and confidence.
-- **Feedback Result**: Structured correction package containing verdict, corrected answer, error spans, severity, controlled tags, explanation, and optional next practice hint.
+- **Feedback Result**: Structured correction package containing verdict, corrected answer, error spans, severity, controlled tags, explanation, and required next-drill hint.
+- **Lifecycle Event**: Append-only record of setup, vocabulary, writing, progress, or session lifecycle activity used to preserve session history.
+- **Session Analysis**: Validated end-of-session analysis used to create summaries, weak-pattern updates, skill metrics, cost records, and pending-status handoff when analysis is interrupted.
 - **Session Summary**: End-of-session recap with key outcomes, weak patterns, next focus, and a concise handoff for the next session.
 - **Skill Metric**: Aggregated learning or cost metric used for progress, habit tracking, and operational visibility.
+- **Cost Event**: Append-only local record of host-provided usage metadata for evaluator or analyzer calls, including operation, model, token counts, optional USD estimate, source, and timestamp.
+- **Migration Record**: Local SQLite migration marker with applied version and checksum state.
 - **Error Tag**: Controlled category used to group mistakes consistently across feedback, progress, and future practice.
 
 ## Constitution Alignment *(mandatory)*
@@ -168,7 +172,7 @@ A learner or contributor can verify installation health, inspect local data owne
 - **SC-003**: In acceptance tests, 100% of graded vocabulary answers produce one visible feedback result, one recorded review event, and one future review decision with no duplicate state changes.
 - **SC-004**: In a curated fixture set of at least 20 non-empty writing submissions that pass input validation, at least 95% produce feedback containing corrected text, span or location guidance, severity, controlled tag, and native-language explanation.
 - **SC-005**: In curated Slavic evaluator fixtures, expected verdicts and core morphology tags are produced for at least 90% of cases, with no definitive high-severity correction shown for known-correct sentences.
-- **SC-006**: Progress view answers streak, due count, weak patterns, item maturity, last-session recap, and month-to-date cost in under 5 seconds for a learner with one year of daily history.
+- **SC-006**: Progress view answers streak, due count, weak patterns, item maturity, last-session recap, month-to-date estimated USD cost, and cost availability status in under 5 seconds for a learner with one year of daily history.
 - **SC-007**: Re-rendering the same validated feedback or session-start context produces identical displayed text in 100% of deterministic fixtures.
 - **SC-008**: A learner can complete 30 consecutive days of local sessions without creating an account, enabling telemetry, using cloud storage, or manually repairing learning state.
 - **SC-009**: macOS and Linux fresh-machine checks identify missing prerequisites or corrupt local data with actionable messages in 100% of tested failure fixtures.
@@ -181,6 +185,7 @@ A learner or contributor can verify installation health, inspect local data owne
 - The learner brings access to host-provided model evaluation; the tutor itself does not add separate cloud accounts or remote storage.
 - Host-provided model evaluation is responsible for language-generation quality; the tutor is responsible for well-formed feedback, validation, display, local records, and safe downgrade behavior.
 - Exercise content is generated or selected on demand instead of bundled as a curated curriculum.
+- Cost display uses local usage metadata captured from host-provided evaluator or analyzer calls; when token counts or pricing metadata are absent, progress and boot context show cost status as unavailable.
 - The initial daily-use surface is setup, vocabulary, writing, progress, session start context, and session end summary.
 - Russian/Ukrainian/Slavic dogfood drives evaluator quality requirements, but the learner profile can name any target language.
 - Native-language explanations are required; controlled tags remain stable and language-neutral.

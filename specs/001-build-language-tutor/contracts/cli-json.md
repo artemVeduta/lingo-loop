@@ -13,9 +13,9 @@
 
 ### `tutor doctor --json`
 
-Checks runtime, plugin registration, data paths, migrations, schema health, and common setup problems.
+Checks runtime, plugin registration, data paths, migrations, schema health, and defined setup failure fixtures.
 
-**Output**: `DoctorReport`.
+**Output**: `DoctorReport` with per-area status for Python runtime, `bin/tutor` executability, plugin manifest, hooks, skills, agent file, config/data/state path permissions, profile/preferences YAML schema validation, SQLite connectivity, migration checksum/order, package data inclusion, and whether learner data changed (`false` unless an explicit repair command is added later).
 
 ### `tutor setup read --json`
 
@@ -45,7 +45,7 @@ Renders a validated `BootContext` as markdown-style host text.
 
 ### `tutor vocab start --json`
 
-Returns due queue and optional starter-content request metadata.
+Returns due queue and optional starter-content request metadata. Starter-content candidates accepted by the core must declare target language, level target, prompt, accepted-answer forms, learner-constraint fit, weak-pattern or interest rationale, and normalized duplicate key before queueing.
 
 **Output**: `VocabularySessionPlan`.
 
@@ -59,7 +59,7 @@ Records one vocabulary answer, evaluates against accepted answers, applies SM-2 
 
 ### `tutor writing prompt --json`
 
-Returns a level-appropriate writing prompt or prompt choices.
+Returns a writing prompt or prompt choices with explicit fit metadata for target language, level target, interests, and learner constraints. If no candidate satisfies those rules, the response must allow learner-provided passage entry without pretending a prompt was selected.
 
 **Output**: `WritingPromptResult`.
 
@@ -79,13 +79,13 @@ Renders a validated feedback envelope.
 
 ### `tutor progress --json`
 
-Returns streak, due counts, weak patterns, item maturity, latest recap, and month-to-date cost.
+Returns streak, due counts, weak patterns, item maturity, latest recap, month-to-date estimated USD cost, and cost status (`available`, `partial`, or `unavailable`).
 
 **Output**: `ProgressReport`.
 
 ### `tutor session-end --json`
 
-Handles SessionEnd analysis input and persists validated summary/cost/metrics. It is safe to run asynchronously and must not block host shutdown on non-critical analyzer failure. If analysis is interrupted or rejected, persisted lifecycle events remain intact and the result status is `pending`.
+Handles SessionEnd analysis input and persists validated summary/cost/metrics. Cost input comes from host-provided usage metadata for evaluator/analyzer calls: operation, model, non-negative token counts, optional estimated USD cost, pricing source, and source event id. It is safe to run asynchronously and must not block host shutdown on non-critical analyzer failure. If analysis is interrupted or rejected, persisted lifecycle events remain intact and the result status is `pending`.
 
 **Output**: `SessionEndResult`.
 
@@ -96,3 +96,6 @@ Handles SessionEnd analysis input and persists validated summary/cost/metrics. I
 - Duplicate `vocab answer` calls with same idempotency key do not double-apply SRS.
 - Same DB/profile state produces byte-identical `boot-context` JSON and rendered markdown.
 - Unsupported evaluator tags are rejected or downgraded before persistence.
+- Starter vocabulary content missing required declarations or conflicting with profile constraints is rejected before queueing.
+- Doctor reports actionable failures for missing plugin files, invalid YAML, migration drift, unreadable data paths, and corrupt local databases without mutating learner data.
+- Plugin and CLI discovery expose setup, vocabulary, writing, and progress as distinct learner intents.

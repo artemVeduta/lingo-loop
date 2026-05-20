@@ -101,7 +101,6 @@ src/
     ├── feedback.py
     ├── vocab.py
     ├── srs.py
-    ├── session.py
     ├── evaluators.py
     ├── writing.py
     ├── progress.py

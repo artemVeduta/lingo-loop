@@ -44,7 +44,14 @@ Use when learner wants free writing or structured correction. Calls `tutor-judge
 
 ### `tutor-progress`
 
-Use when learner wants status, progress, due counts, weak patterns, item maturity, last recap, or month-to-date cost.
+Use when learner wants status, progress, due counts, weak patterns, item maturity, last recap, month-to-date estimated cost, or cost availability status.
+
+Each skill must expose one distinct learner intent and delegate stateful work to the matching CLI command family:
+
+- `tutor-setup`: setup and profile/preference edits through `setup read` and `setup write`.
+- `tutor-vocab`: due reviews and starter vocabulary through `vocab start` and `vocab answer`.
+- `tutor-writing`: free writing and structured correction through `writing prompt`, `writing record`, and `render feedback`.
+- `tutor-progress`: progress/status through `progress`.
 
 ## Agent
 

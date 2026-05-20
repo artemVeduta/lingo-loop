@@ -72,7 +72,7 @@
 
 - [ ] T026 [P] [US1] Write failing setup CLI contract tests in `tests/adapter_contract/test_setup_cli.py`
 - [ ] T027 [P] [US1] Write failing YAML validation and round-trip tests in `tests/unit/test_yaml_store.py`
-- [ ] T028 [P] [US1] Write failing no-history and history-rich boot-context golden tests with eight-section ordering, due review, weak-pattern, latest-recap, cost/status, first-session guidance, and 6,000-character budget assertions in `tests/golden/test_boot_context.py`
+- [ ] T028 [P] [US1] Write failing no-history and history-rich boot-context golden tests with up-to-eight ordered sections, due review, weak-pattern, latest-recap, local cost/status available-or-unavailable handling, first-session guidance, and 6,000-character budget assertions in `tests/golden/test_boot_context.py`
 - [ ] T029 [P] [US1] Write failing fresh setup, setup-rerun history-preservation, and first-session integration tests, including the under-60-second setup-to-context budget with model calls stubbed, in `tests/integration/test_first_session.py`
 
 ### Implementation for User Story 1
@@ -102,18 +102,18 @@
 
 - [ ] T040 [P] [US2] Write failing SM-2 scheduling, queue-sizing, unanswered, mixed-language, and severity-quality mapping tests in `tests/unit/test_srs.py`
 - [ ] T041 [P] [US2] Write failing vocabulary CLI, transliteration tolerance, and idempotency contract tests in `tests/adapter_contract/test_vocab_cli.py`
-- [ ] T042 [P] [US2] Write failing vocabulary practice integration tests, including session length/review intensity queue sizing, duplicate item handling by normalized target-language lemma/prompt key, and interrupted-session exact-once answer/review persistence, in `tests/integration/test_vocabulary_flow.py`
+- [ ] T042 [P] [US2] Write failing vocabulary practice integration tests, including session length/review intensity queue sizing, duplicate item handling by normalized target-language lemma/prompt key, rejection of starter-content candidates with missing required declarations or profile-constraint conflicts, and interrupted-session exact-once answer/review persistence, in `tests/integration/test_vocabulary_flow.py`
 - [ ] T043 [P] [US2] Write failing vocabulary feedback golden tests in `tests/golden/test_vocab_feedback.py`
 
 ### Implementation for User Story 2
 
 - [ ] T044 [US2] Implement deterministic SM-2 scheduler and verdict-to-quality mapping in `src/language_tutor/srs.py`
 - [ ] T045 [US2] Implement accepted-answer comparator with blank, "I don't know", mixed-language, transliteration preference handling, and vocabulary feedback envelope builder in `src/language_tutor/feedback.py`
-- [ ] T046 [US2] Implement due queue selection using session length/review intensity, starter-content planning, and duplicate vocabulary item handling in `src/language_tutor/vocab.py`
+- [ ] T046 [US2] Implement due queue selection using session length/review intensity, starter-content candidate validation, profile-constraint conflict rejection, and duplicate vocabulary item handling in `src/language_tutor/vocab.py`
 - [ ] T047 [US2] Implement idempotent and interruption-safe vocabulary answer and review persistence in `src/language_tutor/dal/repositories.py`
 - [ ] T048 [US2] Add `vocab start` CLI command in `src/language_tutor/cli.py`
 - [ ] T049 [US2] Add `vocab answer` CLI command with idempotency key handling in `src/language_tutor/cli.py`
-- [ ] T050 [US2] Add vocabulary seed, transliteration, duplicate-item, and answer fixtures in `tests/fixtures/vocabulary/`
+- [ ] T050 [US2] Add vocabulary seed, transliteration, duplicate-item, missing-field starter-content, profile-conflict starter-content, and answer fixtures in `tests/fixtures/vocabulary/`
 - [ ] T051 [US2] Create vocabulary skill orchestration that shells out only to `bin/tutor` in `skills/tutor-vocab/SKILL.md`
 - [ ] T052 [US2] Add vocabulary skill helper script that shells out only to `bin/tutor` in `skills/tutor-vocab/scripts/run.py`
 
@@ -129,17 +129,17 @@
 
 ### Tests for User Story 3
 
-- [ ] T053 [P] [US3] Write failing evaluator JSON contract tests, including feedback verbosity-derived detail budget, in `tests/adapter_contract/test_evaluator_contract.py`
+- [ ] T053 [P] [US3] Write failing evaluator JSON contract tests, including feedback verbosity-derived detail budget and required next-drill hint shape, in `tests/adapter_contract/test_evaluator_contract.py`
 - [ ] T054 [P] [US3] Write failing malformed, unsupported-tag, contradictory, missing-confidence, invalid-confidence, and low-confidence evaluator tests in `tests/unit/test_evaluators.py`
-- [ ] T055 [P] [US3] Write failing feedback rendering and ASCII fallback golden tests in `tests/golden/test_feedback_rendering.py`
-- [ ] T056 [P] [US3] Write failing writing prompt and record integration tests in `tests/integration/test_writing_flow.py`
+- [ ] T055 [P] [US3] Write failing feedback rendering, required next-drill hint, and ASCII fallback golden tests in `tests/golden/test_feedback_rendering.py`
+- [ ] T056 [P] [US3] Write failing writing prompt and record integration tests, including prompt fit by target language, level target, interests, constraints, and fallback to learner-provided passage when no candidate fits, in `tests/integration/test_writing_flow.py`
 - [ ] T057 [P] [US3] Add at least 20 accepted semantic evaluator fixture cases and a failing threshold harness that enforces SC-004 95% feedback completeness and SC-005 90% Slavic verdict/tag pass rates in `tests/fixtures/evaluator_slavic/` and `tests/adapter_contract/test_evaluator_semantic_thresholds.py`
 
 ### Implementation for User Story 3
 
-- [ ] T058 [US3] Implement evaluator output validation, confidence enum handling (`high`, `medium`, `low`), retry decision, safe downgrade, and controlled-tag handling in `src/language_tutor/evaluators.py`
-- [ ] T059 [US3] Implement writing prompt generation and writing record service in `src/language_tutor/writing.py`
-- [ ] T060 [US3] Implement deterministic feedback markdown renderer with ASCII fallback in `src/language_tutor/feedback.py`
+- [ ] T058 [US3] Implement evaluator output validation, confidence enum handling (`high`, `medium`, `low`), retry decision, safe downgrade, controlled-tag handling, and required next-drill hint validation in `src/language_tutor/evaluators.py`
+- [ ] T059 [US3] Implement writing prompt generation with target-language, level, interest, and constraint fit metadata plus writing record service in `src/language_tutor/writing.py`
+- [ ] T060 [US3] Implement deterministic feedback markdown renderer with required next-drill hint and ASCII fallback in `src/language_tutor/feedback.py`
 - [ ] T061 [US3] Implement mistake-event persistence without vocabulary SRS mutation in `src/language_tutor/dal/repositories.py`
 - [ ] T062 [US3] Add `writing prompt` and `writing record` CLI commands in `src/language_tutor/cli.py`
 - [ ] T063 [US3] Add `render feedback` CLI command in `src/language_tutor/cli.py`
@@ -155,20 +155,20 @@
 
 **Goal**: A learner can view compact progress and receive an end-of-session recap with streak, due counts, weak patterns, maturity, cost, and next focus.
 
-**Independent Test**: Seed empty history and one-year daily history cases, run progress and session-end, then verify streak grace, due counts, weak tags, recap, item maturity, month-to-date cost, progress under 5 seconds, and pending summary status when session analysis is interrupted.
+**Independent Test**: Seed empty history and one-year daily history cases, run progress and session-end, then verify streak grace, due counts, weak tags, recap, item maturity, month-to-date estimated USD cost, cost availability status, progress under 5 seconds, and pending summary status when session analysis is interrupted.
 
 ### Tests for User Story 4
 
-- [ ] T067 [P] [US4] Write failing progress aggregation unit tests in `tests/unit/test_progress.py`
+- [ ] T067 [P] [US4] Write failing progress aggregation unit tests, including month-to-date estimated USD cost and `available`/`partial`/`unavailable` cost status, in `tests/unit/test_progress.py`
 - [ ] T068 [P] [US4] Write failing empty-history and history-rich progress integration tests, including the under-5-second one-year fixture budget, in `tests/integration/test_progress_flow.py`
-- [ ] T069 [P] [US4] Write failing session-end CLI contract tests, including interrupted-analysis pending status, in `tests/adapter_contract/test_session_end_cli.py`
+- [ ] T069 [P] [US4] Write failing session-end CLI contract tests, including interrupted-analysis pending status and host usage metadata validation for cost events, in `tests/adapter_contract/test_session_end_cli.py`
 - [ ] T070 [P] [US4] Write failing progress and session-summary golden tests in `tests/golden/test_progress_rendering.py`
 
 ### Implementation for User Story 4
 
-- [ ] T071 [US4] Implement streak, due count, item maturity, weak-pattern, recap, and cost aggregation in `src/language_tutor/progress.py`
-- [ ] T072 [US4] Implement session analysis validation, interrupted-analysis pending status, summary creation, and next-focus selection in `src/language_tutor/lifecycle.py`
-- [ ] T073 [US4] Implement session summary, skill metric, and cost repository queries in `src/language_tutor/dal/repositories.py`
+- [ ] T071 [US4] Implement streak, due count, item maturity, weak-pattern, recap, estimated USD cost aggregation, and cost status handling in `src/language_tutor/progress.py`
+- [ ] T072 [US4] Implement session analysis validation, interrupted-analysis pending status, summary creation, host usage metadata validation, and next-focus selection in `src/language_tutor/lifecycle.py`
+- [ ] T073 [US4] Implement session summary, skill metric, CostEvent insert, and cost repository queries in `src/language_tutor/dal/repositories.py`
 - [ ] T074 [US4] Add `progress` CLI command in `src/language_tutor/cli.py`
 - [ ] T075 [US4] Add `session-end` CLI command in `src/language_tutor/cli.py`
 - [ ] T076 [US4] Implement non-blocking session-end hook wrapper that preserves persisted events when analysis remains pending in `hooks/session-end.sh`
@@ -188,19 +188,19 @@
 
 ### Tests for User Story 5
 
-- [ ] T080 [P] [US5] Write failing doctor CLI contract tests in `tests/adapter_contract/test_doctor_cli.py`
-- [ ] T081 [P] [US5] Write failing plugin surface contract tests in `tests/adapter_contract/test_plugin_surface.py`
+- [ ] T080 [P] [US5] Write failing doctor CLI contract tests for runtime, `bin/tutor` executability, plugin file discovery, path permissions, YAML schema health, SQLite connectivity, migration checksum/order, corrupt local data, repair messages, and no implicit learner-data mutation in `tests/adapter_contract/test_doctor_cli.py`
+- [ ] T081 [P] [US5] Write failing plugin surface contract tests for distinct setup, vocabulary, writing, progress, and doctor/health command discovery plus intent/value mapping in `tests/adapter_contract/test_plugin_surface.py`
 - [ ] T082 [P] [US5] Write failing local data ownership integration tests, including 30 consecutive local sessions without account, telemetry, cloud storage, or manual state repair, in `tests/integration/test_local_data_ownership.py`
 - [ ] T083 [P] [US5] Write failing deterministic rerender golden tests in `tests/golden/test_deterministic_rerender.py`
 
 ### Implementation for User Story 5
 
-- [ ] T084 [US5] Implement runtime, data path, stored data, migration, schema, and plugin file health checks in `src/language_tutor/health.py`
+- [ ] T084 [US5] Implement runtime, CLI wrapper, plugin file, data path permission, YAML schema, SQLite connectivity, migration checksum/order, corrupt data, package data, and no-mutation health checks in `src/language_tutor/health.py`
 - [ ] T085 [US5] Add `doctor --json` CLI command with repair-oriented failure output in `src/language_tutor/cli.py`
 - [ ] T086 [US5] Complete Claude hook registry for plugin discovery in `hooks/hooks.json`
 - [ ] T087 [US5] Complete Claude plugin metadata only in `.claude-plugin/plugin.json` and keep component discovery in root-level `skills/`, `hooks/`, `agents/`, and `bin/`
 - [ ] T088 [US5] Document local data ownership, install checks, and no-telemetry behavior in `README.md`
-- [ ] T089 [US5] Add macOS, Linux, corrupt-profile, and corrupt-database fixture cases in `tests/fixtures/doctor/`
+- [ ] T089 [US5] Add macOS, Linux, missing CLI wrapper, missing plugin file, unreadable path, invalid YAML, migration drift, corrupt-profile, and corrupt-database fixture cases in `tests/fixtures/doctor/`
 - [ ] T090 [US5] Include plugin files, defaults, migrations, and schemas in package build data in `pyproject.toml`
 
 **Checkpoint**: User Story 5 is independently usable and testable.
@@ -276,7 +276,7 @@ Recommended v1 path:  Setup -> Foundational -> US1 -> US2 -> US3 -> US4 -> US5 -
 ```bash
 Task: "T026 [US1] Write failing setup CLI contract tests in tests/adapter_contract/test_setup_cli.py"
 Task: "T027 [US1] Write failing YAML validation and round-trip tests in tests/unit/test_yaml_store.py"
-Task: "T028 [US1] Write failing no-history and history-rich boot-context golden tests with eight-section ordering, due review, weak-pattern, latest-recap, cost/status, first-session guidance, and 6,000-character budget assertions in tests/golden/test_boot_context.py"
+Task: "T028 [US1] Write failing no-history and history-rich boot-context golden tests with up-to-eight ordered sections, due review, weak-pattern, latest-recap, local cost/status available-or-unavailable handling, first-session guidance, and 6,000-character budget assertions in tests/golden/test_boot_context.py"
 Task: "T029 [US1] Write failing fresh setup, setup-rerun history-preservation, and first-session integration tests, including the under-60-second setup-to-context budget with model calls stubbed, in tests/integration/test_first_session.py"
 ```
 
@@ -285,16 +285,16 @@ Task: "T029 [US1] Write failing fresh setup, setup-rerun history-preservation, a
 ```bash
 Task: "T040 [US2] Write failing SM-2 scheduling, queue-sizing, unanswered, mixed-language, and severity-quality mapping tests in tests/unit/test_srs.py"
 Task: "T041 [US2] Write failing vocabulary CLI and idempotency contract tests in tests/adapter_contract/test_vocab_cli.py"
-Task: "T042 [US2] Write failing vocabulary practice integration tests, including session length/review intensity queue sizing, duplicate item handling by normalized target-language lemma/prompt key, and interrupted-session exact-once answer/review persistence, in tests/integration/test_vocabulary_flow.py"
+Task: "T042 [US2] Write failing vocabulary practice integration tests, including session length/review intensity queue sizing, duplicate item handling by normalized target-language lemma/prompt key, rejection of starter-content candidates with missing required declarations or profile-constraint conflicts, and interrupted-session exact-once answer/review persistence, in tests/integration/test_vocabulary_flow.py"
 Task: "T043 [US2] Write failing vocabulary feedback golden tests in tests/golden/test_vocab_feedback.py"
 ```
 
 ### Parallel Example: User Story 3
 
 ```bash
-Task: "T053 [US3] Write failing evaluator JSON contract tests, including feedback verbosity-derived detail budget, in tests/adapter_contract/test_evaluator_contract.py"
+Task: "T053 [US3] Write failing evaluator JSON contract tests, including feedback verbosity-derived detail budget and required next-drill hint shape, in tests/adapter_contract/test_evaluator_contract.py"
 Task: "T054 [US3] Write failing malformed, unsupported-tag, contradictory, missing-confidence, invalid-confidence, and low-confidence evaluator tests in tests/unit/test_evaluators.py"
-Task: "T055 [US3] Write failing feedback rendering and ASCII fallback golden tests in tests/golden/test_feedback_rendering.py"
+Task: "T055 [US3] Write failing feedback rendering, required next-drill hint, and ASCII fallback golden tests in tests/golden/test_feedback_rendering.py"
 Task: "T057 [US3] Add at least 20 accepted semantic evaluator fixture cases and a failing threshold harness that enforces SC-004 95% feedback completeness and SC-005 90% Slavic verdict/tag pass rates in tests/fixtures/evaluator_slavic/ and tests/adapter_contract/test_evaluator_semantic_thresholds.py"
 ```
 
@@ -303,15 +303,15 @@ Task: "T057 [US3] Add at least 20 accepted semantic evaluator fixture cases and 
 ```bash
 Task: "T067 [US4] Write failing progress aggregation unit tests in tests/unit/test_progress.py"
 Task: "T068 [US4] Write failing empty-history and history-rich progress integration tests, including the under-5-second one-year fixture budget, in tests/integration/test_progress_flow.py"
-Task: "T069 [US4] Write failing session-end CLI contract tests, including interrupted-analysis pending status, in tests/adapter_contract/test_session_end_cli.py"
+Task: "T069 [US4] Write failing session-end CLI contract tests, including interrupted-analysis pending status and host usage metadata validation for cost events, in tests/adapter_contract/test_session_end_cli.py"
 Task: "T070 [US4] Write failing progress and session-summary golden tests in tests/golden/test_progress_rendering.py"
 ```
 
 ### Parallel Example: User Story 5
 
 ```bash
-Task: "T080 [US5] Write failing doctor CLI contract tests in tests/adapter_contract/test_doctor_cli.py"
-Task: "T081 [US5] Write failing plugin surface contract tests in tests/adapter_contract/test_plugin_surface.py"
+Task: "T080 [US5] Write failing doctor CLI contract tests for runtime, bin/tutor executability, plugin file discovery, path permissions, YAML schema health, SQLite connectivity, migration checksum/order, corrupt local data, repair messages, and no implicit learner-data mutation in tests/adapter_contract/test_doctor_cli.py"
+Task: "T081 [US5] Write failing plugin surface contract tests for distinct setup, vocabulary, writing, progress, and doctor/health command discovery plus intent/value mapping in tests/adapter_contract/test_plugin_surface.py"
 Task: "T082 [US5] Write failing local data ownership integration tests, including 30 consecutive local sessions without account, telemetry, cloud storage, or manual state repair, in tests/integration/test_local_data_ownership.py"
 Task: "T083 [US5] Write failing deterministic rerender golden tests in tests/golden/test_deterministic_rerender.py"
 ```

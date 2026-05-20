@@ -45,7 +45,7 @@ Focus: local-first data/contracts and learning-feedback workflows/evaluator qual
 - [x] CHK002 Are all local data ownership boundaries documented for editable YAML versus transactional SQLite state? [Completeness, Spec §FR-003, Data Model §Ownership Rules]
 - [x] CHK003 Are vocabulary practice requirements complete for due reviews, optional new content, answer capture, feedback, and queue sizing? [Completeness, Spec §FR-007]
 - [x] CHK004 Are writing feedback requirements complete for corrected text, spans, severity, confidence, tags, native-language explanation, and next drill? [Completeness, Spec §FR-013]
-- [x] CHK005 Are install and health-check requirements complete for runtime readiness, plugin registration, data paths, schema health, and common setup problems? [Completeness, Spec §FR-021]
+- [x] CHK005 Are install and health-check requirements complete for runtime readiness, plugin registration, CLI wrapper executability, path permissions, YAML schema health, SQLite migration state, corrupt local data, and no implicit data mutation? [Completeness, Spec §FR-021]
 - [x] CHK006 Are the four user-facing tutor actions fully documented as discoverable surfaces with their expected user value? [Completeness, Spec §FR-023]
 
 ## Requirement Clarity
@@ -100,5 +100,5 @@ Focus: local-first data/contracts and learning-feedback workflows/evaluator qual
 ## Generated Review Notes
 
 - Revalidated after current-spec refinement on 2026-05-20.
-- Spec updates clarified setup defaults, session-context priority/bounds, vocabulary answer edge handling, generated-content selection, streak grace, health-check repair messages, and dogfood success measurement.
+- Spec updates clarified setup defaults, session-context priority/bounds, vocabulary answer edge handling, generated-content selection/rejection, writing prompt fit, cost source/status, streak grace, health-check repair messages, and dogfood success measurement.
 - Cross-artifact checks rely on `data-model.md`, `contracts/`, `plan.md`, and `tasks.md` for implementation-specific details while keeping `spec.md` focused on user value and requirements.

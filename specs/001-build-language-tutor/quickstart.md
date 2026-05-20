@@ -61,7 +61,7 @@ Expected result: evaluator output is validated or safely downgraded; mistake eve
 rtk tutor progress --json
 ```
 
-Expected result: progress includes streak policy, due counts, weak patterns, item maturity, last recap, and month-to-date cost. Empty history returns clear next action.
+Expected result: progress includes streak policy, due counts, weak patterns, item maturity, last recap, month-to-date estimated USD cost, and cost availability status. Empty history returns clear next action.
 
 ## 8. Plugin Local Check
 
