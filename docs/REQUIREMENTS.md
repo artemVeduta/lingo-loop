@@ -92,9 +92,12 @@ Deferred to future release. Tracked but not in current roadmap.
 
 ### Additional Hosts
 
-- **HOST-01**: Codex host adapter
+- **HOST-01**: Codex host adapter (Codex CLI / desktop app)
 - **HOST-02**: OpenClaw host adapter
-- **HOST-03**: Hermess host adapter
+- **HOST-03**: Hermess host adapter ([profile-distributions](https://hermes-agent.nousresearch.com/docs/user-guide/profile-distributions))
+- **HOST-04**: Antigravity host adapter (Antigravity CLI)
+- **HOST-CAP**: Host-capability layer — adapters declare I/O modality (text/audio/image) and lifecycle-event availability; skills gate on capabilities; reusable conformance kit
+- **HOST-DIST**: Per-host install/distribution path (non-Claude hosts; verified fresh-environment)
 
 ### Vocab Enhancements
 
@@ -123,16 +126,34 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Which phases cover which requirements. Populated during roadmap creation.
+Which phases cover which requirements. See
+[ROADMAP.md](ROADMAP.md) for phase detail.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated by roadmapper) | — | Pending |
+| All v1 (PLAT, DATA, CTRC, ONBD, VOCB-01..06, WRIT, FDBK, ANLZ, PROG, QUAL, DIST) | Phase 1 (spec 001) | ✅ Done |
+| VOCB-07 manual card add | Phase 2 | Planned |
+| VOCB-08 cloze exercise | Phase 2 | Planned |
+| VOCB-09 tag-filtered / weak-targeted drills | Phase 2 (filter) + Phase 3 (targeting) | Planned |
+| VOCB-10 seed word lists | Phase 2 | Planned |
+| (richer SessionAnalysis + adaptive selection, extends ANLZ-01/02) | Phase 3 | Planned |
+| (deeper text progress + export, extends PROG-01..03) | Phase 4 | Planned |
+| READ-01 tutor-reading | Phase 5 | Planned |
+| LESN-01 tutor-lesson | Phase 5 | Planned |
+| HOST-CAP capability layer | Phase 6 | Planned |
+| HOST-01 codex | Phase 6.x | Planned |
+| HOST-02 openclaw | Phase 6.x | Planned |
+| HOST-03 hermess | Phase 6.x | Planned |
+| HOST-04 antigravity | Phase 6.x | Planned |
+| HOST-DIST per-host distribution | Phase 6.x | Planned |
+| LIST-01 tutor-listening | Phase 7 (needs audio-capable host) | Planned |
+| SPEK-01 tutor-speaking | Phase 7 (needs audio-capable host) | Planned |
 
 **Coverage:**
-- v1 requirements: 38 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 38 ⚠️
+- v1 requirements: 38 total → all in Phase 1 (complete)
+- v2 requirements: mapped to Phases 2–7
+- Unmapped: 0
+- Explicitly excluded: FSRS / advanced SRS (SM-2 remains sole algorithm)
 
 ---
 *Requirements defined: 2026-05-19*
