@@ -1,7 +1,8 @@
 <!-- SPECKIT START -->
 For additional context about technologies, project structure, shell commands,
 and design decisions, read `docs/ROADMAP.md` for current phase scope and
-`specs/003-smarter-engine/plan.md` for the prior engine baseline. Enforce
+`specs/004-richer-feedback-progress/plan.md` for the current implementation
+plan. Use `specs/003-smarter-engine/plan.md` as the prior engine baseline. Enforce
 `.specify/memory/constitution.md` for architecture, scope, data ownership,
 testing, and review gates.
 <!-- SPECKIT END -->
