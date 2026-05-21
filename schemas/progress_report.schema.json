@@ -87,6 +87,24 @@
           "title": "Answers",
           "type": "integer"
         },
+        "lesson_answers": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Lesson Answers",
+          "type": "integer"
+        },
+        "reading_answers": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Reading Answers",
+          "type": "integer"
+        },
+        "transcript_drills": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Transcript Drills",
+          "type": "integer"
+        },
         "vocabulary_reviews": {
           "default": 0,
           "minimum": 0,

@@ -7,9 +7,20 @@ from language_tutor.dal.paths import resolve_paths
 from language_tutor.dal.repositories import TutorRepository
 from language_tutor.dal.sqlite_store import connect
 from language_tutor.progress_rendering import render_progress_markdown
-from language_tutor.schemas import ProgressReport, export_json_schemas
+from language_tutor.schemas import (
+    ProgressReport,
+    TextModalityResult,
+    ValidatedTextExercise,
+    export_json_schemas,
+)
 from tests.conftest import invoke_json
 from tests.fixtures.progress.phase4_scenarios import seed_mixed_history
+from tests.fixtures.text_modalities.builders import (
+    lesson_candidate,
+    reading_candidate,
+    record_payload,
+    transcript_candidate,
+)
 
 
 def test_cli_error_envelope(runner) -> None:  # type: ignore[no-untyped-def]
@@ -89,6 +100,88 @@ def test_progress_schema_mirrors_export(tmp_path) -> None:  # type: ignore[no-un
     assert (tmp_path / "progress_request.schema.json").exists()
     assert (tmp_path / "progress_report.schema.json").exists()
     assert (tmp_path / "progress_markdown_export.schema.json").exists()
+
+
+def test_reading_json_round_trip_and_schema_mirrors(runner, tmp_path) -> None:  # type: ignore[no-untyped-def]
+    invoke_json(
+        runner,
+        [
+            "setup",
+            "write",
+            "--json",
+            '{"profile":{"native_language":"en","target_language":"Ukrainian","level_target":"A2"}}',
+        ],
+    )
+    exercise_json = invoke_json(
+        runner,
+        ["reading", "start", "--json", json.dumps({"mode": "comprehension", "candidate": reading_candidate()})],
+    )
+    exercise = ValidatedTextExercise.model_validate(exercise_json)
+    assert (
+        ValidatedTextExercise.model_validate_json(exercise.model_dump_json()).exercise_id
+        == exercise.exercise_id
+    )
+    result_json = invoke_json(
+        runner, ["reading", "record", "--json", json.dumps(record_payload(exercise.exercise_id))]
+    )
+    result = TextModalityResult.model_validate(result_json)
+    assert TextModalityResult.model_validate_json(result.model_dump_json()).feedback.verdict == "partial"
+    export_json_schemas(tmp_path)
+    assert (tmp_path / "reading_exercise.schema.json").exists()
+    assert (tmp_path / "reading_result.schema.json").exists()
+
+
+def test_lesson_json_round_trip_and_schema_mirrors(runner, tmp_path) -> None:  # type: ignore[no-untyped-def]
+    invoke_json(
+        runner,
+        [
+            "setup",
+            "write",
+            "--json",
+            '{"profile":{"native_language":"en","target_language":"Ukrainian","level_target":"A2"}}',
+        ],
+    )
+    exercise_json = invoke_json(
+        runner, ["lesson", "start", "--json", json.dumps({"candidate": lesson_candidate()})]
+    )
+    exercise = ValidatedTextExercise.model_validate(exercise_json)
+    assert exercise.modality == "lesson"
+    result_json = invoke_json(
+        runner,
+        ["lesson", "record", "--json", json.dumps(record_payload(exercise.exercise_id, modality="lesson"))],
+    )
+    result = TextModalityResult.model_validate(result_json)
+    assert result.answer_event is not None and result.answer_event.skill == "lesson"
+    export_json_schemas(tmp_path)
+    assert (tmp_path / "lesson_exercise.schema.json").exists()
+    assert (tmp_path / "lesson_result.schema.json").exists()
+
+
+def test_transcript_json_round_trip_stores_reading_skill(runner, tmp_path) -> None:  # type: ignore[no-untyped-def]
+    invoke_json(
+        runner,
+        [
+            "setup",
+            "write",
+            "--json",
+            '{"profile":{"native_language":"en","target_language":"Ukrainian","level_target":"A2"}}',
+        ],
+    )
+    exercise_json = invoke_json(
+        runner,
+        ["reading", "start", "--json", json.dumps({"mode": "transcript", "candidate": transcript_candidate()})],
+    )
+    exercise = ValidatedTextExercise.model_validate(exercise_json)
+    assert exercise.modality == "transcript"
+    result_json = invoke_json(
+        runner,
+        ["reading", "record", "--json", json.dumps(record_payload(exercise.exercise_id, modality="transcript"))],
+    )
+    result = TextModalityResult.model_validate(result_json)
+    assert result.modality == "transcript"
+    assert result.answer_event is not None and result.answer_event.skill == "reading"
+    export_json_schemas(tmp_path)
+    assert (tmp_path / "transcript_drill.schema.json").exists()
 
 
 def test_progress_json_round_trip_and_markdown_equivalence(runner) -> None:  # type: ignore[no-untyped-def]

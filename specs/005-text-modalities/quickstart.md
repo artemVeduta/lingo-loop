@@ -69,3 +69,24 @@ rtk uv run ruff check .
 ```
 
 Expected: deterministic, contract, integration, semantic-eval, type, and lint gates pass before Phase 5 is marked complete.
+
+## 9. Dogfood evidence (T076)
+
+Recorded 2026-05-22 against a fresh local `LANGUAGE_TUTOR_HOME`, profile Ukrainian/A2:
+
+| Modality | `start` result | `record` result |
+|----------|----------------|-----------------|
+| Reading | `exercise_id=reading_cfffa9e9aede`, rendered 151 chars (≤1200) | `skill=reading`, `persisted_mistakes=1` |
+| Lesson | `exercise_id=lesson_2dec6b0460b3`, `modality=lesson` | `skill=lesson` |
+| Transcript | `exercise_id=transcript_54de33d137b8`, `modality=transcript`, text-only | stored `skill=reading` (transcript submode) |
+
+`bin/tutor progress --json` exposed aggregate guardrails (`aggregate_metrics_only`) with no
+raw learner responses or exercise bodies. All three flows validated the candidate, embedded
+an unchanged `FeedbackEnvelope`, and persisted through existing tables only — no new table
+was created (verified by `tests/integration/test_local_data_ownership.py`).
+
+> Note: the semantic-eval gate (5 live judge runs × 3 fixtures × 3 modalities, thresholds in
+> `contracts/semantic-eval.md`) is a manual operational gate run with judge/API access. The
+> repository CI validates the fixtures deterministically
+> (`tests/semantic/test_text_modality_feedback.py`,
+> `tests/adapter_contract/test_evaluator_semantic_thresholds.py`).

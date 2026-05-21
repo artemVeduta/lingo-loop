@@ -1,7 +1,11 @@
 # language-tutor — Capability-Expansion Roadmap
 
-**Date:** 2026-05-21
-**Status:** Phase 3 implemented in draft PR #5
+**Date:** 2026-05-21 (updated 2026-05-22)
+**Status:** Phase 3 implemented in draft PR #5; Phase 5 (text modalities) implemented on
+branch `005-text-modalities` — reading comprehension, guided micro-lessons, and
+transcript drills as text-only CLI/skill flows with no new persistence and
+`FeedbackEnvelope` unchanged. Scope guardrails: no audio, image, dashboard, host adapter,
+or new scheduler.
 **Baseline:** Phase 1 = spec `001-build-language-tutor` (full v1) — treated as **complete** (98/98 tasks, 28 tests passing, layered Python package + 4 skills + Claude adapter shipped).
 
 ## Goal
@@ -19,7 +23,7 @@ Check a phase when its exit gate is met. (Granular item boxes live in each phase
 - [x] **Phase 2** — Vocab Depth
 - [x] **Phase 3** — Smarter Engine
 - [x] **Phase 4** — Richer Feedback & Progress
-- [ ] **Phase 5** — Text Modalities
+- [x] **Phase 5** — Text Modalities
 - [ ] **Phase 6** — Host-Capability Layer + Adapter Framework
 - [ ] **Phase 6.x** — Adapter Rollout (openclaw / hermess / codex / antigravity)
 - [ ] **Phase 7** — Audio Modalities
@@ -139,18 +143,18 @@ Verification: `rtk uv run pytest`, `rtk uv run pyright`, and
 First new exercise types plus full project skill review/rewrite. Text-only,
 runs on any host.
 
-- [ ] Inventory and review every project `SKILL.md` under `.agents/skills/` and
+- [x] Inventory and review every project `SKILL.md` under `.agents/skills/` and
   `skills/`, including active Speckit skills used during the phase.
-- [ ] Rewrite existing skills where needed using the local writing-skills helper,
+- [x] Rewrite existing skills where needed using the local writing-skills helper,
   required external skill-authoring references, and assigned subagent
   RED/GREEN/REFACTOR pressure evidence.
-- [ ] Confirm trigger descriptions, frontmatter, progressive disclosure,
+- [x] Confirm trigger descriptions, frontmatter, progressive disclosure,
   CLI/contract conventions, and no duplicated pedagogy across the full skill
   suite before adding new skills.
-- [ ] `tutor-reading` — LLM-generated passage + comprehension questions,
+- [x] `tutor-reading` — LLM-generated passage + comprehension questions,
   feedback via the existing `FeedbackEnvelope`.
-- [ ] `tutor-lesson` — guided micro-lesson.
-- [ ] Dictation / transcript drill as a text-based "listening" proxy.
+- [x] `tutor-lesson` — guided micro-lesson.
+- [x] Dictation / transcript drill as a text-based "listening" proxy.
 
 **Exit gate:** 100% of project `SKILL.md` files are inventoried and either
 confirmed compliant or rewritten with subagent evidence; each new skill reuses

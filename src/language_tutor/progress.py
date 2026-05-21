@@ -269,6 +269,9 @@ def recent_recap(
     total_answers = 0
     total_vocab = 0
     total_writing = 0
+    total_reading = 0
+    total_lesson = 0
+    total_transcript = 0
     total_reviews = 0
     low_quality = 0
     severity_totals = {"low": 0, "medium": 0, "high": 0}
@@ -286,6 +289,15 @@ def recent_recap(
         writing_count = (
             answer_row.writing_answers if isinstance(answer_row, ProgressAnswerTotalsRow) else 0
         )
+        reading_count = (
+            answer_row.reading_answers if isinstance(answer_row, ProgressAnswerTotalsRow) else 0
+        )
+        lesson_count = (
+            answer_row.lesson_answers if isinstance(answer_row, ProgressAnswerTotalsRow) else 0
+        )
+        transcript_count = (
+            answer_row.transcript_drills if isinstance(answer_row, ProgressAnswerTotalsRow) else 0
+        )
         review_count = review_row.completed if isinstance(review_row, ProgressReviewTotalsRow) else 0
         low_quality += review_row.low_quality if isinstance(review_row, ProgressReviewTotalsRow) else 0
         low = mistake_row.low if isinstance(mistake_row, ProgressMistakeSeverityTotalsRow) else 0
@@ -294,6 +306,9 @@ def recent_recap(
         total_answers += answers_count
         total_vocab += vocab_count
         total_writing += writing_count
+        total_reading += reading_count
+        total_lesson += lesson_count
+        total_transcript += transcript_count
         total_reviews += review_count
         severity_totals["low"] += low
         severity_totals["medium"] += medium
@@ -321,6 +336,9 @@ def recent_recap(
             answers=total_answers,
             vocabulary_reviews=total_reviews or total_vocab,
             writing_answers=total_writing,
+            reading_answers=total_reading,
+            lesson_answers=total_lesson,
+            transcript_drills=total_transcript,
         ),
         due_review_completion=DueReviewCompletion(
             completed=total_reviews,

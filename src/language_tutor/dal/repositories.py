@@ -66,6 +66,9 @@ class ProgressAnswerTotalsRow:
     answers: int
     vocabulary_answers: int
     writing_answers: int
+    reading_answers: int = 0
+    lesson_answers: int = 0
+    transcript_drills: int = 0
 
 
 @dataclass(frozen=True)
@@ -483,7 +486,7 @@ class TutorRepository:
             for span in feedback.error_spans:
                 if feedback.confidence == "low" and span.severity == "high":
                     continue
-                self._insert_mistake(event_id, session_id, span, feedback.confidence)
+                self._insert_mistake(event_id, session_id, span, feedback.confidence, "writing")
                 persisted += 1
         return (
             AnswerEvent(
@@ -500,17 +503,18 @@ class TutorRepository:
         )
 
     def _insert_mistake(
-        self, event_id: str, session_id: str, span: ErrorSpan, confidence: str
+        self, event_id: str, session_id: str, span: ErrorSpan, confidence: str, skill: str
     ) -> None:
         self.conn.execute(
             """
             INSERT INTO mistake_events(id, session_id, answer_event_id, skill, span_start, span_end, span_text, severity, tag, explanation, confidence, created_at)
-            VALUES (?, ?, ?, 'writing', ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 new_id("mistake"),
                 session_id,
                 event_id,
+                skill,
                 span.start,
                 span.end,
                 span.text,
@@ -520,6 +524,87 @@ class TutorRepository:
                 confidence,
                 now_iso(),
             ),
+        )
+
+    def record_text_modality_answer(
+        self,
+        *,
+        skill: Literal["reading", "lesson"],
+        session_id: str,
+        prompt_ref: str,
+        learner_answer: str,
+        outcome: str,
+        feedback: FeedbackEnvelope,
+        safe_spans: list[ErrorSpan],
+        idempotency_key: str | None = None,
+    ) -> tuple[AnswerEvent, int]:
+        """Record a text-modality answer event plus safe mistake events.
+
+        Narrow helper over the existing answer_events/mistake_events tables. When
+        idempotency_key matches an existing event the prior event is returned and no
+        new rows are written.
+        """
+        if idempotency_key:
+            existing = self.conn.execute(
+                "SELECT * FROM answer_events WHERE idempotency_key = ?", (idempotency_key,)
+            ).fetchone()
+            if existing:
+                mistake_count = self.conn.execute(
+                    "SELECT COUNT(*) AS count FROM mistake_events WHERE answer_event_id = ?",
+                    (str(existing["id"]),),
+                ).fetchone()
+                event = AnswerEvent(
+                    id=str(existing["id"]),
+                    session_id=str(existing["session_id"]),
+                    skill=cast(Literal["reading", "lesson"], str(existing["skill"])),
+                    prompt_ref=str(existing["prompt_ref"]),
+                    learner_answer=str(existing["learner_answer"]),
+                    outcome=str(existing["outcome"]),
+                    feedback_envelope=(
+                        FeedbackEnvelope.model_validate_json(existing["feedback_envelope_json"])
+                        if existing["feedback_envelope_json"]
+                        else None
+                    ),
+                    recorded_at=datetime.fromisoformat(str(existing["recorded_at"])),
+                )
+                return event, int(mistake_count["count"])
+
+        with transaction(self.conn):
+            event_id = new_id("ans")
+            recorded_at = now_iso()
+            self.conn.execute(
+                """
+                INSERT INTO answer_events(id, idempotency_key, session_id, skill, prompt_ref, learner_answer, outcome, feedback_envelope_json, recorded_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    event_id,
+                    idempotency_key,
+                    session_id,
+                    skill,
+                    prompt_ref,
+                    learner_answer,
+                    outcome,
+                    feedback.model_dump_json(),
+                    recorded_at,
+                ),
+            )
+            persisted = 0
+            for span in safe_spans:
+                self._insert_mistake(event_id, session_id, span, feedback.confidence, skill)
+                persisted += 1
+        return (
+            AnswerEvent(
+                id=event_id,
+                session_id=session_id,
+                skill=skill,
+                prompt_ref=prompt_ref,
+                learner_answer=learner_answer,
+                outcome=outcome,
+                feedback_envelope=feedback,
+                recorded_at=datetime.fromisoformat(recorded_at),
+            ),
+            persisted,
         )
 
     def record_session_end(
@@ -691,7 +776,10 @@ class TutorRepository:
               session_id,
               COUNT(*) AS answers,
               SUM(CASE WHEN skill = 'vocab' THEN 1 ELSE 0 END) AS vocabulary_answers,
-              SUM(CASE WHEN skill = 'writing' THEN 1 ELSE 0 END) AS writing_answers
+              SUM(CASE WHEN skill = 'writing' THEN 1 ELSE 0 END) AS writing_answers,
+              SUM(CASE WHEN skill = 'reading' AND prompt_ref LIKE 'reading%' THEN 1 ELSE 0 END) AS reading_answers,
+              SUM(CASE WHEN skill = 'lesson' THEN 1 ELSE 0 END) AS lesson_answers,
+              SUM(CASE WHEN skill = 'reading' AND prompt_ref LIKE 'transcript%' THEN 1 ELSE 0 END) AS transcript_drills
             FROM answer_events
             WHERE session_id IN ({placeholders})
             GROUP BY session_id
@@ -704,6 +792,9 @@ class TutorRepository:
                 answers=int(row["answers"] or 0),
                 vocabulary_answers=int(row["vocabulary_answers"] or 0),
                 writing_answers=int(row["writing_answers"] or 0),
+                reading_answers=int(row["reading_answers"] or 0),
+                lesson_answers=int(row["lesson_answers"] or 0),
+                transcript_drills=int(row["transcript_drills"] or 0),
             )
             for row in rows
         ]

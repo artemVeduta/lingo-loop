@@ -12,9 +12,9 @@
 
 **Purpose**: Prepare evidence and fixture locations without changing runtime behavior.
 
-- [ ] T001 Create Phase 5 evidence artifact skeletons in specs/005-text-modalities/skill-inventory.md, specs/005-text-modalities/skill-rewrite-evidence.md, and specs/005-text-modalities/skill-suite-coherence-audit.md
-- [ ] T002 [P] Create text-modality fixture index in tests/fixtures/text_modalities/README.md
-- [ ] T003 [P] Record the required local writing-skills helper path, external reference checklist, and blocked-rewrite decision rule for unavailable helper/reference inputs in specs/005-text-modalities/skill-rewrite-evidence.md
+- [X] T001 Create Phase 5 evidence artifact skeletons in specs/005-text-modalities/skill-inventory.md, specs/005-text-modalities/skill-rewrite-evidence.md, and specs/005-text-modalities/skill-suite-coherence-audit.md
+- [X] T002 [P] Create text-modality fixture index in tests/fixtures/text_modalities/README.md
+- [X] T003 [P] Record the required local writing-skills helper path, external reference checklist, and blocked-rewrite decision rule for unavailable helper/reference inputs in specs/005-text-modalities/skill-rewrite-evidence.md
 
 ---
 
@@ -26,22 +26,22 @@
 
 ### Tests for Shared Foundation
 
-- [ ] T004 [P] Add shared text exercise validation, render-budget, repair/refusal, and result-wrapper unit tests in tests/unit/test_text_modalities.py
-- [ ] T005 [P] Add schema literal and JSON-schema export tests for text modality models, AnswerEvent skills, and progress totals in tests/unit/test_schemas.py
-- [ ] T006 [P] Add repository tests for idempotent text-modality answer recording and safe mistake-event insertion in tests/unit/test_repositories.py
-- [ ] T007 [P] Add progress aggregation tests for reading_answers, lesson_answers, and transcript_drills totals in tests/unit/test_progress.py
-- [ ] T008 [P] Add migration/local-data ownership tests proving existing SQLite tables accept reading and lesson skill values without a new runtime table in tests/migration/test_migrations.py
+- [X] T004 [P] Add shared text exercise validation, render-budget, repair/refusal, and result-wrapper unit tests in tests/unit/test_text_modalities.py
+- [X] T005 [P] Add schema literal and JSON-schema export tests for text modality models, AnswerEvent skills, and progress totals in tests/unit/test_schemas.py
+- [X] T006 [P] Add repository tests for idempotent text-modality answer recording and safe mistake-event insertion in tests/unit/test_repositories.py
+- [X] T007 [P] Add progress aggregation tests for reading_answers, lesson_answers, and transcript_drills totals in tests/unit/test_progress.py
+- [X] T008 [P] Add migration/local-data ownership tests proving existing SQLite tables accept reading and lesson skill values without a new runtime table in tests/migration/test_migrations.py
 
 ### Implementation for Shared Foundation
 
-- [ ] T009 Update shared Pydantic contracts for TextExerciseCandidate, TextModalityRecordInput, TextModalityResult, stored skill literals, response statuses, and progress totals in src/language_tutor/schemas.py
-- [ ] T010 Implement shared text exercise validation, rendered output budgets, one-repair refusal helpers, scope guardrails, and safe mistake filtering in src/language_tutor/text_modalities.py
-- [ ] T011 Update schema export mapping for text-modality schema mirrors in src/language_tutor/schemas.py
-- [ ] T012 Add generated schema mirrors for text modality contracts in schemas/text_modality_result.schema.json and schemas/text_modality_record.schema.json
-- [ ] T013 Refactor mistake insertion so repository helpers can persist safe mistake events for writing, reading, lesson, and transcript-as-reading without hardcoded writing skill in src/language_tutor/dal/repositories.py
-- [ ] T014 Add narrow repository helper for text-modality answer event recording with optional idempotency key in src/language_tutor/dal/repositories.py
-- [ ] T015 Extend progress input rows, totals, and aggregate output for reading, lesson, and transcript attempts in src/language_tutor/progress.py
-- [ ] T016 Update progress rendering for any new aggregate-only practice totals while preserving raw-answer privacy in src/language_tutor/progress_rendering.py
+- [X] T009 Update shared Pydantic contracts for TextExerciseCandidate, TextModalityRecordInput, TextModalityResult, stored skill literals, response statuses, and progress totals in src/language_tutor/schemas.py
+- [X] T010 Implement shared text exercise validation, rendered output budgets, one-repair refusal helpers, scope guardrails, and safe mistake filtering in src/language_tutor/text_modalities.py
+- [X] T011 Update schema export mapping for text-modality schema mirrors in src/language_tutor/schemas.py
+- [X] T012 Add generated schema mirrors for text modality contracts in schemas/text_modality_result.schema.json and schemas/text_modality_record.schema.json
+- [X] T013 Refactor mistake insertion so repository helpers can persist safe mistake events for writing, reading, lesson, and transcript-as-reading without hardcoded writing skill in src/language_tutor/dal/repositories.py
+- [X] T014 Add narrow repository helper for text-modality answer event recording with optional idempotency key in src/language_tutor/dal/repositories.py
+- [X] T015 Extend progress input rows, totals, and aggregate output for reading, lesson, and transcript attempts in src/language_tutor/progress.py
+- [X] T016 Update progress rendering for any new aggregate-only practice totals while preserving raw-answer privacy in src/language_tutor/progress_rendering.py
 
 **Checkpoint**: Shared foundation validates candidate exercises, result wrappers, safe persistence, and aggregate progress without delivering a learner-facing modality.
 
@@ -55,19 +55,19 @@
 
 ### Tests for User Story 1
 
-- [ ] T017 [P] [US1] Add skill inventory artifact validation tests for required columns and exact SKILL.md coverage in tests/adapter_contract/test_plugin_surface.py
-- [ ] T018 [P] [US1] Add baseline skill pressure scenarios for existing tutor and Speckit trigger boundaries in tests/fixtures/text_modalities/skill_pressure.json
-- [ ] T019 [P] [US1] Add audit artifact structure tests for rewrite evidence, unavailable helper/reference blocked decisions, and coherence audit decisions in tests/unit/test_skill_suite_audit_artifacts.py
+- [X] T017 [P] [US1] Add skill inventory artifact validation tests for required columns and exact SKILL.md coverage in tests/adapter_contract/test_plugin_surface.py
+- [X] T018 [P] [US1] Add baseline skill pressure scenarios for existing tutor and Speckit trigger boundaries in tests/fixtures/text_modalities/skill_pressure.json
+- [X] T019 [P] [US1] Add audit artifact structure tests for rewrite evidence, unavailable helper/reference blocked decisions, and coherence audit decisions in tests/unit/test_skill_suite_audit_artifacts.py
 
 ### Implementation for User Story 1
 
-- [ ] T020 [US1] Populate the complete SKILL.md inventory from skills/ and .agents/skills/ in specs/005-text-modalities/skill-inventory.md
-- [ ] T021 [US1] Dispatch subagent baseline pressure review for existing skills and record RED evidence in specs/005-text-modalities/skill-rewrite-evidence.md
-- [ ] T022 [US1] Rewrite any non-compliant existing tutor skill through its assigned subagent using the local writing-skills helper in skills/tutor-setup/SKILL.md, skills/tutor-vocab/SKILL.md, skills/tutor-writing/SKILL.md, and skills/tutor-progress/SKILL.md
-- [ ] T023 [US1] Rewrite any non-compliant active Speckit skill through its assigned subagent using the local writing-skills helper in .agents/skills/speckit-analyze/SKILL.md, .agents/skills/speckit-checklist/SKILL.md, .agents/skills/speckit-clarify/SKILL.md, .agents/skills/speckit-constitution/SKILL.md, .agents/skills/speckit-implement/SKILL.md, .agents/skills/speckit-plan/SKILL.md, .agents/skills/speckit-specify/SKILL.md, .agents/skills/speckit-tasks/SKILL.md, and .agents/skills/speckit-taskstoissues/SKILL.md
-- [ ] T024 [US1] Record GREEN and REFACTOR pressure evidence, changed files, and main-agent review for every created or rewritten skill in specs/005-text-modalities/skill-rewrite-evidence.md
-- [ ] T025 [US1] Update plugin surface expectations for reviewed skill names, descriptions, and trigger boundaries in tests/adapter_contract/test_plugin_surface.py
-- [ ] T026 [US1] Write the pre-new-skill coherence decision with unresolved overlaps, blockers, and allowed next steps in specs/005-text-modalities/skill-suite-coherence-audit.md
+- [X] T020 [US1] Populate the complete SKILL.md inventory from skills/ and .agents/skills/ in specs/005-text-modalities/skill-inventory.md
+- [X] T021 [US1] Dispatch subagent baseline pressure review for existing skills and record RED evidence in specs/005-text-modalities/skill-rewrite-evidence.md
+- [X] T022 [US1] Rewrite any non-compliant existing tutor skill through its assigned subagent using the local writing-skills helper in skills/tutor-setup/SKILL.md, skills/tutor-vocab/SKILL.md, skills/tutor-writing/SKILL.md, and skills/tutor-progress/SKILL.md
+- [X] T023 [US1] Rewrite any non-compliant active Speckit skill through its assigned subagent using the local writing-skills helper in .agents/skills/speckit-analyze/SKILL.md, .agents/skills/speckit-checklist/SKILL.md, .agents/skills/speckit-clarify/SKILL.md, .agents/skills/speckit-constitution/SKILL.md, .agents/skills/speckit-implement/SKILL.md, .agents/skills/speckit-plan/SKILL.md, .agents/skills/speckit-specify/SKILL.md, .agents/skills/speckit-tasks/SKILL.md, and .agents/skills/speckit-taskstoissues/SKILL.md
+- [X] T024 [US1] Record GREEN and REFACTOR pressure evidence, changed files, and main-agent review for every created or rewritten skill in specs/005-text-modalities/skill-rewrite-evidence.md
+- [X] T025 [US1] Update plugin surface expectations for reviewed skill names, descriptions, and trigger boundaries in tests/adapter_contract/test_plugin_surface.py
+- [X] T026 [US1] Write the pre-new-skill coherence decision with unresolved overlaps, blockers, and allowed next steps in specs/005-text-modalities/skill-suite-coherence-audit.md
 
 **Checkpoint**: Skill suite is inventoried and any required rewrite evidence exists before `tutor-reading` or `tutor-lesson` is accepted.
 
@@ -81,25 +81,25 @@
 
 ### Tests for User Story 2
 
-- [ ] T027 [P] [US2] Add reading exercise validation and orchestration unit tests in tests/unit/test_reading.py
-- [ ] T028 [P] [US2] Add reading start and record CLI contract tests for success and invalid-candidate errors in tests/adapter_contract/test_reading_cli.py
-- [ ] T029 [P] [US2] Add reading JSON round-trip and schema mirror assertions in tests/adapter_contract/test_cli_json_contract.py
-- [ ] T030 [P] [US2] Add reading terminal rendering golden tests for 1200-character exercise and 900-character feedback budgets in tests/golden/test_text_modality_rendering.py
-- [ ] T031 [P] [US2] Add reading completed, invalid-generation, empty, abandoned, off-topic, and mixed-language integration tests in tests/integration/test_text_modality_flow.py
-- [ ] T032 [P] [US2] Add three representative reading semantic-eval fixtures in tests/fixtures/text_modalities/reading.json
-- [ ] T033 [P] [US2] Add tutor-reading skill pressure baseline scenarios before skill creation in tests/fixtures/text_modalities/skill_pressure.json
+- [X] T027 [P] [US2] Add reading exercise validation and orchestration unit tests in tests/unit/test_reading.py
+- [X] T028 [P] [US2] Add reading start and record CLI contract tests for success and invalid-candidate errors in tests/adapter_contract/test_reading_cli.py
+- [X] T029 [P] [US2] Add reading JSON round-trip and schema mirror assertions in tests/adapter_contract/test_cli_json_contract.py
+- [X] T030 [P] [US2] Add reading terminal rendering golden tests for 1200-character exercise and 900-character feedback budgets in tests/golden/test_text_modality_rendering.py
+- [X] T031 [P] [US2] Add reading completed, invalid-generation, empty, abandoned, off-topic, and mixed-language integration tests in tests/integration/test_text_modality_flow.py
+- [X] T032 [P] [US2] Add three representative reading semantic-eval fixtures in tests/fixtures/text_modalities/reading.json
+- [X] T033 [P] [US2] Add tutor-reading skill pressure baseline scenarios before skill creation in tests/fixtures/text_modalities/skill_pressure.json
 
 ### Implementation for User Story 2
 
-- [ ] T034 [US2] Implement reading comprehension start and record orchestration in src/language_tutor/reading.py
-- [ ] T035 [US2] Add `reading start` and `reading record` Click commands with documented error envelopes in src/language_tutor/cli.py
-- [ ] T036 [US2] Wire reading answer persistence and safe mistake counts through text-modality repository helpers in src/language_tutor/dal/repositories.py
-- [ ] T037 [US2] Make completed reading attempts visible to aggregate progress and session analysis inputs in src/language_tutor/progress.py
-- [ ] T038 [US2] Export reading exercise and reading result schemas in schemas/reading_exercise.schema.json and schemas/reading_result.schema.json
-- [ ] T039 [US2] Create the tutor-reading skill through an assigned subagent using the local writing-skills helper in skills/tutor-reading/SKILL.md
-- [ ] T040 [US2] Add a tutor-reading script only if it matches the existing thin skill-script pattern in skills/tutor-reading/scripts/run.py
-- [ ] T041 [US2] Record tutor-reading RED/GREEN/REFACTOR evidence and main-agent changed-file review in specs/005-text-modalities/skill-rewrite-evidence.md
-- [ ] T042 [US2] Add reading semantic-eval threshold assertions for 5 live runs per fixture in tests/semantic/test_text_modality_feedback.py and tests/adapter_contract/test_evaluator_semantic_thresholds.py
+- [X] T034 [US2] Implement reading comprehension start and record orchestration in src/language_tutor/reading.py
+- [X] T035 [US2] Add `reading start` and `reading record` Click commands with documented error envelopes in src/language_tutor/cli.py
+- [X] T036 [US2] Wire reading answer persistence and safe mistake counts through text-modality repository helpers in src/language_tutor/dal/repositories.py
+- [X] T037 [US2] Make completed reading attempts visible to aggregate progress and session analysis inputs in src/language_tutor/progress.py
+- [X] T038 [US2] Export reading exercise and reading result schemas in schemas/reading_exercise.schema.json and schemas/reading_result.schema.json
+- [X] T039 [US2] Create the tutor-reading skill through an assigned subagent using the local writing-skills helper in skills/tutor-reading/SKILL.md
+- [X] T040 [US2] Add a tutor-reading script only if it matches the existing thin skill-script pattern in skills/tutor-reading/scripts/run.py
+- [X] T041 [US2] Record tutor-reading RED/GREEN/REFACTOR evidence and main-agent changed-file review in specs/005-text-modalities/skill-rewrite-evidence.md
+- [X] T042 [US2] Add reading semantic-eval threshold assertions for 5 live runs per fixture in tests/semantic/test_text_modality_feedback.py and tests/adapter_contract/test_evaluator_semantic_thresholds.py
 
 **Checkpoint**: Reading comprehension is independently usable from CLI and skill surfaces.
 
@@ -113,25 +113,25 @@
 
 ### Tests for User Story 3
 
-- [ ] T043 [P] [US3] Add micro-lesson validation, focus-selection, and orchestration unit tests in tests/unit/test_lessons.py
-- [ ] T044 [P] [US3] Add lesson start and record CLI contract tests for weak-tag and selected-topic flows in tests/adapter_contract/test_lesson_cli.py
-- [ ] T045 [P] [US3] Add lesson JSON round-trip and schema mirror assertions in tests/adapter_contract/test_cli_json_contract.py
-- [ ] T046 [P] [US3] Add lesson terminal rendering golden tests for bounded lesson output and feedback budgets in tests/golden/test_text_modality_rendering.py
-- [ ] T047 [P] [US3] Add lesson completed, no-weak-tag fallback, invalid-generation, and abandoned-response integration tests in tests/integration/test_text_modality_flow.py
-- [ ] T048 [P] [US3] Add three representative lesson semantic-eval fixtures in tests/fixtures/text_modalities/lesson.json
-- [ ] T049 [P] [US3] Add tutor-lesson skill pressure baseline scenarios before skill creation in tests/fixtures/text_modalities/skill_pressure.json
+- [X] T043 [P] [US3] Add micro-lesson validation, focus-selection, and orchestration unit tests in tests/unit/test_lessons.py
+- [X] T044 [P] [US3] Add lesson start and record CLI contract tests for weak-tag and selected-topic flows in tests/adapter_contract/test_lesson_cli.py
+- [X] T045 [P] [US3] Add lesson JSON round-trip and schema mirror assertions in tests/adapter_contract/test_cli_json_contract.py
+- [X] T046 [P] [US3] Add lesson terminal rendering golden tests for bounded lesson output and feedback budgets in tests/golden/test_text_modality_rendering.py
+- [X] T047 [P] [US3] Add lesson completed, no-weak-tag fallback, invalid-generation, and abandoned-response integration tests in tests/integration/test_text_modality_flow.py
+- [X] T048 [P] [US3] Add three representative lesson semantic-eval fixtures in tests/fixtures/text_modalities/lesson.json
+- [X] T049 [P] [US3] Add tutor-lesson skill pressure baseline scenarios before skill creation in tests/fixtures/text_modalities/skill_pressure.json
 
 ### Implementation for User Story 3
 
-- [ ] T050 [US3] Implement guided micro-lesson start and record orchestration in src/language_tutor/lessons.py
-- [ ] T051 [US3] Add `lesson start` and `lesson record` Click commands with documented error envelopes in src/language_tutor/cli.py
-- [ ] T052 [US3] Wire lesson answer persistence and safe mistake counts through text-modality repository helpers in src/language_tutor/dal/repositories.py
-- [ ] T053 [US3] Make completed lesson attempts visible to aggregate progress and session analysis inputs in src/language_tutor/progress.py
-- [ ] T054 [US3] Export lesson exercise and lesson result schemas in schemas/lesson_exercise.schema.json and schemas/lesson_result.schema.json
-- [ ] T055 [US3] Create the tutor-lesson skill through an assigned subagent using the local writing-skills helper in skills/tutor-lesson/SKILL.md
-- [ ] T056 [US3] Add a tutor-lesson script only if it matches the existing thin skill-script pattern in skills/tutor-lesson/scripts/run.py
-- [ ] T057 [US3] Record tutor-lesson RED/GREEN/REFACTOR evidence and main-agent changed-file review in specs/005-text-modalities/skill-rewrite-evidence.md
-- [ ] T058 [US3] Add lesson semantic-eval threshold assertions for 5 live runs per fixture in tests/semantic/test_text_modality_feedback.py and tests/adapter_contract/test_evaluator_semantic_thresholds.py
+- [X] T050 [US3] Implement guided micro-lesson start and record orchestration in src/language_tutor/lessons.py
+- [X] T051 [US3] Add `lesson start` and `lesson record` Click commands with documented error envelopes in src/language_tutor/cli.py
+- [X] T052 [US3] Wire lesson answer persistence and safe mistake counts through text-modality repository helpers in src/language_tutor/dal/repositories.py
+- [X] T053 [US3] Make completed lesson attempts visible to aggregate progress and session analysis inputs in src/language_tutor/progress.py
+- [X] T054 [US3] Export lesson exercise and lesson result schemas in schemas/lesson_exercise.schema.json and schemas/lesson_result.schema.json
+- [X] T055 [US3] Create the tutor-lesson skill through an assigned subagent using the local writing-skills helper in skills/tutor-lesson/SKILL.md
+- [X] T056 [US3] Add a tutor-lesson script only if it matches the existing thin skill-script pattern in skills/tutor-lesson/scripts/run.py
+- [X] T057 [US3] Record tutor-lesson RED/GREEN/REFACTOR evidence and main-agent changed-file review in specs/005-text-modalities/skill-rewrite-evidence.md
+- [X] T058 [US3] Add lesson semantic-eval threshold assertions for 5 live runs per fixture in tests/semantic/test_text_modality_feedback.py and tests/adapter_contract/test_evaluator_semantic_thresholds.py
 
 **Checkpoint**: Guided micro-lessons are independently usable from CLI and skill surfaces.
 
@@ -145,22 +145,22 @@
 
 ### Tests for User Story 4
 
-- [ ] T059 [P] [US4] Add transcript drill validation and reading-submode unit tests in tests/unit/test_reading.py
-- [ ] T060 [P] [US4] Add transcript start and record CLI contract tests under the reading command group in tests/adapter_contract/test_reading_cli.py
-- [ ] T061 [P] [US4] Add transcript JSON round-trip and stored skill assertions in tests/adapter_contract/test_cli_json_contract.py
-- [ ] T062 [P] [US4] Add transcript terminal rendering golden tests with explicit text-only guardrails in tests/golden/test_text_modality_rendering.py
-- [ ] T063 [P] [US4] Add transcript completed, empty, off-topic, and no-audio-scope integration tests in tests/integration/test_text_modality_flow.py
-- [ ] T064 [P] [US4] Add local data ownership regression tests proving transcript drills use `skill=reading` and no new table in tests/integration/test_local_data_ownership.py
-- [ ] T065 [P] [US4] Add three representative transcript semantic-eval fixtures in tests/fixtures/text_modalities/transcript.json
+- [X] T059 [P] [US4] Add transcript drill validation and reading-submode unit tests in tests/unit/test_reading.py
+- [X] T060 [P] [US4] Add transcript start and record CLI contract tests under the reading command group in tests/adapter_contract/test_reading_cli.py
+- [X] T061 [P] [US4] Add transcript JSON round-trip and stored skill assertions in tests/adapter_contract/test_cli_json_contract.py
+- [X] T062 [P] [US4] Add transcript terminal rendering golden tests with explicit text-only guardrails in tests/golden/test_text_modality_rendering.py
+- [X] T063 [P] [US4] Add transcript completed, empty, off-topic, and no-audio-scope integration tests in tests/integration/test_text_modality_flow.py
+- [X] T064 [P] [US4] Add local data ownership regression tests proving transcript drills use `skill=reading` and no new table in tests/integration/test_local_data_ownership.py
+- [X] T065 [P] [US4] Add three representative transcript semantic-eval fixtures in tests/fixtures/text_modalities/transcript.json
 
 ### Implementation for User Story 4
 
-- [ ] T066 [US4] Implement transcript drill validation and start/record orchestration as a reading submode in src/language_tutor/reading.py
-- [ ] T067 [US4] Wire `mode=transcript` through `reading start` and `reading record` while storing answer events as `skill=reading` in src/language_tutor/cli.py
-- [ ] T068 [US4] Export transcript drill schema in schemas/transcript_drill.schema.json
-- [ ] T069 [US4] Update tutor-reading for transcript submode through its assigned subagent using the local writing-skills helper in skills/tutor-reading/SKILL.md
-- [ ] T070 [US4] Record transcript-submode pressure evidence and main-agent changed-file review in specs/005-text-modalities/skill-rewrite-evidence.md
-- [ ] T071 [US4] Add transcript semantic-eval threshold assertions for 5 live runs per fixture in tests/semantic/test_text_modality_feedback.py and tests/adapter_contract/test_evaluator_semantic_thresholds.py
+- [X] T066 [US4] Implement transcript drill validation and start/record orchestration as a reading submode in src/language_tutor/reading.py
+- [X] T067 [US4] Wire `mode=transcript` through `reading start` and `reading record` while storing answer events as `skill=reading` in src/language_tutor/cli.py
+- [X] T068 [US4] Export transcript drill schema in schemas/transcript_drill.schema.json
+- [X] T069 [US4] Update tutor-reading for transcript submode through its assigned subagent using the local writing-skills helper in skills/tutor-reading/SKILL.md
+- [X] T070 [US4] Record transcript-submode pressure evidence and main-agent changed-file review in specs/005-text-modalities/skill-rewrite-evidence.md
+- [X] T071 [US4] Add transcript semantic-eval threshold assertions for 5 live runs per fixture in tests/semantic/test_text_modality_feedback.py and tests/adapter_contract/test_evaluator_semantic_thresholds.py
 
 **Checkpoint**: Transcript drills work as text-only reading submode and are independently testable.
 
@@ -170,14 +170,14 @@
 
 **Purpose**: Finish docs, schema mirrors, final audit, dogfood evidence, and verification gates.
 
-- [ ] T072 [P] Update architecture and feature documentation for text-only reading, lesson, transcript scope, and no new persistence in docs/ARCHITECTURE.md and docs/FEATURES.md
-- [ ] T073 [P] Update project pitfalls and roadmap notes for Phase 5 scope guardrails in docs/PITFALLS.md and docs/ROADMAP.md
-- [ ] T074 [P] Regenerate and verify JSON schema mirrors in schemas/text_modality_result.schema.json, schemas/text_modality_record.schema.json, schemas/reading_exercise.schema.json, schemas/reading_result.schema.json, schemas/lesson_exercise.schema.json, schemas/lesson_result.schema.json, and schemas/transcript_drill.schema.json
-- [ ] T075 Complete final skill-suite coherence audit after tutor-reading and tutor-lesson are added in specs/005-text-modalities/skill-suite-coherence-audit.md
-- [ ] T076 Record dogfood session evidence for tutor-reading, tutor-lesson, and transcript drill in specs/005-text-modalities/quickstart.md
-- [ ] T077 [P] Run unit verification gate for tests/unit/test_text_modalities.py, tests/unit/test_schemas.py, tests/unit/test_repositories.py, tests/unit/test_progress.py, tests/unit/test_reading.py, and tests/unit/test_lessons.py
-- [ ] T078 [P] Run golden, adapter-contract, integration, migration, semantic-eval, pyright, and ruff gates covering tests/golden/test_text_modality_rendering.py, tests/golden/test_feedback_rendering.py, tests/golden/test_progress_rendering.py, tests/adapter_contract/test_reading_cli.py, tests/adapter_contract/test_lesson_cli.py, tests/adapter_contract/test_cli_json_contract.py, tests/adapter_contract/test_evaluator_contract.py, tests/adapter_contract/test_evaluator_semantic_thresholds.py, tests/integration/test_text_modality_flow.py, tests/integration/test_progress_flow.py, tests/integration/test_local_data_ownership.py, tests/migration/test_migrations.py, tests/semantic/test_text_modality_feedback.py, pyright, and ruff
-- [ ] T079 Review SOLID, DRY, KISS, YAGNI, SoC, composition, Demeter, local-first data ownership, and scope guardrails in specs/005-text-modalities/skill-suite-coherence-audit.md
+- [X] T072 [P] Update architecture and feature documentation for text-only reading, lesson, transcript scope, and no new persistence in docs/ARCHITECTURE.md and docs/FEATURES.md
+- [X] T073 [P] Update project pitfalls and roadmap notes for Phase 5 scope guardrails in docs/PITFALLS.md and docs/ROADMAP.md
+- [X] T074 [P] Regenerate and verify JSON schema mirrors in schemas/text_modality_result.schema.json, schemas/text_modality_record.schema.json, schemas/reading_exercise.schema.json, schemas/reading_result.schema.json, schemas/lesson_exercise.schema.json, schemas/lesson_result.schema.json, and schemas/transcript_drill.schema.json
+- [X] T075 Complete final skill-suite coherence audit after tutor-reading and tutor-lesson are added in specs/005-text-modalities/skill-suite-coherence-audit.md
+- [X] T076 Record dogfood session evidence for tutor-reading, tutor-lesson, and transcript drill in specs/005-text-modalities/quickstart.md
+- [X] T077 [P] Run unit verification gate for tests/unit/test_text_modalities.py, tests/unit/test_schemas.py, tests/unit/test_repositories.py, tests/unit/test_progress.py, tests/unit/test_reading.py, and tests/unit/test_lessons.py
+- [X] T078 [P] Run golden, adapter-contract, integration, migration, semantic-eval, pyright, and ruff gates covering tests/golden/test_text_modality_rendering.py, tests/golden/test_feedback_rendering.py, tests/golden/test_progress_rendering.py, tests/adapter_contract/test_reading_cli.py, tests/adapter_contract/test_lesson_cli.py, tests/adapter_contract/test_cli_json_contract.py, tests/adapter_contract/test_evaluator_contract.py, tests/adapter_contract/test_evaluator_semantic_thresholds.py, tests/integration/test_text_modality_flow.py, tests/integration/test_progress_flow.py, tests/integration/test_local_data_ownership.py, tests/migration/test_migrations.py, tests/semantic/test_text_modality_feedback.py, pyright, and ruff
+- [X] T079 Review SOLID, DRY, KISS, YAGNI, SoC, composition, Demeter, local-first data ownership, and scope guardrails in specs/005-text-modalities/skill-suite-coherence-audit.md
 
 ---
 

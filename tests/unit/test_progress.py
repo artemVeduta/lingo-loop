@@ -56,6 +56,36 @@ def test_mastery_rows_are_sorted_and_private_text_is_absent(tmp_path) -> None:  
         conn.close()
 
 
+def _insert_answer(conn, event_id: str, session_id: str, skill: str, prompt_ref: str) -> None:  # type: ignore[no-untyped-def]
+    conn.execute(
+        """
+        INSERT INTO answer_events(id, session_id, skill, prompt_ref, learner_answer, outcome, recorded_at)
+        VALUES (?, ?, ?, ?, 'a', 'partial', ?)
+        """,
+        (event_id, session_id, skill, prompt_ref, datetime(2026, 5, 21, tzinfo=UTC).isoformat()),
+    )
+
+
+def test_text_modality_answer_totals_separate_reading_lesson_transcript(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    conn = connect(tmp_path / "db.sqlite3")
+    try:
+        repo = TutorRepository(conn)
+        _insert_answer(conn, "a1", "s1", "reading", "reading_aaa")
+        _insert_answer(conn, "a2", "s1", "reading", "reading_bbb")
+        _insert_answer(conn, "a3", "s1", "lesson", "lesson_ccc")
+        _insert_answer(conn, "a4", "s1", "reading", "transcript_ddd")
+        _insert_answer(conn, "a5", "s1", "writing", "prompt_x")
+        conn.commit()
+        totals = repo.progress_answer_totals(["s1"])[0]
+        assert totals.reading_answers == 2
+        assert totals.lesson_answers == 1
+        assert totals.transcript_drills == 1
+        assert totals.writing_answers == 1
+        assert totals.answers == 5
+    finally:
+        conn.close()
+
+
 def test_progress_report_contains_recap_and_due_summary(tmp_path) -> None:  # type: ignore[no-untyped-def]
     conn = connect(tmp_path / "db.sqlite3")
     try:

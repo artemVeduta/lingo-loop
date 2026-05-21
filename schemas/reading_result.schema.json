@@ -1,5 +1,66 @@
 {
   "$defs": {
+    "AnswerEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "feedback_envelope": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FeedbackEnvelope"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "learner_answer": {
+          "title": "Learner Answer",
+          "type": "string"
+        },
+        "outcome": {
+          "title": "Outcome",
+          "type": "string"
+        },
+        "prompt_ref": {
+          "title": "Prompt Ref",
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "title": "Recorded At",
+          "type": "string"
+        },
+        "session_id": {
+          "title": "Session Id",
+          "type": "string"
+        },
+        "skill": {
+          "enum": [
+            "vocab",
+            "writing",
+            "reading",
+            "lesson"
+          ],
+          "title": "Skill",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "session_id",
+        "skill",
+        "prompt_ref",
+        "learner_answer",
+        "outcome"
+      ],
+      "title": "AnswerEvent",
+      "type": "object"
+    },
     "Confidence": {
       "enum": [
         "high",
@@ -176,11 +237,12 @@
     }
   },
   "additionalProperties": false,
+  "description": "Canonical result wrapper for reading/lesson/transcript record commands.",
   "properties": {
-    "feedback_envelope": {
+    "answer_event": {
       "anyOf": [
         {
-          "$ref": "#/$defs/FeedbackEnvelope"
+          "$ref": "#/$defs/AnswerEvent"
         },
         {
           "type": "null"
@@ -188,50 +250,69 @@
       ],
       "default": null
     },
-    "id": {
-      "title": "Id",
+    "exercise_id": {
+      "title": "Exercise Id",
       "type": "string"
     },
-    "learner_answer": {
-      "title": "Learner Answer",
+    "feedback": {
+      "$ref": "#/$defs/FeedbackEnvelope"
+    },
+    "modality": {
+      "enum": [
+        "reading",
+        "lesson",
+        "transcript"
+      ],
+      "title": "Modality",
       "type": "string"
     },
-    "outcome": {
-      "title": "Outcome",
+    "persisted_mistakes": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Persisted Mistakes",
+      "type": "integer"
+    },
+    "response_status": {
+      "enum": [
+        "completed",
+        "empty",
+        "abandoned",
+        "off_topic",
+        "mixed_language",
+        "refused"
+      ],
+      "title": "Response Status",
       "type": "string"
     },
-    "prompt_ref": {
-      "title": "Prompt Ref",
-      "type": "string"
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
     },
-    "recorded_at": {
-      "format": "date-time",
-      "title": "Recorded At",
-      "type": "string"
+    "scope_guardrails": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Scope Guardrails",
+      "type": "array"
+    },
+    "score_metadata": {
+      "additionalProperties": true,
+      "title": "Score Metadata",
+      "type": "object"
     },
     "session_id": {
       "title": "Session Id",
       "type": "string"
-    },
-    "skill": {
-      "enum": [
-        "vocab",
-        "writing",
-        "reading",
-        "lesson"
-      ],
-      "title": "Skill",
-      "type": "string"
     }
   },
   "required": [
-    "id",
+    "modality",
+    "exercise_id",
     "session_id",
-    "skill",
-    "prompt_ref",
-    "learner_answer",
-    "outcome"
+    "response_status",
+    "feedback"
   ],
-  "title": "AnswerEvent",
+  "title": "TextModalityResult",
   "type": "object"
 }

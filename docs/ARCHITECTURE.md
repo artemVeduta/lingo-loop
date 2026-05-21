@@ -1228,5 +1228,26 @@ Vocabulary Phase 2 keeps the same layered boundary:
 
 ---
 
+## Phase 5 Addendum — Text Modalities (2026-05-22)
+
+Reading comprehension, guided micro-lessons, and transcript drills were added without new
+architecture layers or new persistence:
+
+- **No new storage path.** Attempts persist as existing `answer_events` (skill expanded to
+  `vocab|writing|reading|lesson`) and `mistake_events`. Transcript drills store
+  `skill=reading` with result `modality=transcript`; they are distinguished in progress by
+  the `transcript_` exercise-id prefix, not by a new column or table.
+- **`FeedbackEnvelope` unchanged.** Modality-specific `TextModalityResult` wrappers embed it
+  verbatim, preserving every existing feedback consumer (rendering, mistake persistence,
+  progress analysis).
+- **Layering preserved.** Skills (`tutor-reading`, `tutor-lesson`) orchestrate
+  `bin/tutor reading|lesson start|record --json`; CLI validates candidates and budgets;
+  `text_modalities.py` owns shared validation/guardrails/safe-signal mapping; `reading.py`
+  and `lessons.py` own modality orchestration; narrow repository helpers persist. Host
+  adapters are untouched.
+- **Transcript is a `tutor-reading` submode** (`mode=transcript`), text-only, never audio.
+
+---
+
 *Architecture research for: agentic-CLI plugin AI language tutor (Claude Code v1)*
 *Researched: 2026-05-19*

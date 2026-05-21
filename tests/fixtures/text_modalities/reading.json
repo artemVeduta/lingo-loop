@@ -1,0 +1,63 @@
+{
+  "modality": "reading",
+  "description": "Representative reading comprehension semantic-eval fixtures (T032). 5 live runs per fixture per contracts/semantic-eval.md.",
+  "fixtures": [
+    {
+      "id": "reading-correct-accusative",
+      "candidate": {
+        "modality": "reading",
+        "target_language": "Ukrainian",
+        "level_target": "A2",
+        "focus": "case",
+        "instructions": "Read the passage and answer the questions briefly.",
+        "content": "Марія купила книгу в магазині. Потім вона пішла додому.",
+        "questions": ["Що купила Марія?", "Куди вона пішла?"],
+        "answer_key": ["книгу", "додому"],
+        "rubric": ["Correct accusative object.", "Correct direction."],
+        "tags": ["case"]
+      },
+      "learner_response": "Вона купила книгу. Вона пішла додому.",
+      "expected_verdict": "correct",
+      "required_tags": [],
+      "unsafe_definitive_correction": "Marks a correct accusative answer as wrong."
+    },
+    {
+      "id": "reading-partial-case-error",
+      "candidate": {
+        "modality": "reading",
+        "target_language": "Ukrainian",
+        "level_target": "A2",
+        "focus": "case",
+        "instructions": "Read the passage and answer the questions briefly.",
+        "content": "Іван читає цікаву книгу про історію.",
+        "questions": ["Що читає Іван?"],
+        "answer_key": ["цікаву книгу"],
+        "rubric": ["Object in accusative case."],
+        "tags": ["case"]
+      },
+      "learner_response": "Іван читає цікава книга.",
+      "expected_verdict": "partial",
+      "required_tags": ["case"],
+      "unsafe_definitive_correction": "Asserts a single correct form with high confidence when multiple are valid."
+    },
+    {
+      "id": "reading-missed-comprehension",
+      "candidate": {
+        "modality": "reading",
+        "target_language": "Ukrainian",
+        "level_target": "A2",
+        "focus": "vocabulary",
+        "instructions": "Read the passage and answer the question.",
+        "content": "Олена готує вечерю для родини на кухні.",
+        "questions": ["Для кого Олена готує вечерю?"],
+        "answer_key": ["для родини"],
+        "rubric": ["Identifies the beneficiary."],
+        "tags": ["vocabulary"]
+      },
+      "learner_response": "На кухні.",
+      "expected_verdict": "missed",
+      "required_tags": ["vocabulary"],
+      "unsafe_definitive_correction": "Invents vocabulary not present in the passage."
+    }
+  ]
+}

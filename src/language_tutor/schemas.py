@@ -369,7 +369,7 @@ class VocabularyAnswerInput(TutorModel):
 class AnswerEvent(TutorModel):
     id: str
     session_id: str
-    skill: Literal["vocab", "writing"]
+    skill: Literal["vocab", "writing", "reading", "lesson"]
     prompt_ref: str
     learner_answer: str
     outcome: str
@@ -459,6 +459,124 @@ class WritingRecordResult(TutorModel):
     feedback: FeedbackEnvelope
     answer_event: AnswerEvent
     persisted_mistakes: int
+
+
+# --- Text modalities (Phase 5) ---
+
+TextModality = Literal["reading", "lesson", "transcript"]
+StoredSkill = Literal["vocab", "writing", "reading", "lesson"]
+TextResponseStatus = Literal[
+    "completed", "empty", "abandoned", "off_topic", "mixed_language", "refused"
+]
+TextExerciseMode = Literal[
+    "comprehension",
+    "lesson",
+    "transcript_reconstruction",
+    "transcript_correction",
+    "transcript_comprehension",
+]
+
+EXERCISE_SCOPE_GUARDRAILS: list[str] = [
+    "text_only",
+    "terminal_readable",
+    "feedback_envelope_unchanged",
+    "no_new_persistence",
+]
+RESULT_SCOPE_GUARDRAILS: list[str] = [
+    "text_only",
+    "no_raw_private_export",
+    "no_host_specific_behavior",
+]
+
+
+def _exercise_guardrails() -> list[str]:
+    return list(EXERCISE_SCOPE_GUARDRAILS)
+
+
+def _result_guardrails() -> list[str]:
+    return list(RESULT_SCOPE_GUARDRAILS)
+
+
+class TextExerciseCandidate(TutorModel):
+    """Common input envelope for generated reading/lesson/transcript candidates."""
+
+    modality: TextModality
+    mode: TextExerciseMode | None = None
+    target_language: str
+    level_target: str
+    focus: str = ""
+    instructions: str
+    content: str
+    questions: list[str] = Field(default_factory=list[str])
+    answer_key: list[str] = Field(default_factory=list[str])
+    rubric: list[str] = Field(default_factory=list[str])
+    tags: list[str] = Field(default_factory=list[str])
+
+    @field_validator("target_language", "level_target", "instructions", "content")
+    @classmethod
+    def required_text(cls, value: str) -> str:
+        return _clean_string(value, "field")
+
+    @field_validator("questions", "tags")
+    @classmethod
+    def required_lists(cls, value: list[str]) -> list[str]:
+        return _clean_string_list(value, "field")
+
+    @model_validator(mode="after")
+    def needs_answer_key_or_rubric(self) -> TextExerciseCandidate:
+        if not self.answer_key and not self.rubric:
+            raise ValueError("candidate must include answer_key or rubric")
+        return self
+
+
+class ValidatedTextExercise(TutorModel):
+    """Validated exercise derived from a candidate; safe to present in the terminal."""
+
+    schema_version: int = 1
+    exercise_id: str
+    modality: TextModality
+    mode: TextExerciseMode
+    target_language: str
+    level_target: str
+    focus: str = ""
+    instructions: str
+    content: str
+    questions: list[str]
+    answer_key_summary: str
+    rubric_summary: str
+    tags: list[str]
+    rendered_char_count: int = Field(ge=0)
+    repair_attempts_used: int = Field(default=0, ge=0)
+    scope_guardrails: list[str] = Field(default_factory=_exercise_guardrails)
+
+
+class TextModalityRecordInput(TutorModel):
+    """CLI input for completed or attempted text-modality responses."""
+
+    exercise_id: str
+    modality: TextModality
+    session_id: str = "default"
+    idempotency_key: str | None = None
+    learner_response: str = ""
+    response_status: TextResponseStatus = "completed"
+    candidate_feedback: FeedbackEnvelope
+    score_metadata: dict[str, Any] = Field(default_factory=dict[str, Any])
+    exercise_summary: str = ""
+
+
+class TextModalityResult(TutorModel):
+    """Canonical result wrapper for reading/lesson/transcript record commands."""
+
+    schema_version: int = 1
+    modality: TextModality
+    exercise_id: str
+    session_id: str
+    response_status: TextResponseStatus
+    feedback: FeedbackEnvelope
+    score_metadata: dict[str, Any] = Field(default_factory=dict[str, Any])
+    answer_event: AnswerEvent | None = None
+    persisted_mistakes: int = Field(default=0, ge=0)
+    scope_guardrails: list[str] = Field(default_factory=_result_guardrails)
 
 
 class ProgressReportRequest(TutorModel):
@@ -555,6 +673,9 @@ class PracticeTotals(TutorModel):
     answers: int = Field(default=0, ge=0)
     vocabulary_reviews: int = Field(default=0, ge=0)
     writing_answers: int = Field(default=0, ge=0)
+    reading_answers: int = Field(default=0, ge=0)
+    lesson_answers: int = Field(default=0, ge=0)
+    transcript_drills: int = Field(default=0, ge=0)
 
 
 class DueReviewCompletion(TutorModel):
@@ -753,6 +874,13 @@ def export_json_schemas(output_dir: Path) -> None:
         "progress_request.schema.json": ProgressReportRequest,
         "progress_report.schema.json": ProgressReport,
         "progress_markdown_export.schema.json": ProgressMarkdownExport,
+        "text_modality_result.schema.json": TextModalityResult,
+        "text_modality_record.schema.json": TextModalityRecordInput,
+        "reading_exercise.schema.json": ValidatedTextExercise,
+        "reading_result.schema.json": TextModalityResult,
+        "lesson_exercise.schema.json": ValidatedTextExercise,
+        "lesson_result.schema.json": TextModalityResult,
+        "transcript_drill.schema.json": ValidatedTextExercise,
     }
     for filename, model in mapping.items():
         (output_dir / filename).write_text(

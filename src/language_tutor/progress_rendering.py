@@ -75,6 +75,17 @@ def render_progress_markdown(report: ProgressReport) -> ProgressMarkdownExport:
                 _line("Answers", recap.practice_totals.answers),
                 _line("Vocabulary reviews", recap.practice_totals.vocabulary_reviews),
                 _line("Writing answers", recap.practice_totals.writing_answers),
+            ]
+        )
+        for label, value in (
+            ("Reading answers", recap.practice_totals.reading_answers),
+            ("Lesson answers", recap.practice_totals.lesson_answers),
+            ("Transcript drills", recap.practice_totals.transcript_drills),
+        ):
+            if value:
+                lines.append(_line(label, value))
+        lines.extend(
+            [
                 _line("Due reviews completed", recap.due_review_completion.completed),
                 _line(
                     "Mistake severity",

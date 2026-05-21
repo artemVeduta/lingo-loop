@@ -321,5 +321,23 @@ Implemented vocabulary depth adds local deck ownership without changing SM-2:
 - [LinGo terminal language app](https://github.com/hsnborn22/LinGo) — Terminal-native prior art
 
 ---
+## Phase 5 Addendum — Text Modalities (2026-05-22)
+
+Three text-only practice features, all host-independent and terminal-readable:
+
+- **Reading comprehension** (`tutor-reading`): validate a generated passage + questions,
+  answer, receive `FeedbackEnvelope` feedback, persist safe signals.
+- **Guided micro-lessons** (`tutor-lesson`): one bounded topic (weak tag or chosen topic) +
+  one practice step.
+- **Transcript drills**: a text-only submode of `tutor-reading` (`mode=transcript`) —
+  reconstruction / correction / comprehension. **Not audio**, and not a separate skill.
+
+Out of scope (anti-features for Phase 5): audio playback, speech recognition, images,
+GUI/web/dashboards, new hosts/adapters, cloud sync, gamification, bundled curriculum, and
+any new scheduler or persistence. Generated exercises are provisional until validated by
+Python contracts; invalid candidates get one repair attempt then a clear learner-facing
+refusal. Rendered exercise ≤ 1200 chars; rendered feedback ≤ 900 chars.
+
+---
 *Feature research for: agentic-CLI AI language tutor (vocab + writing MVP, Slavic dogfood)*
 *Researched: 2026-05-19*

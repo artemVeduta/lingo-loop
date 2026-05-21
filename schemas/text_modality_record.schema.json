@@ -176,62 +176,75 @@
     }
   },
   "additionalProperties": false,
+  "description": "CLI input for completed or attempted text-modality responses.",
   "properties": {
-    "feedback_envelope": {
+    "candidate_feedback": {
+      "$ref": "#/$defs/FeedbackEnvelope"
+    },
+    "exercise_id": {
+      "title": "Exercise Id",
+      "type": "string"
+    },
+    "exercise_summary": {
+      "default": "",
+      "title": "Exercise Summary",
+      "type": "string"
+    },
+    "idempotency_key": {
       "anyOf": [
         {
-          "$ref": "#/$defs/FeedbackEnvelope"
+          "type": "string"
         },
         {
           "type": "null"
         }
       ],
-      "default": null
+      "default": null,
+      "title": "Idempotency Key"
     },
-    "id": {
-      "title": "Id",
+    "learner_response": {
+      "default": "",
+      "title": "Learner Response",
       "type": "string"
     },
-    "learner_answer": {
-      "title": "Learner Answer",
+    "modality": {
+      "enum": [
+        "reading",
+        "lesson",
+        "transcript"
+      ],
+      "title": "Modality",
       "type": "string"
     },
-    "outcome": {
-      "title": "Outcome",
+    "response_status": {
+      "default": "completed",
+      "enum": [
+        "completed",
+        "empty",
+        "abandoned",
+        "off_topic",
+        "mixed_language",
+        "refused"
+      ],
+      "title": "Response Status",
       "type": "string"
     },
-    "prompt_ref": {
-      "title": "Prompt Ref",
-      "type": "string"
-    },
-    "recorded_at": {
-      "format": "date-time",
-      "title": "Recorded At",
-      "type": "string"
+    "score_metadata": {
+      "additionalProperties": true,
+      "title": "Score Metadata",
+      "type": "object"
     },
     "session_id": {
+      "default": "default",
       "title": "Session Id",
-      "type": "string"
-    },
-    "skill": {
-      "enum": [
-        "vocab",
-        "writing",
-        "reading",
-        "lesson"
-      ],
-      "title": "Skill",
       "type": "string"
     }
   },
   "required": [
-    "id",
-    "session_id",
-    "skill",
-    "prompt_ref",
-    "learner_answer",
-    "outcome"
+    "exercise_id",
+    "modality",
+    "candidate_feedback"
   ],
-  "title": "AnswerEvent",
+  "title": "TextModalityRecordInput",
   "type": "object"
 }

@@ -1,0 +1,71 @@
+{
+  "description": "Skill trigger-boundary pressure scenarios. Baseline covers existing tutor and Speckit skills (T018); tutor-reading scenarios added in T033; tutor-lesson scenarios added in T049.",
+  "scenarios": [
+    {
+      "id": "vocab-due-review",
+      "prompt": "I want to review my due vocabulary cards.",
+      "expected_skill": "tutor-vocab",
+      "must_not_trigger": ["tutor-reading", "tutor-lesson", "tutor-writing"]
+    },
+    {
+      "id": "writing-free-correction",
+      "prompt": "Correct these three sentences I wrote.",
+      "expected_skill": "tutor-writing",
+      "must_not_trigger": ["tutor-reading", "tutor-lesson", "tutor-vocab"]
+    },
+    {
+      "id": "progress-report",
+      "prompt": "Show me my progress and weak patterns.",
+      "expected_skill": "tutor-progress",
+      "must_not_trigger": ["tutor-reading", "tutor-lesson"]
+    },
+    {
+      "id": "setup-onboarding",
+      "prompt": "Set up my tutor profile for Ukrainian.",
+      "expected_skill": "tutor-setup",
+      "must_not_trigger": ["tutor-vocab", "tutor-reading", "tutor-lesson"]
+    },
+    {
+      "id": "speckit-plan-boundary",
+      "prompt": "Generate the implementation plan for this feature.",
+      "expected_skill": "speckit-plan",
+      "must_not_trigger": ["tutor-reading", "tutor-lesson", "tutor-progress"]
+    },
+    {
+      "id": "reading-comprehension-request",
+      "prompt": "Give me a short Ukrainian passage and ask me comprehension questions.",
+      "expected_skill": "tutor-reading",
+      "must_not_trigger": ["tutor-vocab", "tutor-writing", "tutor-lesson"]
+    },
+    {
+      "id": "transcript-drill-request",
+      "prompt": "Let me practice reconstructing a text transcript in Ukrainian.",
+      "expected_skill": "tutor-reading",
+      "must_not_trigger": ["tutor-lesson", "tutor-vocab"]
+    },
+    {
+      "id": "reading-not-free-writing",
+      "prompt": "I want to read something and answer questions, not write my own essay.",
+      "expected_skill": "tutor-reading",
+      "must_not_trigger": ["tutor-writing"]
+    },
+    {
+      "id": "lesson-weak-tag-request",
+      "prompt": "Teach me a short lesson on my weakest grammar tag with one practice item.",
+      "expected_skill": "tutor-lesson",
+      "must_not_trigger": ["tutor-reading", "tutor-progress", "tutor-vocab"]
+    },
+    {
+      "id": "lesson-chosen-topic-request",
+      "prompt": "Give me a quick guided lesson on verbs of motion, then one exercise.",
+      "expected_skill": "tutor-lesson",
+      "must_not_trigger": ["tutor-reading", "tutor-writing"]
+    },
+    {
+      "id": "lesson-not-progress",
+      "prompt": "Don't just show my stats — actually teach me one weak area briefly.",
+      "expected_skill": "tutor-lesson",
+      "must_not_trigger": ["tutor-progress"]
+    }
+  ]
+}

@@ -98,6 +98,44 @@ def test_vocab_depth_migration_backfills_metadata_and_preserves_reviews(tmp_path
         migrated.close()
 
 
+def test_existing_tables_accept_reading_and_lesson_skills_without_new_table(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    conn = connect(tmp_path / "db.sqlite3")
+    try:
+        before = {
+            row["name"] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        }
+        for event_id, skill, prompt_ref in (
+            ("ans_read", "reading", "reading_x"),
+            ("ans_lesson", "lesson", "lesson_x"),
+            ("ans_transcript", "reading", "transcript_x"),
+        ):
+            conn.execute(
+                """
+                INSERT INTO answer_events(id, session_id, skill, prompt_ref, learner_answer, outcome, recorded_at)
+                VALUES (?, 's1', ?, ?, 'a', 'partial', '2026-05-21T00:00:00+00:00')
+                """,
+                (event_id, skill, prompt_ref),
+            )
+            conn.execute(
+                """
+                INSERT INTO mistake_events(id, session_id, answer_event_id, skill, severity, tag, explanation, confidence, created_at)
+                VALUES (?, 's1', ?, ?, 'low', 'case', '', 'medium', '2026-05-21T00:00:00+00:00')
+                """,
+                (f"m_{event_id}", event_id, skill),
+            )
+        conn.commit()
+        after = {
+            row["name"] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        }
+        skills = {
+            str(row["skill"]) for row in conn.execute("SELECT DISTINCT skill FROM answer_events")
+        }
+        assert after == before  # no new runtime table introduced
+        assert {"reading", "lesson"} <= skills
+    finally:
+        conn.close()
+
+
 def test_progress_index_migration_order_and_indexes(tmp_path) -> None:  # type: ignore[no-untyped-def]
     conn = connect(tmp_path / "db.sqlite3")
     try:

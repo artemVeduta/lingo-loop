@@ -7,15 +7,20 @@ import pytest
 from pydantic import ValidationError
 
 from language_tutor.schemas import (
+    AnswerEvent,
     FeedbackEnvelope,
     LearnerPreferences,
     LearnerProfile,
+    PracticeTotals,
     ProgressMarkdownExport,
     ProgressReport,
     ProgressReportRequest,
     SelectionPolicy,
     SelectionReason,
+    TextModalityRecordInput,
+    TextModalityResult,
     TextTrend,
+    ValidatedTextExercise,
     VocabularyCardDefinition,
     VocabularyDrillRequest,
     VocabularyItem,
@@ -44,6 +49,58 @@ def test_json_schema_export(tmp_path: Path) -> None:
     assert (tmp_path / "progress_request.schema.json").exists()
     assert (tmp_path / "progress_report.schema.json").exists()
     assert (tmp_path / "progress_markdown_export.schema.json").exists()
+
+
+def test_text_modality_schema_mirrors_export(tmp_path: Path) -> None:
+    export_json_schemas(tmp_path)
+    for filename, title in (
+        ("text_modality_result.schema.json", TextModalityResult.__name__),
+        ("text_modality_record.schema.json", TextModalityRecordInput.__name__),
+        ("reading_exercise.schema.json", ValidatedTextExercise.__name__),
+        ("reading_result.schema.json", TextModalityResult.__name__),
+        ("lesson_exercise.schema.json", ValidatedTextExercise.__name__),
+        ("lesson_result.schema.json", TextModalityResult.__name__),
+        ("transcript_drill.schema.json", ValidatedTextExercise.__name__),
+    ):
+        schema = json.loads((tmp_path / filename).read_text())
+        assert schema["title"] == title
+
+
+def test_answer_event_accepts_text_modality_skills() -> None:
+    for skill in ("vocab", "writing", "reading", "lesson"):
+        event = AnswerEvent(
+            id="ans_1",
+            session_id="s1",
+            skill=skill,  # type: ignore[arg-type]
+            prompt_ref="reading_x",
+            learner_answer="a",
+            outcome="partial",
+        )
+        assert event.skill == skill
+
+
+def test_practice_totals_include_text_modalities() -> None:
+    totals = PracticeTotals(reading_answers=2, lesson_answers=1, transcript_drills=3)
+    assert totals.reading_answers == 2
+    assert totals.lesson_answers == 1
+    assert totals.transcript_drills == 3
+    assert PracticeTotals().reading_answers == 0
+
+
+def test_text_modality_result_embeds_unchanged_feedback() -> None:
+    result = TextModalityResult.model_validate(
+        {
+            "modality": "reading",
+            "exercise_id": "reading_x",
+            "session_id": "default",
+            "response_status": "completed",
+            "feedback": {"verdict": "partial"},
+            "score_metadata": {"questions_total": 2, "questions_correct": 1},
+        }
+    )
+    assert result.feedback.verdict == "partial"
+    assert result.answer_event is None
+    assert "text_only" in result.scope_guardrails
 
 
 def test_vocabulary_item_phase2_defaults() -> None:

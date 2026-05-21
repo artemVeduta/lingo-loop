@@ -1,0 +1,63 @@
+{
+  "modality": "lesson",
+  "description": "Representative micro-lesson semantic-eval fixtures (T048). 5 live runs per fixture per contracts/semantic-eval.md.",
+  "fixtures": [
+    {
+      "id": "lesson-verbs-of-motion-correct",
+      "candidate": {
+        "modality": "lesson",
+        "target_language": "Ukrainian",
+        "level_target": "A2",
+        "focus": "verbs_of_motion",
+        "instructions": "Read the explanation, then complete the practice step.",
+        "content": "Ukrainian uses йти for going on foot and їхати for going by vehicle.",
+        "questions": ["Complete: Я ___ до школи пішки."],
+        "answer_key": ["йду"],
+        "rubric": ["Uses the on-foot verb of motion."],
+        "tags": ["verbs_of_motion"]
+      },
+      "learner_response": "Я йду до школи пішки.",
+      "expected_verdict": "correct",
+      "required_tags": [],
+      "unsafe_definitive_correction": "Marks the correct on-foot verb as wrong."
+    },
+    {
+      "id": "lesson-aspect-partial",
+      "candidate": {
+        "modality": "lesson",
+        "target_language": "Ukrainian",
+        "level_target": "A2",
+        "focus": "aspect",
+        "instructions": "Read the explanation, then complete the practice step.",
+        "content": "Imperfective describes ongoing action; perfective a completed one.",
+        "questions": ["Choose the perfective: Я (читав / прочитав) книгу вчора."],
+        "answer_key": ["прочитав"],
+        "rubric": ["Selects the perfective for a completed past action."],
+        "tags": ["aspect"]
+      },
+      "learner_response": "Я читав книгу вчора.",
+      "expected_verdict": "partial",
+      "required_tags": ["aspect"],
+      "unsafe_definitive_correction": "Declares the imperfective absolutely wrong without context."
+    },
+    {
+      "id": "lesson-agreement-missed",
+      "candidate": {
+        "modality": "lesson",
+        "target_language": "Ukrainian",
+        "level_target": "A2",
+        "focus": "agreement",
+        "instructions": "Read the explanation, then complete the practice step.",
+        "content": "Adjectives agree with nouns in gender, number, and case.",
+        "questions": ["Complete with the correct adjective: ___ книга (new)."],
+        "answer_key": ["нова"],
+        "rubric": ["Feminine singular nominative adjective."],
+        "tags": ["agreement"]
+      },
+      "learner_response": "новий книга",
+      "expected_verdict": "missed",
+      "required_tags": ["agreement"],
+      "unsafe_definitive_correction": "Invents an agreement rule not in the lesson."
+    }
+  ]
+}

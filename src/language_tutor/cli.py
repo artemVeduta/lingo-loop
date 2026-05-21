@@ -14,9 +14,11 @@ from language_tutor.dal.sqlite_store import connect
 from language_tutor.errors import TutorError, fail_json
 from language_tutor.feedback import render_feedback
 from language_tutor.health import doctor
+from language_tutor.lessons import record_lesson, start_lesson
 from language_tutor.lifecycle import end_session
 from language_tutor.progress import progress_report
 from language_tutor.progress_rendering import render_progress_markdown
+from language_tutor.reading import record_reading, start_reading
 from language_tutor.schemas import (
     BootContext,
     FeedbackEnvelope,
@@ -26,6 +28,7 @@ from language_tutor.schemas import (
     ProgressReportRequest,
     SeedImportRequest,
     SessionEndInput,
+    TextModalityRecordInput,
     VocabularyAnswerInput,
     VocabularyCardDefinition,
     VocabularyDrillRequest,
@@ -444,6 +447,89 @@ def session_end_cmd(json_output: bool, payload: str | None) -> None:
                 "Pass SessionEndInput JSON.",
             )
         )
+
+
+def _emit_text_modality_start(
+    payload: str | None,
+    start_fn: Any,
+    invalid_code: str,
+) -> None:
+    try:
+        state = read_setup(resolve_paths())
+        emit(start_fn(parse_payload(payload), state.profile))
+    except (TutorError, ValidationError) as exc:
+        if isinstance(exc, TutorError):
+            fail_json(exc)
+        fail_json(
+            TutorError(
+                invalid_code,
+                "Generated exercise candidate failed validation.",
+                "Regenerate the candidate with required fields and a valid modality.",
+            )
+        )
+
+
+def _emit_text_modality_record(payload: str, record_fn: Any) -> None:
+    try:
+        data = TextModalityRecordInput.model_validate(parse_payload(payload))
+        repo, conn = open_repo()
+        try:
+            emit(record_fn(repo, data))
+            conn.commit()
+        finally:
+            conn.close()
+    except (TutorError, ValidationError) as exc:
+        if isinstance(exc, TutorError):
+            fail_json(exc)
+        fail_json(
+            TutorError(
+                "invalid_text_modality_record",
+                "Text-modality record payload failed validation.",
+                "Pass TextModalityRecordInput JSON with a valid candidate_feedback.",
+            )
+        )
+
+
+@main.group()
+def reading() -> None:
+    """Reading comprehension and transcript drills (text-only)."""
+
+
+@reading.command("start")
+@click.option("--json-output", "--json", "json_output", is_flag=True)
+@click.argument("payload", required=True)
+def reading_start(json_output: bool, payload: str) -> None:
+    del json_output
+    _emit_text_modality_start(payload, start_reading, "invalid_text_exercise")
+
+
+@reading.command("record")
+@click.option("--json-output", "--json", "json_output", is_flag=True)
+@click.argument("payload", required=True)
+def reading_record(json_output: bool, payload: str) -> None:
+    del json_output
+    _emit_text_modality_record(payload, record_reading)
+
+
+@main.group()
+def lesson() -> None:
+    """Guided micro-lessons (text-only)."""
+
+
+@lesson.command("start")
+@click.option("--json-output", "--json", "json_output", is_flag=True)
+@click.argument("payload", required=True)
+def lesson_start(json_output: bool, payload: str) -> None:
+    del json_output
+    _emit_text_modality_start(payload, start_lesson, "invalid_text_exercise")
+
+
+@lesson.command("record")
+@click.option("--json-output", "--json", "json_output", is_flag=True)
+@click.argument("payload", required=True)
+def lesson_record(json_output: bool, payload: str) -> None:
+    del json_output
+    _emit_text_modality_record(payload, record_lesson)
 
 
 if __name__ == "__main__":

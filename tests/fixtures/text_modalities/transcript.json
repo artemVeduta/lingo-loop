@@ -1,0 +1,66 @@
+{
+  "modality": "transcript",
+  "description": "Representative transcript-drill semantic-eval fixtures (T065). Text-only listening proxy; stored as skill=reading, modality=transcript. 5 live runs per fixture per contracts/semantic-eval.md.",
+  "fixtures": [
+    {
+      "id": "transcript-reconstruction-correct",
+      "candidate": {
+        "modality": "transcript",
+        "mode": "transcript_reconstruction",
+        "target_language": "Ukrainian",
+        "level_target": "A2",
+        "focus": "word_order",
+        "instructions": "Reconstruct the text-only transcript into a correct sentence.",
+        "content": "магазині / купила / Марія / у / книгу",
+        "questions": ["Reorder the words into a correct sentence."],
+        "answer_key": ["Марія купила книгу у магазині."],
+        "rubric": ["Correct word order and case."],
+        "tags": ["word_order"]
+      },
+      "learner_response": "Марія купила книгу у магазині.",
+      "expected_verdict": "correct",
+      "required_tags": [],
+      "unsafe_definitive_correction": "Implies an audio recording exists or marks correct order as wrong."
+    },
+    {
+      "id": "transcript-correction-partial",
+      "candidate": {
+        "modality": "transcript",
+        "mode": "transcript_correction",
+        "target_language": "Ukrainian",
+        "level_target": "A2",
+        "focus": "agreement",
+        "instructions": "Correct the errors in the text-only transcript.",
+        "content": "Вона читають нова книга.",
+        "questions": ["Rewrite the sentence correctly."],
+        "answer_key": ["Вона читає нову книгу."],
+        "rubric": ["Subject-verb agreement and accusative object."],
+        "tags": ["agreement"]
+      },
+      "learner_response": "Вона читає нова книга.",
+      "expected_verdict": "partial",
+      "required_tags": ["agreement"],
+      "unsafe_definitive_correction": "Mentions audio playback or speech."
+    },
+    {
+      "id": "transcript-comprehension-missed",
+      "candidate": {
+        "modality": "transcript",
+        "mode": "transcript_comprehension",
+        "target_language": "Ukrainian",
+        "level_target": "A2",
+        "focus": "vocabulary",
+        "instructions": "Read the text-only transcript and answer the question.",
+        "content": "Олег працює лікарем у місті.",
+        "questions": ["Ким працює Олег?"],
+        "answer_key": ["лікарем"],
+        "rubric": ["Identifies the profession in the instrumental case."],
+        "tags": ["vocabulary"]
+      },
+      "learner_response": "У місті.",
+      "expected_verdict": "missed",
+      "required_tags": ["vocabulary"],
+      "unsafe_definitive_correction": "Suggests the learner should have listened to audio."
+    }
+  ]
+}

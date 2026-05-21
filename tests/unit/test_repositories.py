@@ -5,7 +5,15 @@ from datetime import UTC, datetime, timedelta
 from language_tutor.dal.repositories import TutorRepository, new_id
 from language_tutor.dal.sqlite_store import connect
 from language_tutor.feedback import vocabulary_feedback
-from language_tutor.schemas import VocabularyItem
+from language_tutor.schemas import (
+    Confidence,
+    ErrorSpan,
+    ErrorTag,
+    FeedbackEnvelope,
+    Severity,
+    Verdict,
+    VocabularyItem,
+)
 from language_tutor.srs import quality_for_verdict, schedule_review
 from tests.fixtures.progress.phase4_scenarios import seed_mixed_history
 
@@ -241,6 +249,103 @@ def test_vocabulary_selection_candidates_include_ordering_and_filter_boundary(tm
         candidates = repo.vocabulary_selection_candidates(["case"])
         assert [candidate.item.id for candidate in candidates] == ["vocab_case"]
         assert candidates[0].created_at == datetime(2026, 5, 20, tzinfo=UTC)
+    finally:
+        conn.close()
+
+
+def _text_feedback() -> FeedbackEnvelope:
+    return FeedbackEnvelope(
+        verdict=Verdict.PARTIAL,
+        severity=Severity.LOW,
+        confidence=Confidence.MEDIUM,
+        error_spans=[
+            ErrorSpan(text="книга", tag=ErrorTag.CASE, severity=Severity.LOW, explanation="case"),
+        ],
+        explanation="Close.",
+        next_drill_hint="Practice the accusative case.",
+    )
+
+
+def test_text_modality_answer_records_event_and_safe_mistakes(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    conn = connect(tmp_path / "db.sqlite3")
+    try:
+        repo = TutorRepository(conn)
+        feedback = _text_feedback()
+        event, persisted = repo.record_text_modality_answer(
+            skill="reading",
+            session_id="s1",
+            prompt_ref="reading_abc",
+            learner_answer="книга",
+            outcome="partial",
+            feedback=feedback,
+            safe_spans=feedback.error_spans,
+        )
+        conn.commit()
+        assert event.skill == "reading"
+        assert persisted == 1
+        mistake = conn.execute("SELECT skill FROM mistake_events").fetchone()
+        assert mistake["skill"] == "reading"
+        answer = conn.execute("SELECT skill FROM answer_events").fetchone()
+        assert answer["skill"] == "reading"
+    finally:
+        conn.close()
+
+
+def test_text_modality_answer_is_idempotent(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    conn = connect(tmp_path / "db.sqlite3")
+    try:
+        repo = TutorRepository(conn)
+        feedback = _text_feedback()
+        first, first_count = repo.record_text_modality_answer(
+            skill="lesson",
+            session_id="s1",
+            prompt_ref="lesson_abc",
+            learner_answer="йду",
+            outcome="partial",
+            feedback=feedback,
+            safe_spans=feedback.error_spans,
+            idempotency_key="key-1",
+        )
+        conn.commit()
+        second, second_count = repo.record_text_modality_answer(
+            skill="lesson",
+            session_id="s1",
+            prompt_ref="lesson_abc",
+            learner_answer="йду",
+            outcome="partial",
+            feedback=feedback,
+            safe_spans=feedback.error_spans,
+            idempotency_key="key-1",
+        )
+        conn.commit()
+        assert first.id == second.id
+        assert second_count == first_count == 1
+        answer_count = conn.execute("SELECT COUNT(*) AS c FROM answer_events").fetchone()
+        mistake_count = conn.execute("SELECT COUNT(*) AS c FROM mistake_events").fetchone()
+        assert int(answer_count["c"]) == 1
+        assert int(mistake_count["c"]) == 1
+    finally:
+        conn.close()
+
+
+def test_text_modality_answer_without_safe_spans_persists_no_mistakes(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    conn = connect(tmp_path / "db.sqlite3")
+    try:
+        repo = TutorRepository(conn)
+        feedback = _text_feedback()
+        _event, persisted = repo.record_text_modality_answer(
+            skill="reading",
+            session_id="s1",
+            prompt_ref="reading_empty",
+            learner_answer="",
+            outcome="empty",
+            feedback=feedback,
+            safe_spans=[],
+        )
+        conn.commit()
+        assert persisted == 0
+        mistake_count = conn.execute("SELECT COUNT(*) AS c FROM mistake_events").fetchone()
+        assert int(mistake_count["c"]) == 0
     finally:
         conn.close()
 

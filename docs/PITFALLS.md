@@ -617,5 +617,23 @@ Phase 1 lands SQLite migrations as a stub ("just run `init.sql`"). Phase 3 needs
 - [Spaced Repetition With Gamification For Learning Retention — eLearning Industry](https://elearningindustry.com/the-learning-retention-formula)
 
 ---
+## Phase 5 Addendum — Text-Modality Pitfalls (2026-05-22)
+
+- **Scope creep into audio/host features.** Transcript drills are a *text-only* reading
+  submode. Guard: `text_modalities.py` rejects candidates whose instructions/content/
+  questions imply audio playback, speech recognition, images, dashboards, web, cloud, or
+  scheduling. Tests assert transcript output never contains "audio"/"listen"/"play".
+- **Trusting generated prose.** Host-generated exercises are provisional. The CLI validates
+  modality, language/level fit, answer-key-or-rubric presence, and rendered budgets before
+  presenting; one repair attempt, then a learner-facing refusal that records nothing.
+- **New persistence by accident.** No new table/column. Transcript is `skill=reading`
+  disambiguated by exercise-id prefix; a migration test asserts existing tables accept the
+  new skill values and that no table is added.
+- **Leaking raw learner data into progress.** Progress stays aggregate-only; reading/lesson/
+  transcript add counts and safe mistake signals, never raw responses or exercise bodies.
+- **Mutating `FeedbackEnvelope`.** It must stay unchanged; modality results embed it. Adding
+  fields or per-modality feedback models is an anti-pattern.
+
+---
 *Pitfalls research for: AI language tutor as Claude Code plugin (Python core, YAML+SQLite, SM-2, LLM-as-judge, Slavic L2 dogfood)*
 *Researched: 2026-05-19*

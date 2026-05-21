@@ -1,0 +1,112 @@
+{
+  "additionalProperties": false,
+  "description": "Validated exercise derived from a candidate; safe to present in the terminal.",
+  "properties": {
+    "answer_key_summary": {
+      "title": "Answer Key Summary",
+      "type": "string"
+    },
+    "content": {
+      "title": "Content",
+      "type": "string"
+    },
+    "exercise_id": {
+      "title": "Exercise Id",
+      "type": "string"
+    },
+    "focus": {
+      "default": "",
+      "title": "Focus",
+      "type": "string"
+    },
+    "instructions": {
+      "title": "Instructions",
+      "type": "string"
+    },
+    "level_target": {
+      "title": "Level Target",
+      "type": "string"
+    },
+    "modality": {
+      "enum": [
+        "reading",
+        "lesson",
+        "transcript"
+      ],
+      "title": "Modality",
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "comprehension",
+        "lesson",
+        "transcript_reconstruction",
+        "transcript_correction",
+        "transcript_comprehension"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "questions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Questions",
+      "type": "array"
+    },
+    "rendered_char_count": {
+      "minimum": 0,
+      "title": "Rendered Char Count",
+      "type": "integer"
+    },
+    "repair_attempts_used": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Repair Attempts Used",
+      "type": "integer"
+    },
+    "rubric_summary": {
+      "title": "Rubric Summary",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "scope_guardrails": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Scope Guardrails",
+      "type": "array"
+    },
+    "tags": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    },
+    "target_language": {
+      "title": "Target Language",
+      "type": "string"
+    }
+  },
+  "required": [
+    "exercise_id",
+    "modality",
+    "mode",
+    "target_language",
+    "level_target",
+    "instructions",
+    "content",
+    "questions",
+    "answer_key_summary",
+    "rubric_summary",
+    "tags",
+    "rendered_char_count"
+  ],
+  "title": "ValidatedTextExercise",
+  "type": "object"
+}
