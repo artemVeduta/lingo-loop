@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies, project structure, shell commands,
 and design decisions, read the current implementation plan at
-`specs/002-vocab-depth/plan.md` and enforce
+`specs/003-smarter-engine/plan.md` and enforce
 `.specify/memory/constitution.md` for architecture, scope, data ownership,
 testing, and review gates.
 <!-- SPECKIT END -->
@@ -15,3 +15,6 @@ testing, and review gates.
 [ROADMAP.md](docs/ROADMAP.md)
 [STACK.md](docs/STACK.md)
 [SUMMARY.md](docs/SUMMARY.md)
+
+**Skills**:
+Never auto-invoke Superpowers skills. Invoke only when explicitly requested.
