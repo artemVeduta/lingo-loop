@@ -1,8 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies, project structure, shell commands,
-and design decisions, read `specs/004-richer-feedback-progress/spec.md` for
-current Phase 4 scope and `specs/003-smarter-engine/plan.md` for the prior
-engine baseline. Enforce
+and design decisions, read `docs/ROADMAP.md` for current phase scope and
+`specs/003-smarter-engine/plan.md` for the prior engine baseline. Enforce
 `.specify/memory/constitution.md` for architecture, scope, data ownership,
 testing, and review gates.
 <!-- SPECKIT END -->

@@ -127,18 +127,29 @@ no charts, no GUI, no web view.
 output is text/markdown only (no graphical surface); progress view <5s on one
 year of daily history (spec-001 perf bar preserved).
 
-### Phase 5 — Text Modalities
-First new exercise types. Text-only, runs on any host.
+### Phase 5 — Text Modalities + Skill Authoring
+First new exercise types plus full project skill review/rewrite. Text-only,
+runs on any host.
 
+- [ ] Inventory and review every project `SKILL.md` under `.agents/skills/` and
+  `skills/`, including active Speckit skills used during the phase.
+- [ ] Rewrite existing skills where needed using the local writing-skills helper,
+  required external skill-authoring references, and assigned subagent
+  RED/GREEN/REFACTOR pressure evidence.
+- [ ] Confirm trigger descriptions, frontmatter, progressive disclosure,
+  CLI/contract conventions, and no duplicated pedagogy across the full skill
+  suite before adding new skills.
 - [ ] `tutor-reading` — LLM-generated passage + comprehension questions,
   feedback via the existing `FeedbackEnvelope`.
 - [ ] `tutor-lesson` — guided micro-lesson.
 - [ ] Dictation / transcript drill as a text-based "listening" proxy.
 
-**Exit gate:** each new skill reuses `FeedbackEnvelope` + judge contract; emits
-`mistake_events`; introduces no new persistence path; **skill-suite coherence
-audit passes** (existing tutor-vocab/writing/progress/setup re-checked for
-trigger overlap and convention sync); two new skills live and dogfoodable.
+**Exit gate:** 100% of project `SKILL.md` files are inventoried and either
+confirmed compliant or rewritten with subagent evidence; each new skill reuses
+`FeedbackEnvelope` + judge contract, emits `mistake_events`, and introduces no
+new persistence path; **skill-suite coherence audit passes** (existing
+tutor-vocab/writing/progress/setup and Speckit skills re-checked for trigger
+overlap and convention sync); two new skills live and dogfoodable.
 
 ### Phase 6 — Host-Capability Layer + Adapter Framework
 Architecture only — no new host lands in this phase.

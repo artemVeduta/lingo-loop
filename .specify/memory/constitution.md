@@ -1,24 +1,21 @@
 <!--
 Sync Impact Report
-Version change: 1.0.0 -> 1.1.0
+Version change: 1.1.0 -> 1.1.1
 Modified principles:
-- III. Testable Deterministic Behavior -> III. Testable Deterministic Behavior
-- V. Simplicity and Scope Discipline -> V. Simplicity and Scope Discipline
+- VIII. Skill Creation as Tested Contract -> VIII. Skill Creation as Tested Contract
 Added principles:
-- VIII. Skill Creation as Tested Contract
+- None
 Added sections:
 - None
 Removed sections:
 - None
 Templates requiring updates:
-- ✅ updated .specify/templates/plan-template.md
-- ✅ updated .specify/templates/spec-template.md
-- ✅ updated .specify/templates/tasks-template.md
-- ✅ updated .specify/templates/checklist-template.md
+- ✅ checked .specify/templates/plan-template.md
+- ✅ checked .specify/templates/spec-template.md
+- ✅ checked .specify/templates/tasks-template.md
+- ✅ checked .specify/templates/checklist-template.md
 - ✅ checked .specify/extensions/git/commands/*.md
-- ✅ updated docs/ARCHITECTURE.md
 - ✅ updated docs/ROADMAP.md
-- ✅ updated docs/PITFALLS.md
 - ✅ updated AGENTS.md
 Follow-up TODOs:
 - None
@@ -120,7 +117,7 @@ coherent skill family. The subagent prompt MUST explicitly require reading the
 local helper at
 `/Users/artem.veduta/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/writing-skills`
 and reporting changed files. Skill work MUST apply the active feature's required
-external skill-authoring references; the Phase 4 baseline references are
+external skill-authoring references; the baseline skill-authoring references are
 Anthropic skill authoring best practices, Anthropic's Complete Guide to Building
 Skills, and the Superpowers skill corpus. No skill may ship without documented
 RED/GREEN/REFACTOR evidence: baseline subagent behavior without the change,
@@ -200,4 +197,4 @@ Compliance review expectations:
 - Deferred governance questions MUST be recorded as TODO entries in the Sync
   Impact Report and resolved before implementation depends on them.
 
-**Version**: 1.1.0 | **Ratified**: 2026-05-19 | **Last Amended**: 2026-05-21
+**Version**: 1.1.1 | **Ratified**: 2026-05-19 | **Last Amended**: 2026-05-21
