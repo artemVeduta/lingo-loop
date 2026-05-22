@@ -1,4 +1,4 @@
-feat# Handoff: Codex Hook / Session-Lifecycle Decision
+# Handoff: Codex Hook / Session-Lifecycle Decision
 
 **Status:** OPEN — needs a maintainer decision before Codex readiness.
 **Date raised:** 2026-05-22
