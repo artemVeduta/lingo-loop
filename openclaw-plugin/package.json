@@ -15,6 +15,9 @@
       "import": "./dist/index.js"
     }
   },
+  "openclaw": {
+    "extensions": ["./dist/index.js"]
+  },
   "files": [
     "dist",
     "src",
@@ -26,6 +29,9 @@
   },
   "peerDependencies": {
     "openclaw": ">=1.0.0"
+  },
+  "dependencies": {
+    "typebox": "^1.1.0"
   },
   "devDependencies": {
     "typescript": "^5.5.0"
