@@ -27,7 +27,8 @@ Check a phase when its exit gate is met. (Granular item boxes live in each phase
 - [x] **Phase 6** — Host-Capability Layer + Adapter Framework
 - [x] **Phase 6.x** — Adapter Rollout (hermes / openclaw / claude / codex; antigravity excluded)
 - [ ] **Phase 7** — Hook-Free Incremental Lifecycle (fix)
-- [ ] **Phase 8** — Audio Modalities
+- [ ] **Phase 8** — Automated QA Agent Harness + Adapter Expansion (agy, opencode)
+- [ ] **Phase 9** — Audio Modalities
 
 ## Sequencing Decision
 
@@ -234,10 +235,40 @@ package no user-owned data; pytest, pyright, ruff green. Migration updates
 `README.md`, Phase 6 lifecycle wording, host-setup profiles, manual-install
 reports, and adapter/packaging tests listed in the HANDOFF.
 
-### Phase 8 — Audio Modalities *(needs research)*
+### Phase 8 — Automated QA Agent Harness + Adapter Expansion
+Source: `specs/008-qa-harness-agent/design.md`. Replaces manual dogfood testing
+inside Claude Code with a reproducible, headless QA loop. A learner-persona
+agent drives a real tutor session end-to-end via a headless host CLI; a
+separate judge agent grades the run against a structured rubric and records
+in-character "feelings about the lesson." Bundled with adapter expansion: the
+Phase 6 antigravity exclusion is lifted and `opencode` is added so all four
+extra hosts can play learner or judge.
+
+- [ ] `tests/qa/` harness: `harness.py`, `learner.py`, `judge.py`, `fixtures.py`.
+- [ ] Driver layer: `drivers/{claude,codex,hermes,openclaw,agy,opencode,mock}.py`
+      + capability matrix + `LearnerDriver` / `JudgeDriver` protocols.
+- [ ] Scenario / persona / rubric data (`scenarios/*.yaml`, `personas/*.md`,
+      `rubric.md`); `Scenario` + `Critique` pydantic models.
+- [ ] Fixture snapshots under `data/fixtures/qa-snapshots/<id>/` + snapshot CLI
+      (`new`, `promote`, `list`) + `flock`-guarded reset.
+- [ ] Adapter expansion: lift antigravity `HostId` reject, add `opencode` enum,
+      ship `agy-plugin/` and `opencode-plugin/`, amend spec 006 + capability
+      profiles + manual-install reports + packaging tests (replace
+      `test_no_antigravity_artifacts` with positive coverage).
+- [ ] Tests: unit (`tests/unit/qa/`), driver contract (`tests/qa/contract/`),
+      mock-driven CI smoke (`tests/qa/smoke/`), opt-in `pytest -m qa_live`.
+
+**Exit gate:** at least one scenario passes end-to-end through `MockDriver` in
+CI; manual `qa_live` run produces schema-valid `Critique` JSON for every
+learner driver whose CLI is installed locally; all packaging-privacy and
+adapter-conformance tests stay green across the new hosts; `pyright` and
+`ruff` clean.
+
+### Phase 9 — Audio Modalities *(needs research)*
 Rides the Phase 6 capability layer and whichever adapters declared audio support
 (e.g. desktop apps, or Telegram-fronted openclaw/hermess — confirmed per adapter
-in Phase 6.x, not assumed here).
+in Phase 6.x, not assumed here). Consumes the Phase 8 QA harness for
+pronunciation / listening scenarios.
 
 - [ ] `tutor-listening`, `tutor-speaking`.
 - [ ] Audio / image cards.
@@ -245,17 +276,21 @@ in Phase 6.x, not assumed here).
 **Exit gate:** audio skills are capability-gated and degrade gracefully (hidden)
 on text-only hosts; **skill-suite coherence audit passes** (full suite re-checked
 with audio skills added); semantic-eval set covers pronunciation / listening
-quality.
+quality; QA harness scenarios cover at least one audio flow per supported host.
 
 ## Dependency Spine
 
 - Phases 2, 3, 4 are independent core deepening — reorderable.
 - Phase 5 depends on nothing new.
 - Phase 6 (capability layer) gates Phase 6.x (adapters) gates Phase 7
-  (hook-free lifecycle fix) gates Phase 7 (audio).
-- Phase 7 fixes the 6/6.x lifecycle before audio rides the same boot/persist path.
-- Audio is last by construction: it needs the capability layer, which is only
-  worth abstracting once a second adapter exists to validate it.
+  (hook-free lifecycle fix) gates Phase 8 (QA harness + adapter expansion) gates
+  Phase 9 (audio).
+- Phase 7 fixes the 6/6.x lifecycle before any headless harness rides the same
+  boot/persist path.
+- Phase 8 expands the adapter set (agy, opencode) and lands the QA harness in
+  one phase; subagents parallelize the adapter, harness, and driver workstreams.
+- Audio is last by construction: it needs the capability layer + harness, and
+  the harness is only worth building once the lifecycle is deterministic.
 
 ## Process Per Phase
 

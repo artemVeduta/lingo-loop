@@ -177,3 +177,40 @@ A learner receives the same language tutoring behavior on every supported text-c
 - Host setup packages should prefer the host's documented distribution model over a generic archive or manual copy workflow.
 - Required user secrets or credentials are provided by the installer and are never committed, packaged, or copied from the author environment.
 - Each host-specific implementation slice will be planned and executed independently, but shared capability contracts and conformance tests remain centrally reviewed.
+
+## Amendment — Phase 8 Adapter Expansion (2026-05-23)
+
+**Status:** Scope guardrail SC-006 and the §Scope Guardrails Antigravity exclusion are **superseded** by Phase 8 (`specs/008-qa-harness-agent/`). The spec body above is preserved as the spec-006-shipped baseline; this amendment records the in-scope additions handed to Phase 8 and required by Constitution v1.3.0 (Principle V).
+
+**Authority:** Constitution v1.3.0 §V (v1 host set now includes Antigravity and OpenCode); Phase 8 design `specs/008-qa-harness-agent/design.md` §Adapter expansion; ROADMAP Phase 8.
+
+**Net changes vs. spec-006-shipped:**
+
+| Surface | spec-006-shipped | Phase 8 amendment |
+|---|---|---|
+| `HostId` enum | `{claude, codex, hermes, openclaw}`; antigravity rejected at schema layer | Add `antigravity` and `opencode`; remove the antigravity reject |
+| `AdapterCapabilityProfile` coverage | 4 hosts | 6 hosts (adds `agy`, `opencode`) |
+| `adapters/registry.py` | 4 entries | 6 entries (`agy`, `opencode` registered) |
+| Plugin artifacts | `claude-plugin/` (via `.claude/`), `.codex-plugin/`, `hermes-profile/`, `openclaw-plugin/` | + `agy-plugin/`, `opencode-plugin/` (mirror `.codex-plugin/` shape) |
+| Manual install reports | 4 hosts under `manual-install-reports/` | + `manual-install-reports/agy.md`, `manual-install-reports/opencode.md` |
+| Capability profile contracts | `contracts/host-setup-profiles/{claude,codex,hermes,openclaw}.md` | + `contracts/host-setup-profiles/agy.md`, `contracts/host-setup-profiles/opencode.md` |
+| Packaging-privacy coverage | `tests/packaging/test_host_setup_profiles.py::test_no_antigravity_artifacts` (negative) | Delete the negative test; replace with positive packaging-privacy coverage for `agy-plugin/` and `opencode-plugin/` mirroring the four existing hosts |
+| SC-006 | "0 Antigravity files … added" | **Superseded.** Replaced by Phase 8 SC: `agy` and `opencode` ship with the same capability/lifecycle/conformance/packaging-privacy gates green as the four spec-006 hosts |
+| Scope Guardrails | Excludes Antigravity | Antigravity is in scope as of Phase 8; OpenCode is in scope as of Phase 8 |
+
+**Unchanged by this amendment:**
+
+- Constitution Principles I–IV and VI–X — adapters added under existing contracts, no new persistence path, no pedagogy change, hook-free lifecycle (Principle IX) applies unchanged.
+- Conformance kit (`tests/adapter_contract/test_conformance_kit.py`) — new hosts pass the existing kit; no kit changes implied.
+- Capability axes — both new hosts declare `text_support` only; audio/image stay locked unsupported (Phase 9).
+- Lifecycle fields — `lifecycle_start=first_message`, `lifecycle_end=not_available`, `persistence_mode=incremental_checkpoint`, `boot_context_trigger=first_tutor_message` for both new hosts.
+- Data-ownership boundary — `agy-plugin/` and `opencode-plugin/` MUST contain zero user secrets, learner memories, conversation sessions, SQLite state, logs, or machine-local overrides; enforced by the replacement packaging-privacy test.
+
+**Out of scope of this amendment (still deferred):**
+
+- Audio / image capability for any host (Phase 9).
+- QA harness driver implementations for `agy` and `opencode` — owned by Phase 8 `tests/qa/drivers/` work, tracked under `specs/008-qa-harness-agent/`, not under spec 006.
+- Re-running spec-006 manual provider install verification for the four original hosts; this amendment does not invalidate prior dogfood evidence.
+
+**Acceptance:** Phase 8 plan MUST cite this amendment in its Constitution Check, MUST land all rows in the table above before declaring the adapter-expansion exit gate met, and MUST keep all spec-006 contract / capability / lifecycle / conformance / packaging-privacy tests green for `claude`, `codex`, `hermes`, `openclaw` while extending them to `agy` and `opencode`.
+

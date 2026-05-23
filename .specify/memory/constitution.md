@@ -1,28 +1,40 @@
 <!--
 Sync Impact Report
-Version change: 1.1.1 -> 1.2.0
+Version change: 1.2.0 -> 1.3.0
 Modified principles:
-- III. Testable Deterministic Behavior (conformance now verifies first-message
-  boot + checkpoint persistence, not hook lifecycle)
-- IV. Local-First Data Ownership (adds sessions/checkpoints as SQLite
-  source-of-truth; session-end demoted to manual-only, not source of truth)
+- V. Simplicity and Scope Discipline (lifts Antigravity exclusion; adds
+  OpenCode and the headless QA harness to in-scope v1 surfaces; QA harness
+  declared a test surface, not a release gate)
+- III. Testable Deterministic Behavior (adds reproducible headless QA via
+  MockDriver smoke as a deterministic surface; live QA runs remain opt-in and
+  non-gating)
 Added principles:
-- IX. Hook-Free Incremental Lifecycle
+- X. Advisory Semantic QA Harness
 Added sections:
 - None
 Removed sections:
 - None
 Templates requiring updates:
-- ✅ checked .specify/templates/plan-template.md
-- ✅ checked .specify/templates/spec-template.md
-- ✅ checked .specify/templates/tasks-template.md
-- ✅ checked .specify/templates/checklist-template.md
-- ✅ checked .specify/extensions/git/commands/*.md
-- ✅ updated docs/ROADMAP.md (added Phase 6.5 — Hook-Free Incremental Lifecycle)
-- ⚠ pending AGENTS.md (no lifecycle/hook references requiring change found; re-check on Phase 6.5 implementation)
+- ✅ checked .specify/templates/plan-template.md (Constitution Check stays
+  principle-agnostic; no edit required)
+- ✅ checked .specify/templates/spec-template.md (scope/out-of-scope guidance
+  already covers new principle; no edit required)
+- ✅ checked .specify/templates/tasks-template.md (QA harness tasks fit
+  existing contract/integration/test categories; no edit required)
+- ✅ checked .specify/templates/checklist-template.md (no principle-specific
+  language; no edit required)
+- ✅ checked .specify/extensions/git/commands/*.md (no constitutional
+  references requiring update)
+- ✅ docs/ROADMAP.md already reflects Phase 8 scope (QA harness + adapter
+  expansion incl. agy/opencode); no edit required for this amendment
+- ⚠ pending specs/006-agent-adapter-setup/ amendment note pointing at Phase 8
+  (per design.md §Adapter expansion) — to be authored during Phase 8 planning
 Follow-up TODOs:
-- Phase 6.5 implementation MUST remove or deprecate hook files and update
-  host-setup profiles/tests per specs/006-agent-adapter-setup/HANDOFF-incremental-lifecycle-no-hooks.md
+- Phase 8 implementation MUST land the spec 006 amendment note, the
+  `HostId` enum update (add `opencode`, drop antigravity reject),
+  positive packaging coverage replacing `test_no_antigravity_artifacts`,
+  and the `agy-plugin/` + `opencode-plugin/` artifacts before declaring
+  the adapter-expansion exit gate met.
 -->
 # language-tutor Constitution
 
@@ -59,15 +71,21 @@ math, severity mapping, boot-context rendering, feedback markdown, YAML
 validation, schema validation, and migration behavior require unit or golden
 tests. Host adapters require contract tests, and adapter conformance MUST verify
 first-message boot and per-step checkpoint persistence rather than hook-driven
-lifecycle. User journeys that cross CLI,
-core, and DAL require integration tests. LLM evaluator quality requires
-semantic fixture evaluation with controlled tags and confidence thresholds.
-Skill creation and rewrite behavior requires subagent pressure tests and
-best-practice compliance checks before any `SKILL.md` change ships.
+lifecycle. User journeys that cross CLI, core, and DAL require integration
+tests. LLM evaluator quality requires semantic fixture evaluation with
+controlled tags and confidence thresholds. The QA harness MUST keep at least
+one deterministic surface: a `MockDriver` end-to-end smoke run in CI that
+exercises the full learner → tutor → judge pipeline without real LLM calls.
+Live LLM-driven QA runs are opt-in (`pytest -m qa_live`), non-gating, and MUST
+NOT be required for merge. Skill creation and rewrite behavior requires
+subagent pressure tests and best-practice compliance checks before any
+`SKILL.md` change ships.
 
 Rationale: a language tutor loses trust when schedules, corrections, or rendered
 feedback drift without explanation, and a skill-driven product loses trust when
-its invocation rules fail under realistic agent pressure.
+its invocation rules fail under realistic agent pressure. Determinism on the
+harness itself is what lets the advisory critique signal stay comparable across
+runs.
 
 ### IV. Local-First Data Ownership
 
@@ -90,16 +108,19 @@ close without depending on any shutdown event.
 
 ### V. Simplicity and Scope Discipline
 
-Implement current v1 requirements only: Claude Code adapter, local Python core,
-YAML and SQLite persistence, vocab SRS, free writing, feedback rendering,
-session analysis, progress, install checks, and skill-suite quality gates. New
-hosts, modalities, dashboards, gamification, cloud sync, multi-user support,
-FSRS, bundled curricula, and new user-facing skills are out of scope until a
-documented amendment or feature spec moves them into scope. Plans MUST reject
-speculative abstractions, unused dependencies, and methods without current
-callers.
+Implement current v1 requirements only: host adapters for Claude Code, Codex,
+Hermes, OpenClaw, Antigravity, and OpenCode; local Python core; YAML and SQLite
+persistence; vocab SRS; free writing; reading/lesson/dictation text modalities;
+feedback rendering; session analysis; progress; install checks; skill-suite
+quality gates; and the headless QA harness used as a test surface. Dashboards,
+gamification, cloud sync, multi-user support, FSRS, bundled curricula, audio
+modalities, and new user-facing skills are out of scope until a documented
+amendment or feature spec moves them into scope. Plans MUST reject speculative
+abstractions, unused dependencies, and methods without current callers.
 
-Rationale: the MVP must become a daily-use tutor before the architecture expands.
+Rationale: the MVP must become a daily-use tutor before the architecture expands,
+and the adapter set is now wide enough that adding more hosts is an explicit
+amendment, not a default.
 
 ### VI. DRY Without False Coupling
 
@@ -164,6 +185,44 @@ Rationale: hooks can be disabled, uninstalled, or behave differently per host;
 one no-hook lifecycle with first-message boot and per-step persistence is simpler
 and gives stronger data safety than shutdown hooks across heterogeneous hosts.
 
+### X. Advisory Semantic QA Harness
+
+The headless QA harness (`tests/qa/`) is an advisory test surface, not a release
+gate. Critique verdicts, vibe paragraphs, and rubric scores MUST NOT
+auto-promote into merge requirements or block CI; they inform triage. Required
+properties of the harness:
+
+- **Separation of roles.** Learner and judge MUST run in separate driver
+  processes so persona prompts cannot leak into grading prompts.
+- **Host neutrality.** The harness core (`harness.py`, `learner.py`,
+  `judge.py`, `fixtures.py`) MUST NOT import host-specific code; per-host
+  logic lives only in `tests/qa/drivers/<host>.py` behind the
+  `LearnerDriver` / `JudgeDriver` Protocols. Adding a host MUST NOT change
+  the harness core.
+- **Fixture isolation.** Learner runs MUST execute against an isolated
+  fixture profile under repo-relative paths injected via `TUTOR_DATA_DIR`,
+  `XDG_DATA_HOME`, and `XDG_CONFIG_HOME`. The harness MUST assert none of
+  these resolve under `$HOME` and MUST serialize concurrent runs via
+  `flock` on `qa-learner/.lock`. Seed snapshots live under
+  `data/fixtures/qa-snapshots/<id>/` and MUST fail loud when their recorded
+  migration head diverges from the current `migrations/` head.
+- **Schema-validated critique.** Judge output MUST parse as the `Critique`
+  Pydantic model with one retry on parse failure; second failure writes
+  `critique.raw.txt` and exits non-zero. Each rubric score MUST cite a
+  transcript span (`quote`) to deter hallucinated grading.
+- **Cost discipline.** Live LLM runs MUST be opt-in (`pytest -m qa_live`)
+  and MUST NOT run by default in CI. The default CI pipeline MUST exercise
+  the harness only through `MockDriver`.
+- **Privacy.** Per-run reports under `tests/qa/reports/` MUST be gitignored;
+  no transcripts, critiques, or fixture state MAY ship in distributed
+  packages or be required by adapter packaging-privacy tests.
+
+Rationale: an LLM judge is useful for trend signal and bug triage but is
+non-deterministic and token-priced; treating its output as advisory keeps the
+deterministic merge gate intact, while strict isolation prevents the harness
+from leaking learner state into the maintainer's real tutor data or shipped
+artifacts.
+
 ## Operational Constraints
 
 - Runtime MUST remain Python 3.12+ with a synchronous core.
@@ -172,13 +231,17 @@ and gives stronger data safety than shutdown hooks across heterogeneous hosts.
 - Human-editable YAML MUST use comment-preserving round trips for setup/edit
   flows and safe reads for boot-time loading.
 - The CLI MUST expose validated JSON for host adapters and skills.
-- Claude Code is the only v1 host; host-portability work MUST stay limited to
-  contracts and adapter seams used by the Claude adapter.
+- v1 hosts are Claude Code, Codex, Hermes, OpenClaw, Antigravity, and OpenCode;
+  host-portability work MUST stay limited to contracts and adapter seams shared
+  by these adapters. Adding a host outside this set requires an amendment.
 - LLM evaluator outputs MUST be schema-validated before persistence or rendering.
 - Boot context MUST be deterministic and token-budgeted, and boot MUST return
   the active `session_id` alongside context.
 - Host lifecycle MUST NOT depend on hooks; hooks MUST NOT be packaged as required
   adapter surface for any host.
+- The QA harness MUST NOT ship as production CLI surface, MUST live under
+  `tests/qa/`, MUST keep per-run artifacts gitignored, and MUST guard fixture
+  reset with the documented `flock` + XDG isolation contract.
 - Skill frontmatter names MUST use lowercase letters, numbers, and hyphens; the
   description MUST be third-person, concrete, trigger-oriented, and free of
   workflow summaries that let an agent skip the full skill body.
@@ -203,6 +266,10 @@ and gives stronger data safety than shutdown hooks across heterogeneous hosts.
   contract, persistence, rendering, SRS, boot-context, and evaluator semantics.
 - Skill tests MUST be written before skill edits: pressure scenarios first,
   baseline failure documented, then skill edit, then subagent verification.
+- QA harness changes MUST be written with unit tests for scenario load, fixture
+  reset, driver matrix, critique schema, and env isolation before driver or
+  scenario code lands; a `MockDriver` smoke run MUST stay green on every PR
+  that touches the harness.
 - Reviews MUST reject SOLID, DRY, KISS, YAGNI, SoC, composition, or Demeter
   violations and skill-creation gate violations unless the plan records the
   violation and the simpler alternative rejected.
@@ -231,7 +298,9 @@ Compliance review expectations:
 - Skill governance updates MUST cite the local writing-skills helper and the
   active spec's required skill-authoring references when skill creation or
   rewrite work is in scope.
+- QA harness critique output MUST NOT be cited as a merge gate; reviews MAY
+  cite it as advisory evidence only.
 - Deferred governance questions MUST be recorded as TODO entries in the Sync
   Impact Report and resolved before implementation depends on them.
 
-**Version**: 1.2.0 | **Ratified**: 2026-05-19 | **Last Amended**: 2026-05-22
+**Version**: 1.3.0 | **Ratified**: 2026-05-19 | **Last Amended**: 2026-05-23
