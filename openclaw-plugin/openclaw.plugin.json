@@ -9,6 +9,9 @@
   "activation": {
     "onStartup": true
   },
+  "contracts": {
+     "tools": ["language_tutor"]
+   },
   "configSchema": {
     "type": "object",
     "properties": {},
