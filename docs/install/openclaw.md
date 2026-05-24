@@ -1,0 +1,98 @@
+# Install lingo-loop for OpenClaw
+
+> Last verified: 2026-05-24 against OpenClaw version <!-- TODO: verify -->
+
+## Prerequisites
+- Python 3.12+
+- Node.js 22+ (declared by the plugin's `engines.node`)
+- OpenClaw ≥ 1.0.0 installed (declared as a `peerDependency`)
+
+## Step 0 — Install the tutor CLI
+
+```bash
+# PyPI publish is pending; install from source for now:
+uv tool install git+https://github.com/artemVeduta/lingo-loop
+tutor doctor --json
+```
+
+> The distribution name is `lingo-loop` but the Python module installed on disk is still `language_tutor`. This is intentional for v0.1; see [troubleshooting](../troubleshooting.md).
+
+## Step 1 — Guided wiring via `tutor init`
+
+```bash
+tutor init --provider openclaw --yes
+```
+
+Writes a managed plugin registration at
+`~/.openclaw/plugins/lingo-loop/package.json` (copy of the bundled
+`openclaw-plugin/package.json`) and verifies the result. After it succeeds,
+run `openclaw plugins install lingo-loop` so OpenClaw picks up the plugin.
+Rerun `tutor init` any time to repair drift. Use `--dry-run --json` to preview.
+
+## Manual fallback — install the OpenClaw plugin from a clone
+
+The plugin package is `@language-tutor/openclaw-plugin` (under `openclaw-plugin/` in this repository). Manifest highlights:
+
+- `license`: `MIT`
+- `engines.node`: `>=22`
+- `peerDependencies.openclaw`: `>=1.0.0`
+- `openclaw.extensions`: `./dist/index.js`
+- `main`: `dist/index.js`
+
+Build and install from a local clone:
+
+```bash
+git clone https://github.com/artemVeduta/lingo-loop.git
+cd lingo-loop/openclaw-plugin
+npm install
+npm run build
+
+# install into OpenClaw from the built directory
+openclaw plugin install $(pwd)
+```
+
+<!-- TODO: verify exact `openclaw plugin install` syntax against current OpenClaw release -->
+
+## Screenshot
+
+<!-- TODO(oss-baseline-assets): capture screenshot of OpenClaw plugins panel showing @language-tutor/openclaw-plugin enabled -->
+*(Screenshot pending — see `docs/internal/launch-checklist.md`.)*
+
+## First session
+
+<!-- TODO(oss-baseline-assets): record asciinema cast of first OpenClaw tutor session -->
+*(Cast pending — see `docs/internal/launch-checklist.md`.)*
+
+## Verify
+
+1. In OpenClaw's plugins panel, `@language-tutor/openclaw-plugin 0.1.0` is listed and enabled.
+2. Triggering a tutor skill from the OpenClaw host invokes `tutor session-start --json` and renders the boot context.
+
+```bash
+tutor doctor --json | jq '.status'
+```
+
+Should print `"ok"`.
+
+## Troubleshooting
+
+### Error: `Unsupported engine: required node >=22`
+**Cause:** OpenClaw is running on an older Node runtime than the plugin requires.
+**Fix:** Upgrade to Node.js 22 or newer (e.g. via `nvm install 22 && nvm use 22`), then reinstall the plugin.
+
+### Error: Plugin fails to load — `Cannot find module './dist/index.js'`
+**Cause:** The plugin was installed without running `npm run build`.
+**Fix:** `cd openclaw-plugin && npm install && npm run build`, then reinstall.
+
+### Error: `peer dep openclaw >=1.0.0 not satisfied`
+**Cause:** The host OpenClaw version is older than 1.0.0.
+**Fix:** Upgrade OpenClaw to ≥1.0.0. The plugin does not bundle the host.
+
+## Uninstall
+
+```bash
+openclaw plugin uninstall @language-tutor/openclaw-plugin
+uv tool uninstall lingo-loop
+```
+
+Local data (profile/preferences/SQLite history) persists. See [privacy](../privacy.md).

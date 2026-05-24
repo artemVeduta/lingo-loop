@@ -1,0 +1,206 @@
+{
+  "$defs": {
+    "HostId": {
+      "enum": [
+        "hermes",
+        "openclaw",
+        "claude",
+        "codex"
+      ],
+      "title": "HostId",
+      "type": "string"
+    },
+    "OfficialSourceEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "facts_used": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Facts Used",
+          "type": "array"
+        },
+        "retrieved_on": {
+          "title": "Retrieved On",
+          "type": "string"
+        },
+        "source_risk": {
+          "$ref": "#/$defs/SourceRisk",
+          "default": "stable"
+        },
+        "source_sections": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Source Sections",
+          "type": "array"
+        },
+        "source_url": {
+          "title": "Source Url",
+          "type": "string"
+        },
+        "unsupported_assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unsupported Assumptions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_url",
+        "retrieved_on",
+        "source_sections",
+        "facts_used"
+      ],
+      "title": "OfficialSourceEvidence",
+      "type": "object"
+    },
+    "SetupModel": {
+      "enum": [
+        "profile_distribution",
+        "plugin_package",
+        "local_marketplace_plugin"
+      ],
+      "title": "SetupModel",
+      "type": "string"
+    },
+    "SourceRisk": {
+      "enum": [
+        "stable",
+        "changed",
+        "unreachable",
+        "ambiguous"
+      ],
+      "title": "SourceRisk",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "capability_profile_path": {
+      "title": "Capability Profile Path",
+      "type": "string"
+    },
+    "host": {
+      "$ref": "#/$defs/HostId"
+    },
+    "inspect_flow": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Inspect Flow",
+      "type": "array"
+    },
+    "install_flow": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Install Flow",
+      "type": "array"
+    },
+    "known_limitations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Known Limitations",
+      "type": "array"
+    },
+    "launch_flow": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Launch Flow",
+      "type": "array"
+    },
+    "official_sources": {
+      "items": {
+        "$ref": "#/$defs/OfficialSourceEvidence"
+      },
+      "minItems": 1,
+      "title": "Official Sources",
+      "type": "array"
+    },
+    "package_files": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Package Files",
+      "type": "array"
+    },
+    "package_model": {
+      "$ref": "#/$defs/SetupModel"
+    },
+    "prerequisites": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Prerequisites",
+      "type": "array"
+    },
+    "remove_flow": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Remove Flow",
+      "type": "array"
+    },
+    "required_user_values": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Required User Values",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "update_or_reload_flow": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Update Or Reload Flow",
+      "type": "array"
+    },
+    "user_owned_boundaries": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "User Owned Boundaries",
+      "type": "array"
+    },
+    "verification_expectations": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Verification Expectations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "host",
+    "official_sources",
+    "package_model",
+    "package_files",
+    "install_flow",
+    "launch_flow",
+    "inspect_flow",
+    "update_or_reload_flow",
+    "user_owned_boundaries",
+    "capability_profile_path",
+    "verification_expectations"
+  ],
+  "title": "HostSetupProfileContract",
+  "type": "object"
+}

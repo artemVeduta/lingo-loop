@@ -1,0 +1,222 @@
+{
+  "$defs": {
+    "HostId": {
+      "enum": [
+        "hermes",
+        "openclaw",
+        "claude",
+        "codex"
+      ],
+      "title": "HostId",
+      "type": "string"
+    },
+    "ProviderActionKind": {
+      "enum": [
+        "write_file",
+        "skip",
+        "block",
+        "verify"
+      ],
+      "title": "ProviderActionKind",
+      "type": "string"
+    },
+    "ProviderActionStage": {
+      "enum": [
+        "planned",
+        "applied",
+        "skipped",
+        "blocked",
+        "failed"
+      ],
+      "title": "ProviderActionStage",
+      "type": "string"
+    },
+    "ProviderInstallAction": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProviderActionKind"
+        },
+        "stage": {
+          "$ref": "#/$defs/ProviderActionStage",
+          "default": "planned"
+        },
+        "target_path": {
+          "title": "Target Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "target_path",
+        "description"
+      ],
+      "title": "ProviderInstallAction",
+      "type": "object"
+    },
+    "ProviderPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/ProviderInstallAction"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "host": {
+          "$ref": "#/$defs/HostId"
+        },
+        "next_command": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Command"
+        },
+        "status": {
+          "$ref": "#/$defs/ProviderStatus"
+        }
+      },
+      "required": [
+        "host",
+        "status"
+      ],
+      "title": "ProviderPlan",
+      "type": "object"
+    },
+    "ProviderState": {
+      "enum": [
+        "available",
+        "installed",
+        "needs-repair",
+        "blocked",
+        "unknown"
+      ],
+      "title": "ProviderState",
+      "type": "string"
+    },
+    "ProviderStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "cli_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cli Path"
+        },
+        "config_root": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Config Root"
+        },
+        "detected_cli": {
+          "default": false,
+          "title": "Detected Cli",
+          "type": "boolean"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "docs_url": {
+          "title": "Docs Url",
+          "type": "string"
+        },
+        "host": {
+          "$ref": "#/$defs/HostId"
+        },
+        "managed_files": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Managed Files",
+          "type": "array"
+        },
+        "repair_hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Repair Hint"
+        },
+        "state": {
+          "$ref": "#/$defs/ProviderState"
+        }
+      },
+      "required": [
+        "host",
+        "display_name",
+        "state",
+        "docs_url"
+      ],
+      "title": "ProviderStatus",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "plans": {
+      "items": {
+        "$ref": "#/$defs/ProviderPlan"
+      },
+      "title": "Plans",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "generated_at",
+    "plans"
+  ],
+  "title": "InitPlan",
+  "type": "object"
+}

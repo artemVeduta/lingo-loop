@@ -1,0 +1,70 @@
+{
+  "$defs": {
+    "TriggerType": {
+      "enum": [
+        "hook",
+        "explicit_command",
+        "first_message",
+        "manual"
+      ],
+      "title": "TriggerType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "command": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Command"
+    },
+    "fallback": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TriggerType"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "host_event_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Host Event Name"
+    },
+    "input_contract": {
+      "title": "Input Contract",
+      "type": "string"
+    },
+    "output_contract": {
+      "title": "Output Contract",
+      "type": "string"
+    },
+    "trigger_type": {
+      "$ref": "#/$defs/TriggerType"
+    }
+  },
+  "required": [
+    "trigger_type",
+    "input_contract",
+    "output_contract"
+  ],
+  "title": "BootContextTrigger",
+  "type": "object"
+}

@@ -1,0 +1,107 @@
+{
+  "$defs": {
+    "Decision": {
+      "enum": [
+        "pass",
+        "fail",
+        "blocked"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "FlowResult": {
+      "enum": [
+        "pass",
+        "fail",
+        "skipped"
+      ],
+      "title": "FlowResult",
+      "type": "string"
+    },
+    "HostId": {
+      "enum": [
+        "hermes",
+        "openclaw",
+        "claude",
+        "codex"
+      ],
+      "title": "HostId",
+      "type": "string"
+    },
+    "RepresentativeFlow": {
+      "enum": [
+        "reading",
+        "lesson",
+        "transcript",
+        "vocab",
+        "writing",
+        "progress"
+      ],
+      "title": "RepresentativeFlow",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "boot_context_result": {
+      "$ref": "#/$defs/FlowResult"
+    },
+    "capability_profile": {
+      "title": "Capability Profile",
+      "type": "string"
+    },
+    "data_ownership_result": {
+      "$ref": "#/$defs/FlowResult"
+    },
+    "decision": {
+      "$ref": "#/$defs/Decision"
+    },
+    "error_behavior_result": {
+      "$ref": "#/$defs/FlowResult"
+    },
+    "feedback_contract_result": {
+      "$ref": "#/$defs/FlowResult"
+    },
+    "flows": {
+      "additionalProperties": {
+        "$ref": "#/$defs/FlowResult"
+      },
+      "propertyNames": {
+        "$ref": "#/$defs/RepresentativeFlow"
+      },
+      "title": "Flows",
+      "type": "object"
+    },
+    "host": {
+      "$ref": "#/$defs/HostId"
+    },
+    "progress_contract_result": {
+      "$ref": "#/$defs/FlowResult"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "skipped_flows": {
+      "items": {
+        "$ref": "#/$defs/RepresentativeFlow"
+      },
+      "title": "Skipped Flows",
+      "type": "array"
+    }
+  },
+  "required": [
+    "host",
+    "capability_profile",
+    "flows",
+    "boot_context_result",
+    "feedback_contract_result",
+    "progress_contract_result",
+    "error_behavior_result",
+    "data_ownership_result",
+    "decision"
+  ],
+  "title": "ConformanceRun",
+  "type": "object"
+}

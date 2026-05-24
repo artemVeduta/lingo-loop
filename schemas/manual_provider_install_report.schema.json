@@ -1,0 +1,117 @@
+{
+  "$defs": {
+    "HostId": {
+      "enum": [
+        "hermes",
+        "openclaw",
+        "claude",
+        "codex"
+      ],
+      "title": "HostId",
+      "type": "string"
+    },
+    "RepresentativeFlow": {
+      "enum": [
+        "reading",
+        "lesson",
+        "transcript",
+        "vocab",
+        "writing",
+        "progress"
+      ],
+      "title": "RepresentativeFlow",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "blockers": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Blockers",
+      "type": "array"
+    },
+    "capability_check_result": {
+      "title": "Capability Check Result",
+      "type": "string"
+    },
+    "host": {
+      "$ref": "#/$defs/HostId"
+    },
+    "host_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Host Version"
+    },
+    "inspect_result": {
+      "title": "Inspect Result",
+      "type": "string"
+    },
+    "install_result": {
+      "title": "Install Result",
+      "type": "string"
+    },
+    "launch_result": {
+      "title": "Launch Result",
+      "type": "string"
+    },
+    "package_ref": {
+      "title": "Package Ref",
+      "type": "string"
+    },
+    "performed_on": {
+      "title": "Performed On",
+      "type": "string"
+    },
+    "remove_result": {
+      "title": "Remove Result",
+      "type": "string"
+    },
+    "representative_flow_results": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "$ref": "#/$defs/RepresentativeFlow"
+      },
+      "title": "Representative Flow Results",
+      "type": "object"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "update_or_reload_result": {
+      "title": "Update Or Reload Result",
+      "type": "string"
+    },
+    "user_data_preservation": {
+      "title": "User Data Preservation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "host",
+    "performed_on",
+    "package_ref",
+    "install_result",
+    "launch_result",
+    "capability_check_result",
+    "representative_flow_results",
+    "update_or_reload_result",
+    "inspect_result",
+    "remove_result",
+    "user_data_preservation"
+  ],
+  "title": "ManualProviderInstallReport",
+  "type": "object"
+}

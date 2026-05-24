@@ -1317,6 +1317,90 @@ class BootResult(TutorModel):
     context: BootContext
 
 
+# ---------------------------------------------------------------------------
+# Interactive provider installer contracts (oss-baseline §11)
+# ---------------------------------------------------------------------------
+
+
+class ProviderState(StrEnum):
+    AVAILABLE = "available"
+    INSTALLED = "installed"
+    NEEDS_REPAIR = "needs-repair"
+    BLOCKED = "blocked"
+    UNKNOWN = "unknown"
+
+
+class ProviderActionKind(StrEnum):
+    WRITE_FILE = "write_file"
+    SKIP = "skip"
+    BLOCK = "block"
+    VERIFY = "verify"
+
+
+class ProviderActionStage(StrEnum):
+    PLANNED = "planned"
+    APPLIED = "applied"
+    SKIPPED = "skipped"
+    BLOCKED = "blocked"
+    FAILED = "failed"
+
+
+class ProviderStatus(TutorModel):
+    host: HostId
+    display_name: str
+    state: ProviderState
+    detected_cli: bool = False
+    cli_path: str | None = None
+    config_root: str | None = None
+    managed_files: list[str] = Field(default_factory=list[str])
+    repair_hint: str | None = None
+    docs_url: str
+
+
+class ProviderInstallAction(TutorModel):
+    kind: ProviderActionKind
+    target_path: str
+    description: str
+    stage: ProviderActionStage = ProviderActionStage.PLANNED
+    error: str | None = None
+
+
+class InitRequest(TutorModel):
+    providers: list[HostId] = Field(default_factory=list[HostId])
+    yes: bool = False
+    dry_run: bool = False
+    json_output: bool = False
+
+
+class ProviderPlan(TutorModel):
+    host: HostId
+    status: ProviderStatus
+    actions: list[ProviderInstallAction] = Field(default_factory=list[ProviderInstallAction])
+    next_command: str | None = None
+
+
+class InitPlan(TutorModel):
+    schema_version: int = 1
+    generated_at: datetime
+    plans: list[ProviderPlan]
+
+
+class ProviderResult(TutorModel):
+    host: HostId
+    status: ProviderStatus
+    actions: list[ProviderInstallAction]
+    verified: bool = False
+    next_command: str | None = None
+    repair_hint: str | None = None
+
+
+class InitResult(TutorModel):
+    schema_version: int = 1
+    completed_at: datetime
+    dry_run: bool = False
+    results: list[ProviderResult]
+
+
 def export_json_schemas(output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     mapping: dict[str, type[BaseModel]] = {
@@ -1345,6 +1429,11 @@ def export_json_schemas(output_dir: Path) -> None:
         "lifecycle_trigger.schema.json": BootContextTrigger,
         "conformance_run.schema.json": ConformanceRun,
         "manual_provider_install_report.schema.json": ManualProviderInstallReport,
+        "init_request.schema.json": InitRequest,
+        "init_plan.schema.json": InitPlan,
+        "init_result.schema.json": InitResult,
+        "provider_status.schema.json": ProviderStatus,
+        "provider_install_action.schema.json": ProviderInstallAction,
     }
     for filename, model in mapping.items():
         (output_dir / filename).write_text(

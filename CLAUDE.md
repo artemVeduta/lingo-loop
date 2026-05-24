@@ -1,6 +1,6 @@
 <!-- SPECKIT START -->
 For additional context about technologies, project structure, shell commands,
-and design decisions, read `docs/ROADMAP.md` for current phase scope and
+and design decisions, read `docs/internal/ROADMAP.md` for current phase scope and
 `specs/007-hookfree-incremental-lifecycle/plan.md` for the current
 implementation plan. Use `specs/006-agent-adapter-setup/plan.md` as the prior
 agent-adapter baseline, `specs/005-text-modalities/plan.md` as the prior text-flow baseline,
@@ -12,13 +12,13 @@ ownership, testing, and review gates.
 
 **Documentation**
 [ARCHITECTURE.md](docs/ARCHITECTURE.md)
-[FEATURES.md](docs/FEATURES.md)
-[PITFALLS.md](docs/PITFALLS.md)
-[PROJECT.md](docs/PROJECT.md)
-[REQUIREMENTS.md](docs/REQUIREMENTS.md)
-[ROADMAP.md](docs/ROADMAP.md)
-[STACK.md](docs/STACK.md)
-[SUMMARY.md](docs/SUMMARY.md)
+[FEATURES.md](docs/internal/FEATURES.md)
+[PITFALLS.md](docs/internal/PITFALLS.md)
+[PROJECT.md](docs/internal/PROJECT.md)
+[REQUIREMENTS.md](docs/internal/REQUIREMENTS.md)
+[ROADMAP.md](docs/internal/ROADMAP.md)
+[STACK.md](docs/internal/STACK.md)
+[SUMMARY.md](docs/internal/SUMMARY.md)
 
 **Skills**:
 Never auto-invoke Superpowers skills. Invoke only when explicitly requested.

@@ -70,4 +70,5 @@ dmypy.json
 
 .agents
 .claude
+.codex
 claude.manifest.json

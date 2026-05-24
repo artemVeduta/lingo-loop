@@ -8,12 +8,29 @@ version = "0.1.0"
 description = "Local-first Claude Code language tutor"
 readme = "README.md"
 requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Artem Veduta", email = "veduta.artem20@gmail.com" }]
+keywords = ["language-learning", "tutor", "claude-code", "codex", "local-first", "cli", "lingo-loop"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+  "Intended Audience :: End Users/Desktop",
+  "Topic :: Education",
+  "Topic :: Education :: Computer Aided Instruction (CAI)",
+]
 dependencies = [
   "click>=8.1",
   "platformdirs>=4.2",
   "pydantic>=2.7",
   "ruamel.yaml>=0.18",
 ]
+
+[project.urls]
+Homepage = "https://github.com/artemVeduta/lingo-loop"
+Source = "https://github.com/artemVeduta/lingo-loop"
+Issues = "https://github.com/artemVeduta/lingo-loop/issues"
+Changelog = "https://github.com/artemVeduta/lingo-loop/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -46,6 +63,15 @@ include = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/language_tutor"]
+
+# Ship bundled host plugin/profile assets in the wheel so `tutor init` can read
+# them via importlib.resources after `uv tool install lingo-loop`. Editable /
+# source installs resolve the same files via repo root (see installer/assets.py).
+[tool.hatch.build.targets.wheel.force-include]
+".claude-plugin" = "language_tutor/_assets/.claude-plugin"
+".codex-plugin" = "language_tutor/_assets/.codex-plugin"
+"openclaw-plugin/package.json" = "language_tutor/_assets/openclaw-plugin/package.json"
+"hermes-profile/distribution.yaml" = "language_tutor/_assets/hermes-profile/distribution.yaml"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

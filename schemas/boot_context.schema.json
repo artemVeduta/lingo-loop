@@ -156,6 +156,44 @@
       "title": "LearnerProfile",
       "type": "object"
     },
+    "PriorSessionEntry": {
+      "additionalProperties": false,
+      "description": "N most-recent prior session entry surfaced in the boot context history.",
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/SessionLabel"
+        },
+        "last_seen_at": {
+          "format": "date-time",
+          "title": "Last Seen At",
+          "type": "string"
+        },
+        "session_id": {
+          "pattern": "^sess_[A-Za-z0-9]+$",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Summary"
+        }
+      },
+      "required": [
+        "session_id",
+        "label",
+        "last_seen_at"
+      ],
+      "title": "PriorSessionEntry",
+      "type": "object"
+    },
     "ReviewIntensity": {
       "enum": [
         "light",
@@ -163,6 +201,17 @@
         "heavy"
       ],
       "title": "ReviewIntensity",
+      "type": "string"
+    },
+    "SessionLabel": {
+      "description": "Read-time derived session label. Never stored (FR-018).",
+      "enum": [
+        "open",
+        "stale",
+        "abandoned",
+        "closed"
+      ],
+      "title": "SessionLabel",
       "type": "string"
     }
   },
@@ -180,6 +229,13 @@
     },
     "preferences": {
       "$ref": "#/$defs/LearnerPreferences"
+    },
+    "prior_sessions": {
+      "items": {
+        "$ref": "#/$defs/PriorSessionEntry"
+      },
+      "title": "Prior Sessions",
+      "type": "array"
     },
     "profile": {
       "$ref": "#/$defs/LearnerProfile"

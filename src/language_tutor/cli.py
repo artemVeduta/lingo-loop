@@ -797,5 +797,114 @@ def host_boot_trigger(host_id: str, json_output: bool) -> None:
     emit(select_boot_trigger(profile.boot_context_trigger))
 
 
+@main.command("init")
+@click.option(
+    "--provider",
+    "providers",
+    multiple=True,
+    type=click.Choice([h.value for h in HostId], case_sensitive=False),
+    help="Provider id to install (repeat for multiple). Omit for interactive selection.",
+)
+@click.option("--yes", is_flag=True, help="Skip confirmation prompts (required when non-TTY).")
+@click.option("--dry-run", is_flag=True, help="Plan only; do not write any files.")
+@click.option("--json-output", "--json", "json_output", is_flag=True, help="Emit InitResult JSON.")
+def init_cmd(
+    providers: tuple[str, ...], yes: bool, dry_run: bool, json_output: bool
+) -> None:
+    """Detect supported AI hosts and install/repair selected provider wiring."""
+    from language_tutor.installer import InstallerContext
+    from language_tutor.installer.assets import bundled_assets_root
+    from language_tutor.installer.registry import SUPPORTED_PROVIDER_IDS, build_installer
+    from language_tutor.installer.seams import is_tty
+    from language_tutor.installer.service import build_plan, run_init
+    from language_tutor.schemas import (
+        InitRequest,
+        ProviderActionStage,
+        ProviderState,
+    )
+
+    try:
+        ctx = InstallerContext.real(bundled_assets_root())
+        selected_ids = [HostId(p) for p in providers]
+        non_interactive = not is_tty() or yes or providers
+        if not is_tty() and not (providers and yes) and not dry_run:
+            raise TutorError(
+                "init_non_interactive_unsafe",
+                "tutor init refuses to run non-interactively without --provider and --yes.",
+                "Pass --provider <id> (repeatable) plus --yes, or run in an interactive terminal.",
+            )
+
+        if not selected_ids and not non_interactive:
+            from language_tutor.schemas import ProviderStatus
+
+            statuses: list[ProviderStatus] = []
+            for host in SUPPORTED_PROVIDER_IDS:
+                installer = build_installer(host, ctx)
+                statuses.append(installer.detect())
+            click.echo("Lingo Loop setup\n")
+            click.echo("Detected providers:")
+            choices: list[str] = []
+            for s in statuses:
+                marker = "x" if s.state == ProviderState.INSTALLED else " "
+                hint = s.repair_hint or str(s.state)
+                click.echo(f"  [{marker}] {s.display_name:<14} {str(s.state):<14} {hint}")
+                if s.state != ProviderState.BLOCKED:
+                    choices.append(str(s.host))
+            if not choices:
+                raise TutorError(
+                    "no_providers_available",
+                    "No host CLIs detected on PATH.",
+                    "Install at least one of: claude, codex, hermes, openclaw, then rerun.",
+                )
+            picked = click.prompt(
+                "\nProviders to install (comma-separated)",
+                default=",".join(choices[:1]),
+                show_default=True,
+            )
+            selected_ids = [HostId(p.strip()) for p in picked.split(",") if p.strip()]
+
+        if not selected_ids:
+            selected_ids = list(SUPPORTED_PROVIDER_IDS)
+
+        request = InitRequest(
+            providers=selected_ids,
+            yes=yes,
+            dry_run=dry_run,
+            json_output=json_output,
+        )
+
+        if not json_output:
+            plan = build_plan(ctx, request)
+            click.echo("\nPlan:")
+            for pp in plan.plans:
+                click.echo(f"  {pp.status.display_name} [{pp.status.state}]")
+                for action in pp.actions:
+                    click.echo(f"    - {action.kind}: {action.description}")
+            if not dry_run and not yes and not click.confirm("\nApply?", default=False):
+                click.echo("Aborted.")
+                return
+
+        result = run_init(ctx, request)
+
+        if json_output:
+            emit(result)
+            return
+
+        click.echo("\nResult:")
+        for r in result.results:
+            verified = "verified" if r.verified else str(r.status.state)
+            click.echo(f"  {r.status.display_name:<14} {verified}")
+            for action in r.actions:
+                stage = action.stage.value
+                marker = "✓" if action.stage == ProviderActionStage.APPLIED else "-"
+                click.echo(f"    {marker} {stage}: {action.target_path}")
+            if r.next_command:
+                click.echo(f"    next: {r.next_command}")
+            if r.repair_hint:
+                click.echo(f"    hint: {r.repair_hint}")
+    except TutorError as exc:
+        fail_json(exc)
+
+
 if __name__ == "__main__":
     main()

@@ -10,8 +10,8 @@ description: >-
   text-only reading, lesson, transcript, vocab, writing, and progress
   flows backed by the host-independent tutor core. No audio or image
   capabilities.
-license: see repository
-source_url: https://github.com/synesthesias/hermes
+license: MIT
+source_url: https://github.com/artemVeduta/lingo-loop
 
 # Whole-agent package contents (git-backed distribution).
 profile:

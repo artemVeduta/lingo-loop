@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Lint (ruff)
+        run: uv run ruff check .
+
+      - name: Typecheck (pyright)
+        run: uv run pyright
+
+      - name: Test (pytest)
+        run: uv run pytest
+
+      - name: Guard against pre-OSS internal names in public docs
+        run: |
+          set -e
+          if grep -RInE '\brtk\b' README.md docs/ 2>/dev/null | grep -v docs/internal/; then
+            echo "::error::Found 'rtk' reference in public docs. Move to docs/internal/ or remove."
+            exit 1
+          fi
+          if grep -RInE 'Spec [0-9]+' README.md docs/ 2>/dev/null | grep -v docs/internal/; then
+            echo "::error::Found 'Spec N' reference in public docs. Use feature names or move to docs/internal/."
+            exit 1
+          fi

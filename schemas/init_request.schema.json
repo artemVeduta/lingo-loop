@@ -1,0 +1,41 @@
+{
+  "$defs": {
+    "HostId": {
+      "enum": [
+        "hermes",
+        "openclaw",
+        "claude",
+        "codex"
+      ],
+      "title": "HostId",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "dry_run": {
+      "default": false,
+      "title": "Dry Run",
+      "type": "boolean"
+    },
+    "json_output": {
+      "default": false,
+      "title": "Json Output",
+      "type": "boolean"
+    },
+    "providers": {
+      "items": {
+        "$ref": "#/$defs/HostId"
+      },
+      "title": "Providers",
+      "type": "array"
+    },
+    "yes": {
+      "default": false,
+      "title": "Yes",
+      "type": "boolean"
+    }
+  },
+  "title": "InitRequest",
+  "type": "object"
+}

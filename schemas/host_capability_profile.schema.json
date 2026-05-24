@@ -1,0 +1,170 @@
+{
+  "$defs": {
+    "BootTrigger": {
+      "enum": [
+        "session_start_hook",
+        "codex_plugin_hook",
+        "explicit_tutor_command",
+        "first_tutor_message",
+        "host_specific"
+      ],
+      "title": "BootTrigger",
+      "type": "string"
+    },
+    "CapabilitySupport": {
+      "enum": [
+        "supported",
+        "unsupported",
+        "partial"
+      ],
+      "title": "CapabilitySupport",
+      "type": "string"
+    },
+    "HostId": {
+      "enum": [
+        "hermes",
+        "openclaw",
+        "claude",
+        "codex"
+      ],
+      "title": "HostId",
+      "type": "string"
+    },
+    "LifecycleEnd": {
+      "enum": [
+        "hook",
+        "explicit_command",
+        "manual",
+        "not_available"
+      ],
+      "title": "LifecycleEnd",
+      "type": "string"
+    },
+    "LifecycleStart": {
+      "enum": [
+        "hook",
+        "explicit_command",
+        "first_message",
+        "manual",
+        "not_available"
+      ],
+      "title": "LifecycleStart",
+      "type": "string"
+    },
+    "PersistenceMode": {
+      "enum": [
+        "incremental_checkpoint"
+      ],
+      "title": "PersistenceMode",
+      "type": "string"
+    },
+    "RepresentativeFlow": {
+      "enum": [
+        "reading",
+        "lesson",
+        "transcript",
+        "vocab",
+        "writing",
+        "progress"
+      ],
+      "title": "RepresentativeFlow",
+      "type": "string"
+    },
+    "SessionIdSource": {
+      "enum": [
+        "host_conversation",
+        "tutor_generated"
+      ],
+      "title": "SessionIdSource",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "audio_support": {
+      "const": "unsupported",
+      "default": "unsupported",
+      "title": "Audio Support",
+      "type": "string"
+    },
+    "boot_context_trigger": {
+      "$ref": "#/$defs/BootTrigger"
+    },
+    "display_name": {
+      "title": "Display Name",
+      "type": "string"
+    },
+    "flow_gates": {
+      "items": {
+        "$ref": "#/$defs/RepresentativeFlow"
+      },
+      "title": "Flow Gates",
+      "type": "array"
+    },
+    "host": {
+      "$ref": "#/$defs/HostId"
+    },
+    "image_support": {
+      "const": "unsupported",
+      "default": "unsupported",
+      "title": "Image Support",
+      "type": "string"
+    },
+    "lifecycle_end": {
+      "$ref": "#/$defs/LifecycleEnd"
+    },
+    "lifecycle_start": {
+      "$ref": "#/$defs/LifecycleStart"
+    },
+    "persistence_mode": {
+      "$ref": "#/$defs/PersistenceMode",
+      "default": "incremental_checkpoint"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "session_id_source": {
+      "$ref": "#/$defs/SessionIdSource",
+      "default": "tutor_generated"
+    },
+    "setup_entry_point": {
+      "title": "Setup Entry Point",
+      "type": "string"
+    },
+    "side_effectful_capabilities": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Side Effectful Capabilities",
+      "type": "array"
+    },
+    "text_support": {
+      "$ref": "#/$defs/CapabilitySupport"
+    },
+    "unsupported_capabilities": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Unsupported Capabilities",
+      "type": "array"
+    },
+    "update_behavior": {
+      "title": "Update Behavior",
+      "type": "string"
+    }
+  },
+  "required": [
+    "host",
+    "display_name",
+    "text_support",
+    "lifecycle_start",
+    "lifecycle_end",
+    "boot_context_trigger",
+    "setup_entry_point",
+    "update_behavior"
+  ],
+  "title": "AdapterCapabilityProfile",
+  "type": "object"
+}

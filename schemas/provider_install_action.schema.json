@@ -1,0 +1,62 @@
+{
+  "$defs": {
+    "ProviderActionKind": {
+      "enum": [
+        "write_file",
+        "skip",
+        "block",
+        "verify"
+      ],
+      "title": "ProviderActionKind",
+      "type": "string"
+    },
+    "ProviderActionStage": {
+      "enum": [
+        "planned",
+        "applied",
+        "skipped",
+        "blocked",
+        "failed"
+      ],
+      "title": "ProviderActionStage",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "title": "Description",
+      "type": "string"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error"
+    },
+    "kind": {
+      "$ref": "#/$defs/ProviderActionKind"
+    },
+    "stage": {
+      "$ref": "#/$defs/ProviderActionStage",
+      "default": "planned"
+    },
+    "target_path": {
+      "title": "Target Path",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "target_path",
+    "description"
+  ],
+  "title": "ProviderInstallAction",
+  "type": "object"
+}

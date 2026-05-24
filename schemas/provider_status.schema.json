@@ -1,0 +1,98 @@
+{
+  "$defs": {
+    "HostId": {
+      "enum": [
+        "hermes",
+        "openclaw",
+        "claude",
+        "codex"
+      ],
+      "title": "HostId",
+      "type": "string"
+    },
+    "ProviderState": {
+      "enum": [
+        "available",
+        "installed",
+        "needs-repair",
+        "blocked",
+        "unknown"
+      ],
+      "title": "ProviderState",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cli_path": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cli Path"
+    },
+    "config_root": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Config Root"
+    },
+    "detected_cli": {
+      "default": false,
+      "title": "Detected Cli",
+      "type": "boolean"
+    },
+    "display_name": {
+      "title": "Display Name",
+      "type": "string"
+    },
+    "docs_url": {
+      "title": "Docs Url",
+      "type": "string"
+    },
+    "host": {
+      "$ref": "#/$defs/HostId"
+    },
+    "managed_files": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Managed Files",
+      "type": "array"
+    },
+    "repair_hint": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Repair Hint"
+    },
+    "state": {
+      "$ref": "#/$defs/ProviderState"
+    }
+  },
+  "required": [
+    "host",
+    "display_name",
+    "state",
+    "docs_url"
+  ],
+  "title": "ProviderStatus",
+  "type": "object"
+}

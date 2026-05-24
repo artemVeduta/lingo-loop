@@ -116,8 +116,8 @@ passes its existing golden suite.
 **Status:** Implemented via spec `003-smarter-engine`. Adds weak-tag signal
 contracts, deterministic weak-aware queue selection, safe boot/progress weak
 summaries, intensity queue sizing capped at 60, and schema/contract/golden/
-integration coverage. Verification: `rtk uv run pytest`, `rtk uv run pyright`,
-and `rtk uv run ruff check .`.
+integration coverage. Verification: `uv run pytest`, `uv run pyright`,
+and `uv run ruff check .`.
 
 ### Phase 4 — Richer Feedback & Progress ✅ *(implemented)*
 Renderer / analysis surface. No host dependency. **Text/markdown only** — stays
@@ -137,8 +137,8 @@ progress report/request/markdown contracts, schema mirrors, aggregate-safe DAL
 reads, read-performance indexes, deterministic markdown rendering, CLI JSON and
 markdown export paths, `tutor-progress` routing updates, skill pressure evidence,
 and unit/golden/contract/integration/migration/performance coverage.
-Verification: `rtk uv run pytest`, `rtk uv run pyright`, and
-`rtk uv run ruff check .`.
+Verification: `uv run pytest`, `uv run pyright`, and
+`uv run ruff check .`.
 
 ### Phase 5 — Text Modalities + Skill Authoring
 First new exercise types plus full project skill review/rewrite. Text-only,
