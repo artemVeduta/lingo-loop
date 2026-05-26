@@ -15,6 +15,17 @@ tutor doctor --json
 
 It prints the resolved config/data/state paths, whether the YAML files parse, and whether the SQLite database is reachable and migrated.
 
+## Migrating from `language-tutor`
+
+Earlier pre-releases were published under the distribution name `language-tutor`. The PyPI distribution is now `lingo-loop` (the Python module and the `tutor` CLI command are unchanged). If you installed the old name, swap it in place:
+
+```bash
+uv tool uninstall language-tutor
+uv tool install lingo-loop
+```
+
+Your config, data, and state directories are untouched — only the wheel name changed.
+
 ## Install-time
 
 ### `tutor: command not found`
@@ -23,7 +34,7 @@ The `uv tool install` bin directory is not on `PATH`. Run `uv tool update-shell`
 ### `ModuleNotFoundError: No module named 'language_tutor'`
 You attempted to run from a source checkout without installing dependencies. Run `uv pip install -e ".[dev]"` from the repo root, or install the published CLI with `uv tool install lingo-loop`.
 
-> Note: the distribution is named `lingo-loop` but the Python module is `language_tutor`. This is intentional for v0.1 and will be reconciled in a follow-up release.
+> Note: the distribution is named `lingo-loop` but the Python module is `language_tutor` and the CLI is `tutor`. This split is intentional.
 
 ### `pyright` / `ruff` complaints when running from a clone
 You are seeing developer tooling output. End users do not need either tool — install the CLI via `uv tool install`. See `CONTRIBUTING.md` for the dev setup.

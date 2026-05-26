@@ -12,7 +12,13 @@ class OpenClawInstaller(BaseProviderInstaller):
         host=HostId.OPENCLAW,
         cli_name="openclaw",
         config_root_rel=".openclaw",
-        bundled_asset_rel="openclaw-plugin/package.json",
-        managed_path_rel="plugins/lingo-loop/package.json",
+        bundled_assets_root_rel="openclaw-plugin",
+        managed_dir_rel="plugins/lingo-loop",
+        files=(
+            "package.json",
+            "openclaw.plugin.json",
+            "tsconfig.json",
+            "src/index.ts",
+        ),
         next_command="Run `openclaw plugins install lingo-loop` to register the plugin with OpenClaw.",
     )

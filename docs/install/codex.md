@@ -1,6 +1,6 @@
 # Install lingo-loop for Codex
 
-> Last verified: 2026-05-24 against Codex CLI version <!-- TODO: verify -->
+> Last verified: 2026-05-26 against Codex CLI version <!-- TODO: verify -->
 
 ## Prerequisites
 - Python 3.12+
@@ -35,7 +35,7 @@ repair drift. Automation form: `tutor init --provider codex --yes`. Use
 The Codex plugin lives under `.codex-plugin/` in this repository. The manifest declares:
 
 - `schema_version`: `1.0`
-- `name`: `language-tutor`
+- `name`: `language-tutor` (in-host plugin identifier; the PyPI distribution is `lingo-loop`)
 - `version`: `0.1.0`
 - `license`: `MIT`
 - `skills`: `./skills/` (reuses the root `skills/` tree)
@@ -54,7 +54,7 @@ codex plugin install ./.codex-plugin
 
 ## Screenshot
 
-<!-- TODO(oss-baseline-assets): capture screenshot of Codex marketplace/plugins pane showing language-tutor enabled -->
+<!-- TODO(oss-baseline-assets): capture screenshot of Codex marketplace/plugins pane showing the language-tutor plugin (from lingo-loop) enabled -->
 *(Screenshot pending — see `docs/internal/launch-checklist.md`.)*
 
 ## First session
@@ -92,7 +92,7 @@ Should print your configured target language (default `"uk"`).
 ## Uninstall
 
 ```bash
-codex plugin uninstall language-tutor
+codex plugin uninstall language-tutor  # in-host plugin name; PyPI distribution is lingo-loop
 uv tool uninstall lingo-loop
 ```
 

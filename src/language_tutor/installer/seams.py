@@ -21,6 +21,7 @@ class FilesystemSeam(Protocol):
     def read_text(self, path: Path) -> str: ...
     def write_text(self, path: Path, content: str) -> None: ...
     def mkdir(self, path: Path) -> None: ...
+    def list_writes(self) -> dict[Path, str]: ...
 
 
 class CommandRunnerSeam(Protocol):
@@ -49,6 +50,9 @@ class RealFilesystem:
 
     def mkdir(self, path: Path) -> None:
         path.mkdir(parents=True, exist_ok=True)
+
+    def list_writes(self) -> dict[Path, str]:
+        return {}
 
 
 class RealCommandRunner:

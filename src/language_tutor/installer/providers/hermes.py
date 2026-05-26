@@ -12,7 +12,8 @@ class HermesInstaller(BaseProviderInstaller):
         host=HostId.HERMES,
         cli_name="hermes",
         config_root_rel=".hermes",
-        bundled_asset_rel="hermes-profile/distribution.yaml",
-        managed_path_rel="profiles/lingo-loop/distribution.yaml",
+        bundled_assets_root_rel="hermes-profile",
+        managed_dir_rel="profiles/lingo-loop",
+        files=("distribution.yaml", "config.yaml", "SOUL.md"),
         next_command="Run `hermes profile update` to refresh the lingo-loop profile.",
     )

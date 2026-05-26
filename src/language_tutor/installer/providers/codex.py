@@ -12,7 +12,8 @@ class CodexInstaller(BaseProviderInstaller):
         host=HostId.CODEX,
         cli_name="codex",
         config_root_rel=".codex",
-        bundled_asset_rel=".codex-plugin/plugin.json",
-        managed_path_rel="plugins/lingo-loop/plugin.json",
+        bundled_assets_root_rel=".codex-plugin",
+        managed_dir_rel="plugins/lingo-loop",
+        files=("plugin.json",),
         next_command="Restart Codex so the local marketplace plugin is discovered.",
     )

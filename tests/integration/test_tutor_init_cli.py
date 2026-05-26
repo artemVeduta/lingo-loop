@@ -25,9 +25,17 @@ def fake_clis(monkeypatch: pytest.MonkeyPatch) -> dict[str, str]:
 
 @pytest.fixture()
 def fake_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """Pin Path.home() so the installer writes under tmp_path, not the user's $HOME."""
+    """Pin Path.home() so the installer writes under tmp_path, not the user's $HOME.
+
+    Also precreate each host's conventional config-root so detect() does not
+    short-circuit to BLOCKED on the "missing config root" guard (spec scenario
+    "Missing host config root blocks with repair guidance"). Tests that need
+    to exercise the missing-root path use a dedicated fixture / setup.
+    """
     home = tmp_path / "home"
     home.mkdir()
+    for rel in (".claude", ".codex", ".hermes", ".openclaw"):
+        (home / rel).mkdir()
     monkeypatch.setattr(
         "language_tutor.installer.seams.RealFilesystem.home", lambda self: home
     )

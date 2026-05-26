@@ -138,7 +138,7 @@ wheels = [
 ]
 
 [[package]]
-name = "language-tutor"
+name = "lingo-loop"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

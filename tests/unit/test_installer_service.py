@@ -18,13 +18,30 @@ from language_tutor.schemas import (
 
 HOME = Path("/fake/home")
 
+# Per-host conventional config roots that every installer expects to already
+# exist (the host CLI creates these on its own first-run). Tests that drive
+# the happy path must precreate these dirs, otherwise the installer returns
+# BLOCKED with a "run the host CLI once" repair hint (spec scenario
+# "Missing host config root blocks with repair guidance").
+_HOST_CONFIG_ROOTS: dict[HostId, str] = {
+    HostId.CLAUDE: ".claude",
+    HostId.CODEX: ".codex",
+    HostId.HERMES: ".hermes",
+    HostId.OPENCLAW: ".openclaw",
+}
+
 
 def make_ctx(
     available_clis: dict[str, str] | None = None,
     files: dict[Path, str] | None = None,
+    precreate_config_roots: bool = True,
 ) -> InstallerContext:
+    fs = FakeFilesystem(home=HOME, files=files)
+    if precreate_config_roots:
+        for host in HostId:
+            fs.mkdir(HOME / _HOST_CONFIG_ROOTS[host])
     return InstallerContext(
-        fs=FakeFilesystem(home=HOME, files=files),
+        fs=fs,
         runner=FakeCommandRunner(available=available_clis or {}),
         bundled_assets_root=bundled_assets_root(),
     )

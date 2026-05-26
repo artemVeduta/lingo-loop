@@ -1,6 +1,6 @@
 # Install lingo-loop for OpenClaw
 
-> Last verified: 2026-05-24 against OpenClaw version <!-- TODO: verify -->
+> Last verified: 2026-05-26 against OpenClaw version <!-- TODO: verify -->
 
 ## Prerequisites
 - Python 3.12+
@@ -34,7 +34,7 @@ Rerun `tutor init` any time to repair drift. Automation form: `tutor init
 
 ## Manual fallback — install the OpenClaw plugin from a clone
 
-The plugin package is `@language-tutor/openclaw-plugin` (under `openclaw-plugin/` in this repository). Manifest highlights:
+The plugin package is `@language-tutor/openclaw-plugin` (npm scope; the PyPI distribution is `lingo-loop`) under `openclaw-plugin/` in this repository. Manifest highlights:
 
 - `license`: `MIT`
 - `engines.node`: `>=22`
@@ -58,7 +58,7 @@ openclaw plugin install $(pwd)
 
 ## Screenshot
 
-<!-- TODO(oss-baseline-assets): capture screenshot of OpenClaw plugins panel showing @language-tutor/openclaw-plugin enabled -->
+<!-- TODO(oss-baseline-assets): capture screenshot of OpenClaw plugins panel showing @language-tutor/openclaw-plugin (from lingo-loop) enabled -->
 *(Screenshot pending — see `docs/internal/launch-checklist.md`.)*
 
 ## First session
@@ -68,7 +68,7 @@ openclaw plugin install $(pwd)
 
 ## Verify
 
-1. In OpenClaw's plugins panel, `@language-tutor/openclaw-plugin 0.1.0` is listed and enabled.
+1. In OpenClaw's plugins panel, `@language-tutor/openclaw-plugin 0.1.0` (shipped by the `lingo-loop` distribution) is listed and enabled.
 2. Triggering a tutor skill from the OpenClaw host invokes `tutor session-start --json` and renders the boot context.
 
 ```bash
@@ -94,7 +94,7 @@ Should print `"ok"`.
 ## Uninstall
 
 ```bash
-openclaw plugin uninstall @language-tutor/openclaw-plugin
+openclaw plugin uninstall @language-tutor/openclaw-plugin  # npm package name; PyPI distribution is lingo-loop
 uv tool uninstall lingo-loop
 ```
 

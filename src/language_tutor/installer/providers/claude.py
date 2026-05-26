@@ -12,7 +12,8 @@ class ClaudeInstaller(BaseProviderInstaller):
         host=HostId.CLAUDE,
         cli_name="claude",
         config_root_rel=".claude",
-        bundled_asset_rel=".claude-plugin/plugin.json",
-        managed_path_rel="plugins/lingo-loop/plugin.json",
+        bundled_assets_root_rel=".claude-plugin",
+        managed_dir_rel="plugins/lingo-loop",
+        files=("plugin.json",),
         next_command="In an open Claude Code session, run `/reload-plugins`.",
     )

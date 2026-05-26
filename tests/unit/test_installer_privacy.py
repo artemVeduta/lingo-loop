@@ -29,8 +29,13 @@ FORBIDDEN_DIR_NAMES = {
 
 
 def _ctx_all_hosts() -> InstallerContext:
+    fs = FakeFilesystem(home=HOME)
+    # Precreate per-host config roots so detect() does not short-circuit to
+    # BLOCKED on the "missing config root" check (covered by dedicated tests).
+    for rel in (".claude", ".codex", ".hermes", ".openclaw"):
+        fs.mkdir(HOME / rel)
     return InstallerContext(
-        fs=FakeFilesystem(home=HOME),
+        fs=fs,
         runner=FakeCommandRunner(available={h.value: f"/usr/bin/{h.value}" for h in HostId}),
         bundled_assets_root=bundled_assets_root(),
     )

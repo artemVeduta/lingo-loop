@@ -29,6 +29,27 @@ release section.
 - License made explicit and consistent: MIT across `LICENSE`,
   `pyproject.toml`, plugin manifests (already MIT), and
   `hermes-profile/distribution.yaml` (was `see repository`).
+- **Interactive provider installer** now models each host as a bundled
+  directory tree: every declared file is materialized, verified, and
+  drift-checked per file; missing or content-divergent siblings are
+  reported as `needs-repair` and rewritten individually. A missing host
+  config root or a missing bundled asset in the wheel now yields
+  `BLOCKED` with a kind-tagged repair hint (CLI / config root / packaging
+  defect) linking to `docs/install/<host>.md`.
+- **Distribution metadata** now requires `pyproject.toml [project].name`
+  to be exactly `lingo-loop` and `[tool.hatch.build.targets.wheel.force-include]`
+  to enumerate every file declared by every provider installer (no
+  reliance on globs picking up bundled assets implicitly).
+- **Tagged releases** workflow provisions Python 3.12 via an explicit
+  `actions/setup-python@v5` step before every `uv` invocation, with
+  `UV_PYTHON: "3.12"` on each affected job — the prior `python-version`
+  input to `astral-sh/setup-uv@v3` was silently ignored.
+- **Per-host install documentation** is now gated by a docs-correctness
+  test (`tests/docs/test_install_docs.py`) that asserts every `tutor`
+  CLI example parses against the shipped CLI, every relative link
+  resolves, every documented config-root path matches the installer's
+  reported path on macOS, and every `language-tutor` mention is in
+  contrast context with `lingo-loop`.
 
 ### Fixed
 

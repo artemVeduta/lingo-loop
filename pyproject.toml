@@ -3,7 +3,7 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [project]
-name = "language-tutor"
+name = "lingo-loop"
 version = "0.1.0"
 description = "Local-first Claude Code language tutor"
 readme = "README.md"
@@ -68,10 +68,15 @@ packages = ["src/language_tutor"]
 # them via importlib.resources after `uv tool install lingo-loop`. Editable /
 # source installs resolve the same files via repo root (see installer/assets.py).
 [tool.hatch.build.targets.wheel.force-include]
-".claude-plugin" = "language_tutor/_assets/.claude-plugin"
-".codex-plugin" = "language_tutor/_assets/.codex-plugin"
+".claude-plugin/plugin.json" = "language_tutor/_assets/.claude-plugin/plugin.json"
+".codex-plugin/plugin.json" = "language_tutor/_assets/.codex-plugin/plugin.json"
 "openclaw-plugin/package.json" = "language_tutor/_assets/openclaw-plugin/package.json"
+"openclaw-plugin/openclaw.plugin.json" = "language_tutor/_assets/openclaw-plugin/openclaw.plugin.json"
+"openclaw-plugin/tsconfig.json" = "language_tutor/_assets/openclaw-plugin/tsconfig.json"
+"openclaw-plugin/src/index.ts" = "language_tutor/_assets/openclaw-plugin/src/index.ts"
 "hermes-profile/distribution.yaml" = "language_tutor/_assets/hermes-profile/distribution.yaml"
+"hermes-profile/config.yaml" = "language_tutor/_assets/hermes-profile/config.yaml"
+"hermes-profile/SOUL.md" = "language_tutor/_assets/hermes-profile/SOUL.md"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

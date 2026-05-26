@@ -1,6 +1,6 @@
 # Install lingo-loop for Hermes
 
-> Last verified: 2026-05-24 against Hermes version <!-- TODO: verify -->
+> Last verified: 2026-05-26 against Hermes version <!-- TODO: verify -->
 
 ## Prerequisites
 - Python 3.12+
@@ -37,7 +37,7 @@ never reads or writes it.
 The Hermes distribution lives under `hermes-profile/`. Key manifest fields:
 
 - `schema_version`: `1`
-- `name`: `language-tutor`
+- `name`: `language-tutor` (in-host profile identifier; the PyPI distribution is `lingo-loop`)
 - `display_name`: `Language Tutor`
 - `version`: `0.1.0`
 - `license`: `MIT`
@@ -57,32 +57,32 @@ hermes profile install https://github.com/artemVeduta/lingo-loop --subdir hermes
 Update later with:
 
 ```bash
-hermes profile update language-tutor
+hermes profile update language-tutor  # Hermes profile name; PyPI distribution is lingo-loop
 ```
 
 Export the required API key before launching:
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
-hermes run language-tutor
+hermes run language-tutor  # Hermes profile name; PyPI distribution is lingo-loop
 ```
 
 The Hermes manifest's `exclude:` list ensures no SQLite, `.env`, secrets, sessions, memories, logs, or caches are ever packaged in the distribution.
 
 ## Screenshot
 
-<!-- TODO(oss-baseline-assets): capture screenshot of Hermes profile listing showing language-tutor installed -->
+<!-- TODO(oss-baseline-assets): capture screenshot of Hermes profile listing showing the language-tutor profile (from lingo-loop) installed -->
 *(Screenshot pending — see `docs/internal/launch-checklist.md`.)*
 
 ## First session
 
-<!-- TODO(oss-baseline-assets): record asciinema cast of `hermes run language-tutor` first session -->
+<!-- TODO(oss-baseline-assets): record asciinema cast of `hermes run language-tutor` (lingo-loop) first session -->
 *(Cast pending — see `docs/internal/launch-checklist.md`.)*
 
 ## Verify
 
-1. `hermes profile list` should include `language-tutor 0.1.0`.
-2. `hermes run language-tutor` should boot, load `SOUL.md`, and invoke `tutor session-start --json` on first tutor message.
+1. `hermes profile list` should include `language-tutor 0.1.0` (the Hermes profile name shipped by `lingo-loop`).
+2. `hermes run language-tutor` (Hermes profile name; PyPI distribution is `lingo-loop`) should boot, load `SOUL.md`, and invoke `tutor session-start --json` on first tutor message.
 3. Confirm the boot block renders Profile / Session / Due Review / Weak Patterns / Latest Recap / Local Status.
 
 ## Troubleshooting
@@ -102,7 +102,7 @@ The Hermes manifest's `exclude:` list ensures no SQLite, `.env`, secrets, sessio
 ## Uninstall
 
 ```bash
-hermes profile uninstall language-tutor
+hermes profile uninstall language-tutor  # Hermes profile name; PyPI distribution is lingo-loop
 uv tool uninstall lingo-loop
 ```
 
