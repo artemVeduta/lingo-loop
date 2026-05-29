@@ -58,11 +58,11 @@ C. Per-provider install test
   D. GitHub repo setup (one-time infra — needed for release, not PR merge)
 
   - [ ] Repo public at github.com/artemVeduta/lingo-loop, MIT LICENSE renders — repo is PUBLIC; LICENSE exists on PR branch; GitHub `licenseInfo` is null and `LICENSE?ref=main` 404 until PR files land on main
-  - [ ] Branch protection on main: require CI green + PR review — protection exists, but required checks list is empty and required approving review count is 0
-  - [ ] GH Environments created: pypi and testpypi (match workflow.yml) — GitHub API reports 0 environments
+  - [x] Branch protection on main: require CI green + PR review — main requires `ci (3.12)` with strict status checks and 1 approving PR review; admin enforcement enabled
+  - [x] GH Environments created: pypi and testpypi (match workflow.yml) — GitHub API lists both environments
   - [ ] PyPI Trusted Publisher registered: project lingo-loop, owner artemVeduta, repo lingo-loop, workflow filename workflow.yml, environment pypi (renaming workflow.yml breaks this —
-  comment at top of file) — not verifiable from repo; requires PyPI project/publisher setup
-  - [ ] TestPyPI Trusted Publisher registered: same, environment testpypi — not verifiable from repo; requires TestPyPI project/publisher setup
+  comment at top of file) — public API shows `lingo-loop` 404/unclaimed; publisher registration still requires PyPI owner setup
+  - [ ] TestPyPI Trusted Publisher registered: same, environment testpypi — public API shows `lingo-loop` 404/unclaimed; publisher registration still requires TestPyPI owner setup
   - [x] No PyPI API tokens in repo secrets (OIDC only — confirm) — `gh secret list --repo artemVeduta/lingo-loop` returned no repo secrets
   - [x] Dependabot enabled (.github/dependabot.yml) — config present on PR branch for pip and GitHub Actions weekly updates
   - [ ] Issue templates + PR template render in GH UI — templates present on PR branch; main returns 404 until merge, so GH UI render cannot be confirmed yet

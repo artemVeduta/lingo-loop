@@ -28,11 +28,11 @@
 
 ## Quick start (Claude Code)
 
-> PyPI publish is coming. Until then, install from source with [`uv`](https://docs.astral.sh/uv/) (or clone and run `uv pip install -e ".[dev]"` for a dev setup — see [CONTRIBUTING.md](CONTRIBUTING.md)).
+> Install with [`uv`](https://docs.astral.sh/uv/) (or clone and run `uv pip install -e ".[dev]"` for a dev setup — see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ```bash
-# 1. Install the CLI from source (pip install lingo-loop coming soon)
-uv tool install git+https://github.com/artemVeduta/lingo-loop
+# 1. Install the CLI
+uv tool install lingo-loop
 
 # 2. Detect AI hosts and install plugin wiring for the ones you use
 tutor init

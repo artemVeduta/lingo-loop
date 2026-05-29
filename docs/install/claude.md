@@ -10,9 +10,11 @@
 ## Step 0 — Install the tutor CLI
 
 ```bash
-# PyPI publish is pending; install from source for now:
-uv tool install git+https://github.com/artemVeduta/lingo-loop
+uv tool install lingo-loop
 tutor doctor --json
+
+# Install from source instead (fallback):
+# uv tool install git+https://github.com/artemVeduta/lingo-loop
 ```
 
 `tutor doctor` should report `status: ok` and print the resolved profile/preferences/database paths.

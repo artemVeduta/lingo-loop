@@ -10,9 +10,11 @@
 ## Step 0 — Install the tutor CLI
 
 ```bash
-# PyPI publish is pending; install from source for now:
-uv tool install git+https://github.com/artemVeduta/lingo-loop
+uv tool install lingo-loop
 tutor doctor --json
+
+# Install from source instead (fallback):
+# uv tool install git+https://github.com/artemVeduta/lingo-loop
 ```
 
 > The distribution name is `lingo-loop` but the Python module installed on disk is still `language_tutor`. This is intentional for v0.1; see [troubleshooting](../troubleshooting.md).

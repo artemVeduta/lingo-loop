@@ -43,21 +43,17 @@ uv run pytest                   # green on main
 > Tag MUST point at a `main` commit. Never tag a feature branch — the workflow
 > fires on any `v*.*.*` tag regardless of branch.
 
-## Step 2 — Publish (RC dry-run first, then real)
+## Step 2 — Publish to PyPI
 
 Use the `release-tag` skill (`/release-tag`) or do manually.
 
-**2a. TestPyPI dry-run (recommended):**
-
-```bash
-git tag v0.1.0-rc.1 && git push origin v0.1.0-rc.1
-```
-
-- [ ] Workflow `publish (testpypi)` job green
-- [ ] https://test.pypi.org/project/lingo-loop/ shows 0.1.0rc1
-- [ ] Clean-venv smoke: `uv tool install -i https://test.pypi.org/simple/ lingo-loop` then `tutor doctor --json` → `status: ok`
-
-**2b. Real PyPI release:**
+> RC dry-run on TestPyPI was dropped: `scripts/version-guard.sh` (run by the
+> workflow on every tag) requires `pyproject.toml` version to equal the tag, so
+> an `-rc.N` tag needs a tagged commit carrying `version = "0.1.0-rc.1"`. The
+> repo has no such bump and adding one is more plumbing than the dry-run is
+> worth here. `pyproject.toml` is already `0.1.0`, so the real tag below passes
+> the guard with no changes. If a future release needs a TestPyPI rehearsal,
+> bump `pyproject.toml` to the `-rc.N` version via a release PR first.
 
 ```bash
 git tag v0.1.0 && git push origin v0.1.0
@@ -115,7 +111,7 @@ uv run pytest tests/docs/test_install_docs.py
 ## Rollback / gotchas
 
 - PyPI is **immutable** — `0.1.0` cannot be re-uploaded. A bad release needs
-  `0.1.1`. RC dry-run on TestPyPI exists to catch this before real publish.
-- TestPyPI is also immutable per version; bump `-rc.N` for retries.
+  `0.1.1`. With the RC dry-run dropped (see Step 2), the local `uv build` +
+  `uv run pytest` on `main` are the only pre-publish gates — run them.
 - If publish job fails on auth → check Trusted Publisher entry on PyPI still
   points at `workflow.yml` in this repo.
