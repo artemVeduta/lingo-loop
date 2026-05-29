@@ -3,22 +3,22 @@
   A. Repo hygiene (do first)
 
 - [x] Commit + push uncommitted src/language_tutor/cli.py and tests/integration/test_tutor_init_cli.py (git status shows them dirty — CI won't see them otherwise) — branch clean and matches upstream at eb7ecac
-  - [ ] CI green on PR: ruff check, pyright, pytest, doc-name guard (rtk/Spec N leak check)
-  - [ ] Coverage ≥ 80% (--cov-fail-under=80)
-  - [ ] ./scripts/build-check.sh and ./scripts/version-guard.sh v0.1.0 pass locally
+- [x] CI green on PR: ruff check, pyright, pytest, doc-name guard (rtk/Spec N leak check) — GitHub PR #12 checks pass at 8b213a3
+- [x] Coverage ≥ 80% (--cov-fail-under=80) — local pytest coverage 89.92%
+- [x] ./scripts/build-check.sh and ./scripts/version-guard.sh v0.1.0 pass locally — both pass
 
-  B. Build / wheel distribution (local)
+B. Build / wheel distribution (local)
 
-  - [ ] uv build → produces sdist + wheel, no errors
-  - [ ] tests/release/test_wheel_contents.py passes — bundled _assets/ present (.claude-plugin, .codex-plugin, openclaw-plugin, hermes-profile)
-  - [ ] tests/release/test_distribution_name.py passes — dist name lingo-loop
-  - [ ] Install built wheel in clean venv → tutor init can read bundled assets via importlib.resources (not just repo-root path)
+- [x] uv build → produces sdist + wheel, no errors — build-check produced `dist/lingo_loop-0.1.0.tar.gz` and `dist/lingo_loop-0.1.0-py3-none-any.whl`
+- [x] tests/release/test_wheel_contents.py passes — bundled _assets/ present (.claude-plugin, .codex-plugin, openclaw-plugin, hermes-profile) — `uv run pytest tests/release/test_wheel_contents.py --no-cov` passes
+- [x] tests/release/test_distribution_name.py passes — dist name lingo-loop — `uv run pytest tests/release/test_distribution_name.py --no-cov` passes
+- [x] Install built wheel in clean venv → tutor init can read bundled assets via importlib.resources (not just repo-root path) — installed wheel into temp venv; `tutor init --provider claude --yes --json` wrote `.claude/plugins/lingo-loop/plugin.json`
 
   C. Per-provider install test
 
   Automated provider smoke runs package install, isolated HOME/XDG paths, `tutor init`, `tutor doctor --json`, managed-file checks, and secret-leak checks. It does not replace live manual provider verification.
 
-  - [ ] Run all provider smoke checks: `scripts/provider-smoke.sh`
+  - [ ] Run all provider smoke checks: `scripts/provider-smoke.sh` — BLOCKED: script is absent from current branch; related smoke-harness spec docs were removed in 65505d6
   - [ ] Run focused provider smoke when debugging: `scripts/provider-smoke.sh --provider claude --keep-workdir`
   - [ ] If a smoke run fails, inspect the preserved temp workdir printed by the script: `reports/<host>.json` for decisions, `logs/` for command output, and `home/` for isolated managed files. Passing runs delete the workdir unless `--keep-workdir` is set.
 
