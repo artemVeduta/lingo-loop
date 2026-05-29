@@ -669,7 +669,13 @@ def _utc_now() -> datetime:
 @click.option("--json-output", "--json", "json_output", is_flag=True)
 @click.argument("payload", required=True)
 def session_start_cmd(json_output: bool, payload: str) -> None:
-    """Mint a tutor session id and return boot context + prior-session history."""
+    """Mint a tutor session id and return boot context + prior-session history.
+
+    PAYLOAD is a JSON object. "host" is required; "host_conversation_id" is
+    optional. Example:
+
+        tutor session-start --json '{"host":"claude|codex|openclaw|hermes"}'
+    """
     del json_output
     try:
         data = parse_payload(payload)
