@@ -13,6 +13,16 @@ release section.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.1.0] - 2026-05-29
+
+### Added
+
 - MIT `LICENSE` file at repo root.
 - `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `RELEASING.md`.
 - Per-host install documentation under `docs/install/`.
