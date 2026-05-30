@@ -19,6 +19,28 @@ release section.
 
 ### Removed
 
+## [0.1.1] - 2026-05-30
+
+### Added
+
+- `tutor doctor` JSON now carries an aggregate `status` field (`ok`/`fail`);
+  `n/a` checks do not count as failures.
+
+### Changed
+
+- `tutor doctor` resolves the plugin `manifest` check via the bundled-assets
+  resolver, so it is honest on wheel/PyPI installs.
+
+### Fixed
+
+- `tutor doctor` no longer reports spurious `fail` for `setup_skill`,
+  `vocab_skill`, `writing_skill`, `progress_skill`, `judge_agent`, and `cli` on
+  non-editable (wheel/PyPI) installs. These source-only payloads are neither
+  bundled nor installed (install contract = manifest only) and are now reported
+  `n/a` outside an editable checkout.
+
+### Removed
+
 ## [0.1.0] - 2026-05-29
 
 ### Added

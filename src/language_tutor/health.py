@@ -9,7 +9,10 @@ from language_tutor.dal.migrations import apply_migrations
 from language_tutor.dal.paths import TutorPaths, ensure_dirs
 from language_tutor.dal.sqlite_store import connect
 from language_tutor.dal.yaml_store import default_preferences, default_profile, load_model
+from language_tutor.installer.assets import bundled_assets_root
 from language_tutor.schemas import DoctorCheck, DoctorReport, LearnerPreferences, LearnerProfile
+
+_MANIFEST_COMPONENT = "manifest"
 
 
 def doctor(paths: TutorPaths, repo_root: Path) -> DoctorReport:
@@ -22,7 +25,35 @@ def doctor(paths: TutorPaths, repo_root: Path) -> DoctorReport:
             repair_hint="Use Python 3.12+.",
         )
     )
-    for name, rel in plugin_root_components().items():
+    components = plugin_root_components()
+    # The manifest is the only plugin asset shipped in the wheel and installed by
+    # ``tutor init``; resolve it via the bundled-assets resolver so the check is
+    # honest on both editable and PyPI/wheel installs.
+    manifest_rel = components[_MANIFEST_COMPONENT]
+    manifest_path = bundled_assets_root() / manifest_rel
+    checks.append(
+        DoctorCheck(
+            name=_MANIFEST_COMPONENT,
+            status="ok" if manifest_path.exists() else "fail",
+            repair_hint=f"Restore {manifest_rel}.",
+        )
+    )
+    # Skills/agents/CLI live in the source tree only — they are neither bundled
+    # in the wheel nor installed for any host. Verify them in an editable
+    # checkout; report ``n/a`` on wheel installs where ``repo_root`` has no tree.
+    is_source_checkout = (repo_root / manifest_rel).exists()
+    for name, rel in components.items():
+        if name == _MANIFEST_COMPONENT:
+            continue
+        if not is_source_checkout:
+            checks.append(
+                DoctorCheck(
+                    name=name,
+                    status="n/a",
+                    repair_hint="Source-only check; not applicable to wheel installs.",
+                )
+            )
+            continue
         path = repo_root / rel
         executable_ok = name != "cli" or os.access(path, os.X_OK)
         checks.append(
@@ -67,4 +98,5 @@ def doctor(paths: TutorPaths, repo_root: Path) -> DoctorReport:
                 repair_hint="Repair SQLite file or migration records.",
             )
         )
-    return DoctorReport(checks=checks)
+    overall = "fail" if any(check.status == "fail" for check in checks) else "ok"
+    return DoctorReport(checks=checks, status=overall)
