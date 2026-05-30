@@ -32,9 +32,10 @@
 
 ```bash
 # 1. Install the CLI
-uv tool install lingo-loop
+uv tool install lingo-loop==0.1.2
 
 # 2. Detect AI hosts and install plugin wiring for the ones you use
+tutor doctor --json
 tutor init
 
 # 3. Write your learner profile (native + target language)
@@ -49,6 +50,12 @@ Rerun any time to repair drift — it never touches your learner profile, histor
 or secrets.
 Non-interactive form: `tutor init --provider claude --yes` (also `--dry-run`,
 `--json`).
+
+If `0.1.2` has not propagated yet, use the source-tag fallback:
+
+```bash
+uv tool install "git+https://github.com/artemVeduta/lingo-loop@v0.1.1"
+```
 
 Full Claude install doc: [`docs/install/claude.md`](docs/install/claude.md)
 

@@ -10,11 +10,12 @@
 ## Step 0 — Install the tutor CLI
 
 ```bash
-uv tool install lingo-loop
+uv tool install lingo-loop==0.1.2
 tutor doctor --json
+tutor init --provider hermes --yes
 
-# Install from source instead (fallback):
-# uv tool install git+https://github.com/artemVeduta/lingo-loop
+# Source tag fallback until the fixed package is available:
+# uv tool install "git+https://github.com/artemVeduta/lingo-loop@v0.1.1"
 ```
 
 > The distribution name is `lingo-loop` but the Python module installed on disk is still `language_tutor`. This is intentional for v0.1; see [troubleshooting](../troubleshooting.md).
@@ -33,6 +34,10 @@ time to repair drift. Automation form: `tutor init --provider hermes --yes`.
 Use `--dry-run --json` to preview.
 `ANTHROPIC_API_KEY` stays a user-owned environment variable — `tutor init`
 never reads or writes it.
+
+`LANGUAGE_TUTOR_HOME` overrides tutor config, data, and state roots; the
+Hermes container and service account set `/home/hermes/.tutor`, while the
+normal CLI omits it.
 
 ## Manual fallback — install the Hermes profile from a clone
 
