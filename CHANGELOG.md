@@ -13,6 +13,16 @@ release section.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.1.1] - 2026-05-30
+
+### Added
+
 - `tutor doctor` JSON now carries an aggregate `status` field (`ok`/`fail`);
   `n/a` checks do not count as failures.
 
