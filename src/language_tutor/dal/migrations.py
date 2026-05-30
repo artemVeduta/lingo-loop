@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from language_tutor.errors import TutorError
+from language_tutor.package_assets import REQUIRED_MIGRATION_FILES, package_assets_root
 
 
 @dataclass(frozen=True)
@@ -18,11 +19,27 @@ class Migration:
 
 
 def migration_dir() -> Path:
-    return Path(__file__).resolve().parents[3] / "migrations"
+    return package_assets_root() / "migrations"
+
+
+def missing_migration_files(root: Path | None = None) -> tuple[str, ...]:
+    base = root or package_assets_root()
+    return tuple(rel for rel in REQUIRED_MIGRATION_FILES if not (base / rel).exists())
 
 
 def load_migrations(root: Path | None = None) -> list[Migration]:
-    directory = root or migration_dir()
+    if root is None:
+        missing = missing_migration_files()
+        if missing:
+            joined = ", ".join(missing)
+            raise TutorError(
+                "missing_migrations",
+                f"SQL migration file(s) missing from lingo-loop package: {joined}",
+                f"Reinstall lingo-loop from a fixed package containing: {joined}.",
+            )
+        directory = migration_dir()
+    else:
+        directory = root
     migrations: list[Migration] = []
     for path in sorted(directory.glob("*.sql")):
         version_text, name = path.stem.split("_", 1)
