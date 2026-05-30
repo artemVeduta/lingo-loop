@@ -904,13 +904,18 @@ class SessionEndResult(TutorModel):
 
 class DoctorCheck(TutorModel):
     name: str
-    status: Literal["ok", "fail"]
+    # ``n/a`` marks a source-only check skipped on wheel/PyPI installs, where the
+    # payload is neither bundled nor installed (install contract = manifest only).
+    status: Literal["ok", "fail", "n/a"]
     repair_hint: str = ""
 
 
 class DoctorReport(TutorModel):
     checks: list[DoctorCheck]
     learner_data_changed: bool = False
+    # Aggregate health: ``fail`` if any check failed, else ``ok`` (``n/a`` checks
+    # do not count as failures).
+    status: Literal["ok", "fail"] = "ok"
 
 
 # ---------------------------------------------------------------------------
