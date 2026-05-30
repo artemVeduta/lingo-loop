@@ -23,9 +23,9 @@ host-package's files; ``bundled_assets_root()`` returns the parent directory
 
 from __future__ import annotations
 
-import os
-from importlib import resources
 from pathlib import Path
+
+from language_tutor.package_assets import package_assets_root
 
 _HOST_PACKAGE_SENTINELS: dict[str, str] = {
     ".claude-plugin": "plugin.json",
@@ -35,66 +35,14 @@ _HOST_PACKAGE_SENTINELS: dict[str, str] = {
 }
 
 
-def _override_root() -> Path | None:
-    override = os.environ.get("LANGUAGE_TUTOR_BUNDLED_ASSETS")
-    if override:
-        return Path(override).expanduser().resolve()
-    return None
-
-
-def _repo_root_candidate() -> Path:
-    return Path(__file__).resolve().parents[3]
-
-
-def _wheel_root_candidate() -> Path | None:
-    try:
-        return Path(str(resources.files("language_tutor") / "_assets"))
-    except (ModuleNotFoundError, AttributeError):
-        return None
-
-
 def bundled_assets_root() -> Path:
-    """Return the directory that contains every host-package directory.
+    """Return the directory that contains every host-package directory."""
 
-    Editable installs return the repo root; wheel installs return
-    ``language_tutor/_assets``. The presence of ``.claude-plugin/plugin.json``
-    is used as the canonical sentinel.
-    """
-
-    override = _override_root()
-    if override is not None:
-        return override
-    repo_root = _repo_root_candidate()
-    if (repo_root / ".claude-plugin" / "plugin.json").exists():
-        return repo_root
-    wheel_root = _wheel_root_candidate()
-    if wheel_root is not None and (wheel_root / ".claude-plugin" / "plugin.json").exists():
-        return wheel_root
-    return repo_root
+    return package_assets_root()
 
 
 def bundled_assets_root_for(host_package: str) -> Path:
-    """Return the directory containing files for a single host-package.
+    """Return the directory containing files for a single host-package."""
 
-    Probes both the editable repo root and the wheel ``_assets`` directory and
-    returns whichever contains the host-package's sentinel file. Falls back to
-    the editable root so callers can surface a clear missing-asset error.
-    """
-
-    override = _override_root()
-    # Explicit override takes strict precedence (tests need to assert that a
-    # missing bundled asset produces a packaging-defect BLOCKED state without
-    # the resolver silently falling back to the editable repo root).
-    if override is not None:
-        return override / host_package
-    sentinel = _HOST_PACKAGE_SENTINELS.get(host_package)
-    candidates: list[Path] = [_repo_root_candidate() / host_package]
-    wheel_root = _wheel_root_candidate()
-    if wheel_root is not None:
-        candidates.append(wheel_root / host_package)
-    if sentinel is not None:
-        for candidate in candidates:
-            if (candidate / sentinel).exists():
-                return candidate
-    # Last-resort: editable repo root path (may not exist; callers handle that).
-    return _repo_root_candidate() / host_package
+    root = package_assets_root()
+    return root / host_package

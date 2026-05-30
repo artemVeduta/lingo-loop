@@ -20,6 +20,7 @@ from language_tutor.installer.providers.claude import ClaudeInstaller
 from language_tutor.installer.providers.codex import CodexInstaller
 from language_tutor.installer.providers.hermes import HermesInstaller
 from language_tutor.installer.providers.openclaw import OpenClawInstaller
+from language_tutor.package_assets import REQUIRED_RUNTIME_PAYLOADS
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -68,4 +69,14 @@ def test_wheel_bundles_every_provider_declared_file(built_wheel: Path) -> None:
     assert not missing, (
         "Wheel is missing provider-declared bundled-tree files:\n  - "
         + "\n  - ".join(missing)
+    )
+
+
+def test_wheel_bundles_runtime_payloads(built_wheel: Path) -> None:
+    with zipfile.ZipFile(built_wheel) as zf:
+        names = set(zf.namelist())
+    expected = [f"language_tutor/_assets/{rel}" for rel in REQUIRED_RUNTIME_PAYLOADS]
+    missing = [path for path in expected if path not in names]
+    assert not missing, (
+        "Wheel is missing runtime payload files:\n  - " + "\n  - ".join(missing)
     )

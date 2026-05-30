@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from language_tutor.installer.providers.openclaw import OpenClawInstaller
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OPENCLAW_ROOT = REPO_ROOT / "openclaw-plugin"
 
@@ -31,9 +33,38 @@ def test_openclaw_entry_point_is_typescript() -> None:
     entry = OPENCLAW_ROOT / "src" / "index.ts"
     _skip_if_absent(entry)
     text = entry.read_text(encoding="utf-8")
-    # Focused SDK imports only — no wildcard root import of the whole SDK.
-    assert "openclaw/plugin-sdk" in text
-    assert "from \"openclaw/plugin-sdk\";" not in text.replace("'", '"') or "/" in text
+    assert "text: \"\"" not in text
+    assert "execFile" in text
+    assert "session-start" in text
+
+
+def test_openclaw_built_artifacts_are_present_and_usable() -> None:
+    dist_js = OPENCLAW_ROOT / "dist" / "index.js"
+    dist_dts = OPENCLAW_ROOT / "dist" / "index.d.ts"
+    _skip_if_absent(dist_js)
+    _skip_if_absent(dist_dts)
+
+    js_text = dist_js.read_text(encoding="utf-8")
+    dts_text = dist_dts.read_text(encoding="utf-8")
+
+    assert "language_tutor.boot_context" in js_text
+    assert "language_tutor.text_exercise" in js_text
+    assert "declare" in dts_text or "export" in dts_text
+
+
+def test_openclaw_declares_built_runtime_files() -> None:
+    manifest = json.loads((OPENCLAW_ROOT / "openclaw.plugin.json").read_text(encoding="utf-8"))
+    entry = manifest.get("entry")
+    assert entry == "dist/index.js"
+    declared = set(OpenClawInstaller.profile.files)
+    assert {
+        "package.json",
+        "openclaw.plugin.json",
+        "tsconfig.json",
+        "src/index.ts",
+        "dist/index.js",
+        "dist/index.d.ts",
+    } <= declared
 
 
 def test_openclaw_excludes_user_owned_data() -> None:

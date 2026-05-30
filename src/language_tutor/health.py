@@ -9,7 +9,9 @@ from language_tutor.dal.migrations import apply_migrations
 from language_tutor.dal.paths import TutorPaths, ensure_dirs
 from language_tutor.dal.sqlite_store import connect
 from language_tutor.dal.yaml_store import default_preferences, default_profile, load_model
+from language_tutor.errors import TutorError
 from language_tutor.installer.assets import bundled_assets_root
+from language_tutor.package_assets import REQUIRED_RUNTIME_PAYLOADS, package_asset_path
 from language_tutor.schemas import DoctorCheck, DoctorReport, LearnerPreferences, LearnerProfile
 
 _MANIFEST_COMPONENT = "manifest"
@@ -38,6 +40,15 @@ def doctor(paths: TutorPaths, repo_root: Path) -> DoctorReport:
             repair_hint=f"Restore {manifest_rel}.",
         )
     )
+    for rel in REQUIRED_RUNTIME_PAYLOADS:
+        path = package_asset_path(rel)
+        checks.append(
+            DoctorCheck(
+                name=f"runtime_payload:{rel}",
+                status="ok" if path.exists() else "fail",
+                repair_hint=f"Reinstall lingo-loop; packaged runtime payload missing: {rel}.",
+            )
+        )
     # Skills/agents/CLI live in the source tree only — they are neither bundled
     # in the wheel nor installed for any host. Verify them in an editable
     # checkout; report ``n/a`` on wheel installs where ``repo_root`` has no tree.
@@ -90,6 +101,14 @@ def doctor(paths: TutorPaths, repo_root: Path) -> DoctorReport:
         apply_migrations(conn)
         conn.close()
         checks.append(DoctorCheck(name="sqlite_migrations", status="ok"))
+    except TutorError as exc:
+        checks.append(
+            DoctorCheck(
+                name="sqlite_migrations",
+                status="fail",
+                repair_hint=exc.repair_hint,
+            )
+        )
     except Exception:
         checks.append(
             DoctorCheck(

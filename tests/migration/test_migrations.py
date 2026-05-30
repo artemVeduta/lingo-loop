@@ -3,7 +3,11 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
+import pytest
+
+from language_tutor.dal.migrations import load_migrations, missing_migration_files
 from language_tutor.dal.sqlite_store import connect
+from language_tutor.errors import TutorError
 
 
 def test_initial_migration_creates_tables(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -156,3 +160,25 @@ def test_progress_index_migration_order_and_indexes(tmp_path) -> None:  # type: 
         } <= indexes
     finally:
         conn.close()
+
+
+def test_missing_packaged_migrations_fail_with_exact_names(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    payload_root = tmp_path / "_assets"
+    (payload_root / "migrations").mkdir(parents=True)
+    (payload_root / "migrations" / "001_initial.sql").write_text("-- sql", encoding="utf-8")
+    monkeypatch.setenv("LANGUAGE_TUTOR_BUNDLED_ASSETS", str(payload_root))
+
+    assert missing_migration_files() == (
+        "migrations/002_vocab_depth.sql",
+        "migrations/003_progress_indexes.sql",
+        "migrations/004_sessions_checkpoints.sql",
+    )
+
+    with pytest.raises(TutorError) as excinfo:
+        load_migrations()
+
+    assert excinfo.value.code == "missing_migrations"
+    assert "002_vocab_depth.sql" in excinfo.value.message
+    assert "004_sessions_checkpoints.sql" in excinfo.value.repair_hint

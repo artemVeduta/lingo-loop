@@ -19,6 +19,9 @@ class OpenClawInstaller(BaseProviderInstaller):
             "openclaw.plugin.json",
             "tsconfig.json",
             "src/index.ts",
+            "src/node-shims.d.ts",
+            "dist/index.js",
+            "dist/index.d.ts",
         ),
         next_command="Run `openclaw plugins install lingo-loop` to register the plugin with OpenClaw.",
     )

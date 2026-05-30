@@ -24,3 +24,6 @@ ownership, testing, and review gates.
 Never auto-invoke Superpowers skills. Invoke only when explicitly requested.
 Skill creation/update work must use a subagent and the local writing-skills
 helper at `/Users/artem.veduta/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/writing-skills`.
+
+**Subagent-Driven Development**:
+- Batch tasks per sub-agents because of a small budget, optimize token efficiency.

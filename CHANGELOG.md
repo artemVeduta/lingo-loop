@@ -13,9 +13,17 @@ release section.
 
 ### Added
 
+- Wheel runtime payload now includes SQL migrations, tutor skill markdown, skill helper scripts, the tutor judge agent, and the CLI shim so installed packages can validate and run without a source checkout.
+- OpenClaw wheel payload now includes the built `dist/index.js` and `dist/index.d.ts` plugin runtime entries.
+
 ### Changed
 
+- `tutor doctor --json` validates packaged runtime payloads and reports exact missing filenames with reinstall hints.
+- OpenClaw plugin tools now invoke the local `tutor` CLI through an allowlisted command boundary instead of returning empty placeholder text.
+
 ### Fixed
+
+- Wheel installs no longer pass `tutor doctor --json` while silently lacking SQL migration files needed for the first real tutor session.
 
 ### Removed
 
