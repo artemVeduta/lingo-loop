@@ -13,6 +13,16 @@ release section.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.1.2] - 2026-05-31
+
+### Added
+
 - Wheel runtime payload now includes SQL migrations, tutor skill markdown, skill helper scripts, the tutor judge agent, and the CLI shim so installed packages can validate and run without a source checkout.
 - OpenClaw wheel payload now includes the built `dist/index.js` and `dist/index.d.ts` plugin runtime entries.
 
