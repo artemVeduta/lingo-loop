@@ -21,14 +21,6 @@ profile:
   # distribution does not ship its own skills/ tree.
   skills: ../skills
 
-# Environment variables the operator must supply locally before launch.
-# Declared here for documentation only; values are never bundled. The actual
-# secrets live in the operator's own untracked .env (NOT shipped).
-env_requires:
-  - name: ANTHROPIC_API_KEY
-    required: true
-    description: API key for the tutor model provider. Operator-supplied; never bundled.
-
 # Hard exclusions: data that must never be packaged, copied, or published.
 exclude:
   - ".env"

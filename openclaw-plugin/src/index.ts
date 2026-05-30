@@ -1,15 +1,52 @@
-// Language Tutor plugin entry for the OpenClaw host.
-//
-// Uses focused SDK subpath imports (NOT a whole-SDK wildcard import) per the
-// OpenClaw plugin model: https://docs.openclaw.ai/plugins
-//
-// Capability stance (mirrors src/language_tutor/adapters/registry.py OpenClaw
-// defaults): text supported; lifecycle start = first_message; lifecycle end =
-// not_available; boot context is built on the first tutor message. Any
-// side-effectful / binary-dependent tool is registered opt-in only.
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
 import { defineToolPlugin } from "openclaw/plugin-sdk/tool-plugin";
 import { Type } from "typebox";
+
+const execFileAsync = promisify(execFile) as (
+  file: string,
+  args: readonly string[],
+  options: {
+    env?: Record<string, string | undefined>;
+    maxBuffer?: number;
+  },
+) => Promise<{ stdout: string }>;
+const TUTOR_BIN = process.env.LANGUAGE_TUTOR_TUTOR_BIN ?? "tutor";
+const MAX_STDOUT_BYTES = 1024 * 1024;
+const ALLOWED_ROOTS = new Set([
+  "session-start",
+  "checkpoint",
+  "boot-context",
+  "setup",
+  "vocab",
+  "writing",
+  "reading",
+  "lesson",
+  "progress",
+  "render",
+  "host",
+  "doctor",
+]);
+
+async function runTutor(command: string[], payload?: unknown): Promise<unknown> {
+  if (command.length === 0) {
+    throw new Error("language_tutor CLI command must not be empty");
+  }
+  const [root, ...args] = command;
+  if (!ALLOWED_ROOTS.has(root)) {
+    throw new Error(`Unsupported tutor command root: ${root}`);
+  }
+  const execArgs = [...command];
+  if (payload !== undefined) {
+    execArgs.push(JSON.stringify(payload));
+  }
+  const { stdout } = await execFileAsync(TUTOR_BIN, execArgs, {
+    env: process.env,
+    maxBuffer: MAX_STDOUT_BYTES,
+  });
+  return JSON.parse(stdout);
+}
 
 export default defineToolPlugin({
   id: "language-tutor",
@@ -17,39 +54,32 @@ export default defineToolPlugin({
   description:
     "Text-only language tutor adapter for OpenClaw. Builds boot context on the first tutor message and exposes core text-modality tutor tools.",
   tools: (tool) => [
-    // First-message boot trigger: OpenClaw has no SessionStart-style hook, so
-    // the tutor assembles boot context the first time the learner messages
-    // the tutor.
     tool({
       name: "language_tutor.boot_context",
       description:
         "Assemble learner boot context (profile, preferences, focus) on the first tutor message.",
       parameters: Type.Object({
-        sessionId: Type.Optional(Type.String()),
+        hostConversationId: Type.Optional(Type.String()),
       }),
-      async execute(_params, _config, _context) {
-        // Pure text assembly only. No persistence or host-specific behavior
-        // here; the core tutor owns boot-context generation.
-        return { sections: [] as string[] };
+      async execute(params) {
+        return runTutor(["session-start", "--json"], {
+          host: "openclaw",
+          host_conversation_id: params.hostConversationId,
+        });
       },
     }),
-    // Text-modality tutor tool (reading / lesson / transcript / vocab /
-    // writing / progress are all text-only flows). No side effects beyond
-    // returning text.
     tool({
       name: "language_tutor.text_exercise",
       description:
         "Present and evaluate a text-only tutor exercise (reading, lesson, transcript, vocab, writing, progress).",
       parameters: Type.Object({
-        modality: Type.String(),
+        command: Type.Array(Type.String()),
         payload: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
       }),
-      async execute(params, _config, _context) {
-        return { modality: params.modality, text: "" };
+      async execute(params) {
+        return runTutor(params.command, params.payload);
       },
     }),
-    // Side-effectful / binary-dependent tool. Shells out to the local tutor
-    // CLI, so it is OPT-IN ONLY and gated behind a user allowlist.
     tool({
       name: "language_tutor.run_cli",
       description:
@@ -57,11 +87,10 @@ export default defineToolPlugin({
       optional: true,
       parameters: Type.Object({
         command: Type.Array(Type.String()),
+        payload: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
       }),
-      async execute(params, _config, _context) {
-        // Execution is performed by the host only after the user allowlists
-        // it.
-        return { command: params.command };
+      async execute(params) {
+        return runTutor(params.command, params.payload);
       },
     }),
   ],

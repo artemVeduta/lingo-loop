@@ -288,3 +288,75 @@ def test_init_interactive_keyboard_menu_redraws_in_place(
     result = runner.invoke(main, ["init"], input="\x1b[B\n\x1b[B\n", color=True)
     assert result.exit_code == 0, result.output
     assert "\x1b[2J\x1b[H" in result.output
+
+
+def test_hermes_init_preserves_learner_state_and_unrelated_files(
+    fake_clis: dict[str, str],
+    fake_home: Path,
+    no_tty: None,
+    tutor_home: Path,
+) -> None:
+    del fake_clis, no_tty
+    (fake_home / ".hermes" / "local.env").write_text(
+        "ANTHROPIC_API_KEY=secret\n", encoding="utf-8"
+    )
+    runner = CliRunner()
+
+    setup_result = runner.invoke(
+        main,
+        [
+            "setup",
+            "write",
+            "--json",
+            '{"profile":{"native_language":"en","target_language":"uk"},"preferences":{}}',
+        ],
+    )
+    assert setup_result.exit_code == 0, setup_result.output
+
+    first = runner.invoke(main, ["init", "--provider", "hermes", "--yes", "--json"])
+    second = runner.invoke(main, ["init", "--provider", "hermes", "--yes", "--json"])
+
+    assert first.exit_code == 0, first.output
+    assert second.exit_code == 0, second.output
+    assert (tutor_home / "config" / "profile.yaml").exists()
+    assert (
+        fake_home / ".hermes" / "local.env"
+    ).read_text(encoding="utf-8") == "ANTHROPIC_API_KEY=secret\n"
+    assert "ANTHROPIC_API_KEY" not in (
+        fake_home / ".hermes" / "profiles" / "lingo-loop" / "distribution.yaml"
+    ).read_text(encoding="utf-8")
+
+
+def test_openclaw_init_preserves_learner_state_and_unrelated_files(
+    fake_clis: dict[str, str],
+    fake_home: Path,
+    no_tty: None,
+    tutor_home: Path,
+) -> None:
+    del fake_clis, no_tty
+    (fake_home / ".openclaw" / "settings.json").write_text(
+        '{"theme":"dark"}\n', encoding="utf-8"
+    )
+    runner = CliRunner()
+
+    setup_result = runner.invoke(
+        main,
+        [
+            "setup",
+            "write",
+            "--json",
+            '{"profile":{"native_language":"en","target_language":"uk"},"preferences":{}}',
+        ],
+    )
+    assert setup_result.exit_code == 0, setup_result.output
+
+    first = runner.invoke(main, ["init", "--provider", "openclaw", "--yes", "--json"])
+    second = runner.invoke(main, ["init", "--provider", "openclaw", "--yes", "--json"])
+
+    assert first.exit_code == 0, first.output
+    assert second.exit_code == 0, second.output
+    assert (tutor_home / "config" / "profile.yaml").exists()
+    assert (
+        fake_home / ".openclaw" / "settings.json"
+    ).read_text(encoding="utf-8") == '{"theme":"dark"}\n'
+    assert (fake_home / ".openclaw" / "plugins" / "lingo-loop" / "dist" / "index.js").exists()
