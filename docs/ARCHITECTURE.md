@@ -31,7 +31,7 @@ This is the module-level expansion of the high-level diagram in the README. For 
 
 ## Layers
 
-### 1. Host integration (`.claude-plugin/`, `.codex-plugin/`, `hermes-profile/`, `openclaw-plugin/`)
+### 1. Host integration (`.claude/`, `.codex/`, `hermes-profile/`, `openclaw-plugin/`)
 Thin packaging glue. Each host gets a manifest declaring metadata (name, version, MIT license) and pointing at the shared skill markdown. No business logic lives here.
 
 ### 2. Skills (`skills/tutor-{lesson,reading,vocab,writing,progress,setup}/`)

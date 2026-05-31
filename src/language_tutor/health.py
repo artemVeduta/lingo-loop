@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -40,7 +41,7 @@ def doctor(paths: TutorPaths, repo_root: Path) -> DoctorReport:
         checks.append(
             DoctorCheck(
                 name=name,
-                status="ok" if path.exists() and path.is_dir() else "fail",
+                status="ok" if os.access(path, os.R_OK | os.W_OK) else "fail",
                 repair_hint=f"Fix permissions for {path}.",
             )
         )
