@@ -23,20 +23,26 @@ def _by_name(report: DoctorReport) -> dict[str, str]:
 
 
 def _make_source_tree(root: Path) -> None:
-    """Materialise the plugin source layout doctor verifies in an editable checkout."""
-    (root / ".claude-plugin").mkdir(parents=True)
-    (root / ".claude-plugin" / "plugin.json").write_text("{}", encoding="utf-8")
-    for skill in ("tutor-setup", "tutor-vocab", "tutor-writing", "tutor-progress"):
+    for skill in (
+        "tutor-setup",
+        "tutor-vocab",
+        "tutor-writing",
+        "tutor-progress",
+        "tutor-reading",
+        "tutor-lesson",
+        "tutor-judge",
+    ):
         skill_dir = root / "skills" / skill
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text("# skill", encoding="utf-8")
-    (root / "agents").mkdir()
-    (root / "agents" / "tutor-judge.md").write_text("# judge", encoding="utf-8")
-    bin_dir = root / "bin"
-    bin_dir.mkdir()
-    cli = bin_dir / "tutor"
-    cli.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
-    cli.chmod(0o755)
+    for script in (
+        "skills/tutor-vocab/scripts/run.py",
+        "skills/tutor-writing/scripts/run.py",
+        "skills/tutor-progress/scripts/run.py",
+    ):
+        path = root / script
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# script\n", encoding="utf-8")
 
 
 def _make_runtime_payload(root: Path) -> None:
@@ -54,61 +60,54 @@ def _make_runtime_payload(root: Path) -> None:
         "skills/tutor-progress/scripts/run.py",
         "skills/tutor-reading/SKILL.md",
         "skills/tutor-lesson/SKILL.md",
-        "agents/tutor-judge.md",
-        "bin/tutor",
+        "skills/tutor-judge/SKILL.md",
     ):
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("-- payload\n" if rel.endswith(".sql") else "# payload\n", encoding="utf-8")
 
 
-def test_source_checkout_all_plugin_checks_ok(tmp_path: Path) -> None:
+def test_source_checkout_runtime_payload_checks_ok(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     _make_source_tree(repo)
+    for rel in (
+        "migrations/001_initial.sql",
+        "migrations/002_vocab_depth.sql",
+        "migrations/003_progress_indexes.sql",
+        "migrations/004_sessions_checkpoints.sql",
+    ):
+        path = repo / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("-- sql\n", encoding="utf-8")
+    monkeypatch.setenv("LANGUAGE_TUTOR_BUNDLED_ASSETS", str(repo))
+
     report = doctor(_paths(tmp_path), repo)
     statuses = _by_name(report)
-    for name in (
-        "manifest",
-        "setup_skill",
-        "vocab_skill",
-        "writing_skill",
-        "progress_skill",
-        "judge_agent",
-        "cli",
-    ):
-        assert statuses[name] == "ok", (name, statuses[name])
+
+    assert statuses["runtime_payload:skills/tutor-judge/SKILL.md"] == "ok"
+    assert "manifest" not in statuses
     assert report.status == "ok"
 
 
-def test_wheel_install_manifest_ok_source_checks_na(
+def test_wheel_install_runtime_payloads_ok(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    # Simulate a wheel: repo_root has no plugin source tree, but the bundled
-    # assets root (env-override seam) carries only the manifest.
     fake_repo = tmp_path / "site-packages-adjacent"
     fake_repo.mkdir()
     assets = tmp_path / "_assets"
-    (assets / ".claude-plugin").mkdir(parents=True)
-    (assets / ".claude-plugin" / "plugin.json").write_text("{}", encoding="utf-8")
     _make_runtime_payload(assets)
     monkeypatch.setenv("LANGUAGE_TUTOR_BUNDLED_ASSETS", str(assets))
 
     report = doctor(_paths(tmp_path), fake_repo)
     statuses = _by_name(report)
-    assert statuses["manifest"] == "ok"
-    for name in (
-        "setup_skill",
-        "vocab_skill",
-        "writing_skill",
-        "progress_skill",
-        "judge_agent",
-        "cli",
-    ):
-        assert statuses[name] == "n/a", (name, statuses[name])
-    # n/a is not a failure -> overall healthy.
-    assert report.status == "ok"
+
+    assert statuses["runtime_payload:skills/tutor-judge/SKILL.md"] == "ok"
+    assert "manifest" not in statuses
     assert "fail" not in statuses.values()
+    assert report.status == "ok"
 
 
 def test_doctor_fails_with_exact_missing_runtime_asset(
@@ -117,8 +116,6 @@ def test_doctor_fails_with_exact_missing_runtime_asset(
     fake_repo = tmp_path / "site-packages-adjacent"
     fake_repo.mkdir()
     assets = tmp_path / "_assets"
-    (assets / ".claude-plugin").mkdir(parents=True)
-    (assets / ".claude-plugin" / "plugin.json").write_text("{}", encoding="utf-8")
     _make_runtime_payload(assets)
     (assets / "migrations" / "004_sessions_checkpoints.sql").unlink()
     monkeypatch.setenv("LANGUAGE_TUTOR_BUNDLED_ASSETS", str(assets))
@@ -134,7 +131,6 @@ def test_doctor_fails_with_exact_missing_runtime_asset(
 
 
 def test_status_fail_when_a_check_fails(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    # Wheel layout but manifest missing from bundled assets -> manifest fail.
     fake_repo = tmp_path / "site-packages-adjacent"
     fake_repo.mkdir()
     assets = tmp_path / "_assets"
@@ -142,14 +138,26 @@ def test_status_fail_when_a_check_fails(tmp_path: Path, monkeypatch: pytest.Monk
     monkeypatch.setenv("LANGUAGE_TUTOR_BUNDLED_ASSETS", str(assets))
     report = doctor(_paths(tmp_path), fake_repo)
     statuses = _by_name(report)
-    assert statuses["manifest"] == "fail"
+    assert statuses["runtime_payload:migrations/001_initial.sql"] == "fail"
     assert report.status == "fail"
 
 
-def test_report_is_json_serialisable_with_status(tmp_path: Path) -> None:
+def test_report_is_json_serialisable_with_status(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     _make_source_tree(repo)
+    for rel in (
+        "migrations/001_initial.sql",
+        "migrations/002_vocab_depth.sql",
+        "migrations/003_progress_indexes.sql",
+        "migrations/004_sessions_checkpoints.sql",
+    ):
+        path = repo / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("-- sql\n", encoding="utf-8")
+    monkeypatch.setenv("LANGUAGE_TUTOR_BUNDLED_ASSETS", str(repo))
     report = doctor(_paths(tmp_path), repo)
     data = json.loads(json.dumps(report.model_dump(mode="json")))
     assert data["status"] == "ok"

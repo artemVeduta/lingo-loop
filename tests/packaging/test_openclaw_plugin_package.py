@@ -56,7 +56,12 @@ def test_openclaw_declares_built_runtime_files() -> None:
     manifest = json.loads((OPENCLAW_ROOT / "openclaw.plugin.json").read_text(encoding="utf-8"))
     entry = manifest.get("entry")
     assert entry == "dist/index.js"
-    declared = set(OpenClawInstaller.profile.files)
+    declared = {
+        rel
+        for area in OpenClawInstaller.profile.areas
+        if area.bundled_assets_root_rel == "openclaw-plugin"
+        for rel in area.files
+    }
     assert {
         "package.json",
         "openclaw.plugin.json",

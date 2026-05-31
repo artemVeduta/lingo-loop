@@ -49,12 +49,12 @@ def test_profile_contract_requires_source_evidence_and_flows() -> None:
         HostSetupProfileContract(
             host=HostId.CLAUDE,
             official_sources=[],  # missing required evidence
-            package_model=SetupModel.PLUGIN_PACKAGE,
-            package_files=[".claude-plugin/plugin.json"],
-            install_flow=["claude --plugin-dir ."],
+            package_model=SetupModel.DIRECTORY_COPY,
+            package_files=["skills/"],
+            install_flow=["tutor init --provider claude --yes"],
             launch_flow=["claude"],
-            inspect_flow=["/reload-plugins"],
-            update_or_reload_flow=["/reload-plugins"],
+            inspect_flow=["ls ~/.claude/skills/tutor-setup/SKILL.md"],
+            update_or_reload_flow=["restart Claude Code"],
             user_owned_boundaries=["secrets"],
             capability_profile_path="schemas/host_capability_profile.schema.json",
             verification_expectations=["claude plugin validate"],
@@ -69,18 +69,18 @@ def test_profile_contract_accepts_full_payload() -> None:
                 source_url=APPROVED_HOST_SOURCES["claude"],
                 retrieved_on="2026-05-22",
                 source_sections=["Plugins"],
-                facts_used=["plugin.json at .claude-plugin/"],
+                facts_used=["personal skills hub at ~/.claude/skills"],
             )
         ],
-        package_model=SetupModel.PLUGIN_PACKAGE,
-        package_files=[".claude-plugin/plugin.json", "skills/"],
-        install_flow=["claude --plugin-dir ."],
+        package_model=SetupModel.DIRECTORY_COPY,
+        package_files=["skills/"],
+        install_flow=["tutor init --provider claude --yes"],
         launch_flow=["claude"],
-        inspect_flow=["/reload-plugins"],
-        update_or_reload_flow=["/reload-plugins"],
+        inspect_flow=["ls ~/.claude/skills/tutor-setup/SKILL.md"],
+        update_or_reload_flow=["restart Claude Code"],
         user_owned_boundaries=["secrets", "memories", "sessions", "*.sqlite"],
         capability_profile_path="schemas/host_capability_profile.schema.json",
-        verification_expectations=["claude plugin validate --strict"],
+        verification_expectations=["tutor init --provider claude --yes --dry-run --json"],
     )
     assert contract.host == HostId.CLAUDE.value
 
@@ -96,7 +96,7 @@ def _scan_dirs() -> list[Path]:
         SUBAGENT_REPORTS,
         MANUAL_REPORTS,
     ]
-    for extra in (".codex-plugin", "openclaw-plugin", "hermes-profile", ".agents/plugins"):
+    for extra in ("openclaw-plugin", "hermes-profile", "skills"):
         dirs.append(REPO_ROOT / extra)
     return [d for d in dirs if d.exists()]
 

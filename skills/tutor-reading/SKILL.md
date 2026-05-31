@@ -7,27 +7,27 @@ Use this when the learner wants reading comprehension practice or a text-only tr
 drill. Transcript drills are a text-only submode of this skill (`mode:"transcript"`); they
 are not audio and there is no separate transcript skill.
 
-Run only `bin/tutor` for stateful work:
+Run only `tutor` for stateful work:
 
 0. On the first stateful step of the conversation, mint a session BEFORE anything else:
-   `bin/tutor session-start --json '{"host":"<host>"}'`. Capture the returned
+   `tutor session-start --json '{"host":"<host>"}'`. Capture the returned
    `session_id` (e.g. `sess_ab12`) and thread `"session_id":"sess_..."` into every
-   later `bin/tutor` payload this conversation. If you already have a `session_id`
+   later `tutor` payload this conversation. If you already have a `session_id`
    from earlier in the conversation, reuse it — do not call `session-start` again.
 1. Generate a candidate exercise (JSON) for the learner's target language and level.
-2. Validate it: `bin/tutor reading start --json '{"session_id":"sess_...","mode":"comprehension","candidate":{...}}'`
+2. Validate it: `tutor reading start --json '{"session_id":"sess_...","mode":"comprehension","candidate":{...}}'`
    (use `"mode":"transcript"` for transcript drills).
 3. If validation fails, regenerate the candidate once, then validate again. After one
    failed repair, stop and tell the learner the exercise could not be prepared.
 4. After validation succeeds and BEFORE showing the exercise to the learner, checkpoint:
-   `bin/tutor checkpoint --json '{"session_id":"sess_...","modality":"reading","step_kind":"prompt_shown","summary":"...","state":{...}}'`.
+   `tutor checkpoint --json '{"session_id":"sess_...","modality":"reading","step_kind":"prompt_shown","summary":"...","state":{...}}'`.
    For transcript submode (`mode:"transcript"`), set `"modality":"transcript"` instead
    of `"reading"`. Only after the checkpoint returns do you present the exercise.
 5. Ask `tutor-judge` for a `FeedbackEnvelope` JSON object about the learner's answer.
-6. Persist: `bin/tutor reading record --json '{"session_id":"sess_...", ...<TextModalityRecordInput>}'`.
-7. Render feedback with `bin/tutor render feedback --json '<feedback>'`.
+6. Persist: `tutor reading record --json '{"session_id":"sess_...", ...<TextModalityRecordInput>}'`.
+7. Render feedback with `tutor render feedback --json '<feedback>'`.
 
-Never call `bin/tutor session-close` (or the legacy `session-end`) automatically — only
+Never call `tutor session-close` (or the legacy `session-end`) automatically — only
 when the learner explicitly asks to wrap up. Sessions stay `open` between turns and are
 resumed by reusing the same `session_id`; a new conversation gets a new session via
 another `session-start`.

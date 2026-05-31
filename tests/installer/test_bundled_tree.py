@@ -43,6 +43,37 @@ _MANAGED_DIR = {
 }
 
 
+def _area_files(host: HostId, bundled_root: str) -> tuple[str, ...]:
+    profile = {
+        HostId.OPENCLAW: OpenClawInstaller.profile,
+    }[host]
+    matches = [
+        area.files
+        for area in profile.areas
+        if area.bundled_assets_root_rel == bundled_root
+    ]
+    assert len(matches) == 1
+    return matches[0]
+
+
+def _prepopulate_openclaw_area(
+    files: dict[Path, str],
+    *,
+    bundled_root_name: str,
+    managed_dir: Path,
+    skip: str | None = None,
+    drift: str | None = None,
+) -> None:
+    bundled_root = bundled_assets_root_for(bundled_root_name)
+    for rel in _area_files(HostId.OPENCLAW, bundled_root_name):
+        if rel == skip:
+            continue
+        content = (bundled_root / rel).read_text(encoding="utf-8")
+        if rel == drift:
+            content = "// DRIFTED " + content
+        files[managed_dir / rel] = content
+
+
 def _ctx(
     *,
     files: dict[Path, str] | None = None,
@@ -64,7 +95,7 @@ def _ctx(
 
 
 def test_openclaw_profile_declares_full_bundled_tree() -> None:
-    declared = set(OpenClawInstaller.profile.files)
+    declared = set(_area_files(HostId.OPENCLAW, "openclaw-plugin"))
     assert "package.json" in declared
     assert "openclaw.plugin.json" in declared
     assert "tsconfig.json" in declared
@@ -89,7 +120,7 @@ def test_openclaw_install_materializes_every_declared_file() -> None:
     assert result.results[0].verified
 
     managed_dir = HOME / _MANAGED_DIR[HostId.OPENCLAW]
-    for rel in OpenClawInstaller.profile.files:
+    for rel in _area_files(HostId.OPENCLAW, "openclaw-plugin"):
         target = managed_dir / rel
         assert ctx.fs.is_file(target), f"missing managed file: {target}"
         bundled_path = bundled_assets_root_for("openclaw-plugin") / rel
@@ -105,14 +136,20 @@ def test_missing_sibling_triggers_single_file_repair() -> None:
     missing sibling only."""
 
     managed_dir = HOME / _MANAGED_DIR[HostId.OPENCLAW]
-    bundled_root = bundled_assets_root_for("openclaw-plugin")
     # Pre-populate every declared file EXCEPT openclaw.plugin.json with the
     # correct content so the only divergence is the missing sibling.
     files: dict[Path, str] = {}
-    for rel in OpenClawInstaller.profile.files:
-        if rel == "openclaw.plugin.json":
-            continue
-        files[managed_dir / rel] = (bundled_root / rel).read_text(encoding="utf-8")
+    _prepopulate_openclaw_area(
+        files,
+        bundled_root_name="openclaw-plugin",
+        managed_dir=managed_dir,
+        skip="openclaw.plugin.json",
+    )
+    _prepopulate_openclaw_area(
+        files,
+        bundled_root_name="skills",
+        managed_dir=HOME / ".openclaw" / "skills",
+    )
 
     ctx = _ctx(files=files)
     plan = build_plan(ctx, InitRequest(providers=[HostId.OPENCLAW]))
@@ -127,7 +164,7 @@ def test_missing_sibling_triggers_single_file_repair() -> None:
     # Apply and verify every file is present.
     result = run_init(ctx, InitRequest(providers=[HostId.OPENCLAW], yes=True))
     assert result.results[0].verified
-    for rel in OpenClawInstaller.profile.files:
+    for rel in _area_files(HostId.OPENCLAW, "openclaw-plugin"):
         assert ctx.fs.is_file(managed_dir / rel)
 
 
@@ -145,24 +182,19 @@ def test_single_file_drift_rewrites_only_divergent_file(
     host: HostId, drift_rel: str
 ) -> None:
     managed_dir = HOME / _MANAGED_DIR[host]
-    bundled_root = bundled_assets_root_for(
-        {
-            HostId.CLAUDE: ".claude-plugin",
-            HostId.CODEX: ".codex-plugin",
-            HostId.HERMES: "hermes-profile",
-            HostId.OPENCLAW: "openclaw-plugin",
-        }[host]
-    )
-    profile = {
-        HostId.OPENCLAW: OpenClawInstaller.profile,
-    }[host]
-
+    bundled_root = bundled_assets_root_for("openclaw-plugin")
     files: dict[Path, str] = {}
-    for rel in profile.files:
-        content = (bundled_root / rel).read_text(encoding="utf-8")
-        if rel == drift_rel:
-            content = "// DRIFTED " + content
-        files[managed_dir / rel] = content
+    _prepopulate_openclaw_area(
+        files,
+        bundled_root_name="openclaw-plugin",
+        managed_dir=managed_dir,
+        drift=drift_rel,
+    )
+    _prepopulate_openclaw_area(
+        files,
+        bundled_root_name="skills",
+        managed_dir=HOME / ".openclaw" / "skills",
+    )
 
     ctx = _ctx(files=files)
     plan = build_plan(ctx, InitRequest(providers=[host]))
@@ -174,7 +206,9 @@ def test_single_file_drift_rewrites_only_divergent_file(
     assert [a.target_path for a in write_actions] == [str(managed_dir / drift_rel)]
 
     # Snapshot non-divergent files; they must not be rewritten.
-    non_divergent = [r for r in profile.files if r != drift_rel]
+    non_divergent = [
+        r for r in _area_files(host, "openclaw-plugin") if r != drift_rel
+    ]
     before = {r: ctx.fs.read_text(managed_dir / r) for r in non_divergent}
 
     result = run_init(ctx, InitRequest(providers=[host], yes=True))
@@ -193,7 +227,11 @@ def test_status_managed_files_lists_every_declared_path() -> None:
     plan = build_plan(ctx, InitRequest(providers=[HostId.OPENCLAW]))
     status = plan.plans[0].status
     managed_dir = HOME / _MANAGED_DIR[HostId.OPENCLAW]
-    expected = [str(managed_dir / rel) for rel in OpenClawInstaller.profile.files]
+    expected = [str(managed_dir / rel) for rel in _area_files(HostId.OPENCLAW, "openclaw-plugin")]
+    expected.extend(
+        str(HOME / ".openclaw" / "skills" / rel)
+        for rel in _area_files(HostId.OPENCLAW, "skills")
+    )
     assert status.managed_files == expected
 
 

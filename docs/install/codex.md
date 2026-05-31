@@ -26,37 +26,17 @@ tutor init
 ```
 
 Select **Codex** in the keyboard menu. Arrow keys move, Space toggles, and Enter
-continues/applies; no provider id typing is required. This writes a managed
-plugin registration at `~/.codex/plugins/lingo-loop/plugin.json` (copy of the
-bundled `.codex-plugin/plugin.json`) and verifies the result. Rerun any time to
-repair drift. Automation form: `tutor init --provider codex --yes`. Use
-`--dry-run --json` to preview.
+continues/applies; no provider id typing is required.
 
-## Manual fallback — install the Codex plugin from a clone
-
-The Codex plugin lives under `.codex-plugin/` in this repository. The manifest declares:
-
-- `schema_version`: `1.0`
-- `name`: `language-tutor` (in-host plugin identifier; the PyPI distribution is `lingo-loop`)
-- `version`: `0.1.0`
-- `license`: `MIT`
-- `skills`: `./skills/` (reuses the root `skills/` tree)
-- `features.plugin_hooks`: `false`
-
-Install from a local clone:
-
-```bash
-git clone https://github.com/artemVeduta/lingo-loop.git
-cd lingo-loop
-
-codex plugin install ./.codex-plugin
-```
-
-<!-- TODO: verify exact `codex plugin install` syntax against current Codex CLI -->
+`tutor init --provider codex --yes` writes the shared tutor skills into the
+personal Codex skills hub at `<CODEX_HOME|~/.codex>/skills`. No Codex plugin
+manifest and no local entry are installed. Restart Codex after initial install
+so the skills are loaded. Rerun any time to repair drift. Use `--dry-run --json`
+to preview.
 
 ## Screenshot
 
-<!-- TODO(oss-baseline-assets): capture screenshot of Codex marketplace/plugins pane showing the language-tutor plugin (from lingo-loop) enabled -->
+<!-- TODO(oss-baseline-assets): capture screenshot of Codex tutor skill invocation -->
 *(Screenshot pending — see `docs/internal/launch-checklist.md`.)*
 
 ## First session
@@ -83,9 +63,9 @@ Should print your configured target language (default `"uk"`).
 **Cause:** `uv tool install` did not add its bin directory to `PATH`.
 **Fix:** Run `uv tool update-shell` or add `~/.local/bin` to `PATH`.
 
-### Error: Codex does not see the plugin's skills
-**Cause:** The plugin manifest points `skills` at `./skills/` (relative to the plugin root), which expects the repository checkout layout. Installing from a copy that omits the root `skills/` directory will fail.
-**Fix:** Install from a full clone of the repository, not a stripped-down copy of `.codex-plugin/` alone.
+### Error: Codex does not see the tutor skills
+**Cause:** Codex was started before `~/.codex/skills` was created, or `CODEX_HOME` points elsewhere.
+**Fix:** Confirm `~/.codex/skills/tutor-setup/SKILL.md` exists, or check `<CODEX_HOME>/skills/tutor-setup/SKILL.md`, then restart Codex.
 
 ### Error: Tutor reports `LANGUAGE_TUTOR_HOME` ignored
 **Cause:** The variable was set in a shell that Codex did not inherit from.
@@ -94,7 +74,7 @@ Should print your configured target language (default `"uk"`).
 ## Uninstall
 
 ```bash
-codex plugin uninstall language-tutor  # in-host plugin name; PyPI distribution is lingo-loop
+rm -rf ~/.codex/skills/tutor-setup ~/.codex/skills/tutor-vocab ~/.codex/skills/tutor-writing ~/.codex/skills/tutor-reading ~/.codex/skills/tutor-lesson ~/.codex/skills/tutor-progress ~/.codex/skills/tutor-judge
 uv tool uninstall lingo-loop
 ```
 

@@ -1,9 +1,0 @@
-{
-  "name": "language-tutor",
-  "version": "0.1.0",
-  "description": "Local-first language tutor for Claude Code",
-  "author": {
-    "name": "language-tutor contributors"
-  },
-  "license": "MIT"
-}

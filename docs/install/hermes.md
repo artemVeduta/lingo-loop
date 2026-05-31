@@ -27,11 +27,12 @@ tutor init
 ```
 
 Select **Hermes** in the keyboard menu. Arrow keys move, Space toggles, and Enter
-continues/applies; no provider id typing is required. This writes a managed
-profile at `~/.hermes/profiles/lingo-loop/distribution.yaml` (copy of the
-bundled `hermes-profile/distribution.yaml`) and verifies the result. Rerun any
-time to repair drift. Automation form: `tutor init --provider hermes --yes`.
-Use `--dry-run --json` to preview.
+continues/applies; no provider id typing is required. Hermes resolves its root
+from `HERMES_HOME` when set, otherwise `~/.hermes/`. `tutor init --provider
+hermes --yes` writes the existing lingo-loop profile files under
+`<root>/profiles/lingo-loop/` and writes the shared flat tutor skills under
+`<root>/skills/`. Rerun any time to repair drift. Use `--dry-run --json` to
+preview.
 `ANTHROPIC_API_KEY` stays a user-owned environment variable — `tutor init`
 never reads or writes it.
 
