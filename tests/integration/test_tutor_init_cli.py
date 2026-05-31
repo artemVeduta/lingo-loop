@@ -164,6 +164,28 @@ def test_init_writes_managed_file_and_is_idempotent(
     assert r["verified"] is True
 
 
+def test_init_writes_managed_file_and_is_idempotent_human_readable(
+    fake_clis: dict[str, str], fake_home: Path, no_tty: None
+) -> None:
+    del fake_clis, no_tty
+    runner = CliRunner()
+    first = runner.invoke(
+        main, ["init", "--provider", "claude", "--yes"]
+    )
+    assert first.exit_code == 0, first.output
+    assert "Result:" in first.output
+    assert "applied" in first.output
+    managed = fake_home / ".claude" / "skills" / "tutor-setup" / "SKILL.md"
+    assert managed.exists()
+
+    second = runner.invoke(
+        main, ["init", "--provider", "claude", "--yes"]
+    )
+    assert second.exit_code == 0, second.output
+    assert "Result:" in second.output
+    assert "skipped" in second.output
+
+
 @pytest.mark.parametrize("provider, required_rels", PROVIDER_REQUIRED_FILES)
 def test_init_writes_managed_file_and_is_idempotent_per_provider(
     provider: str,

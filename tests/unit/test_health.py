@@ -161,3 +161,37 @@ def test_report_is_json_serialisable_with_status(
     report = doctor(_paths(tmp_path), repo)
     data = json.loads(json.dumps(report.model_dump(mode="json")))
     assert data["status"] == "ok"
+
+
+def test_doctor_fails_on_permission_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _make_source_tree(repo)
+    for rel in (
+        "migrations/001_initial.sql",
+        "migrations/002_vocab_depth.sql",
+        "migrations/003_progress_indexes.sql",
+        "migrations/004_sessions_checkpoints.sql",
+    ):
+        path = repo / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("-- sql\n", encoding="utf-8")
+    monkeypatch.setenv("LANGUAGE_TUTOR_BUNDLED_ASSETS", str(repo))
+
+    paths = _paths(tmp_path)
+    import os
+    original_access = os.access
+
+    def mock_access(path: object, mode: int) -> bool:
+        if str(paths.state_dir) in str(path):
+            return False
+        return original_access(path, mode)
+
+    monkeypatch.setattr(os, "access", mock_access)
+
+    report = doctor(paths, repo)
+    statuses = _by_name(report)
+    assert statuses["state_dir"] == "fail"
+    assert report.status == "fail"

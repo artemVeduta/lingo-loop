@@ -44,7 +44,7 @@ uv tool uninstall lingo-loop
 
 ## Distribution artifacts and exclusions
 
-The Hermes profile manifest (`hermes-profile/distribution.yaml`) explicitly excludes the following from any packaged distribution: `.env`, `*.env`, `secrets/`, `memories/`, `sessions/`, `*.sqlite*`, `*.db*`, `logs/`, `*.log`, `caches/`, `*.cache`, `local/`, `local_overrides/`. The Codex and Claude plugins ship only skill markdown and manifests — no learner data.
+The Hermes profile manifest (`hermes-profile/distribution.yaml`) explicitly excludes the following from any packaged distribution: `.env`, `*.env`, `secrets/`, `memories/`, `sessions/`, `*.sqlite*`, `*.db*`, `logs/`, `*.log`, `caches/`, `*.cache`, `local/`, `local_overrides/`. The Codex and Claude host integrations ship only skill markdown — no learner data.
 
 ## What we are *not* protecting against
 

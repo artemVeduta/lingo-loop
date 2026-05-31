@@ -32,7 +32,7 @@
 
 ```bash
 # 1. Install the CLI
-uv tool install lingo-loop==0.1.2
+uv tool install lingo-loop==0.1.3
 
 # 2. Detect AI hosts and install tutor skills for the ones you use
 tutor doctor --json
@@ -53,10 +53,10 @@ or secrets.
 Non-interactive form: `tutor init --provider claude --yes` (also `--dry-run`,
 `--json`).
 
-If `0.1.2` has not propagated yet, use the source-tag fallback:
+If `0.1.3` has not propagated yet, use the source-tag fallback:
 
 ```bash
-uv tool install "git+https://github.com/artemVeduta/lingo-loop@v0.1.1"
+uv tool install "git+https://github.com/artemVeduta/lingo-loop@v0.1.2"
 ```
 
 Full Claude install doc: [`docs/install/claude.md`](docs/install/claude.md)

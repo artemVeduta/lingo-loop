@@ -10,7 +10,7 @@
 ## Step 0 — Install the tutor CLI
 
 ```bash
-uv tool install lingo-loop==0.1.2
+uv tool install lingo-loop==0.1.3
 tutor doctor --json
 tutor init --provider openclaw --yes
 openclaw plugins install ~/.openclaw/plugins/lingo-loop --force
@@ -18,7 +18,7 @@ openclaw plugins enable language-tutor  # language-tutor is the OpenClaw plugin 
 openclaw plugins inspect language-tutor --runtime --json  # language-tutor is the OpenClaw plugin shipped by lingo-loop
 
 # Source tag fallback until the fixed package is available:
-# uv tool install "git+https://github.com/artemVeduta/lingo-loop@v0.1.1"
+# uv tool install "git+https://github.com/artemVeduta/lingo-loop@v0.1.2"
 ```
 
 > The distribution name is `lingo-loop` but the Python module installed on disk is still `language_tutor`. This is intentional for v0.1; see [troubleshooting](../troubleshooting.md).
