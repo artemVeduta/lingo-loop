@@ -19,6 +19,18 @@ release section.
 
 ### Removed
 
+## [0.1.3] - 2026-05-31
+
+### Fixed
+
+- `tutor init` no longer crashes rendering its human-readable result. Under the
+  base model's `use_enum_values=True`, an explicitly-set `ProviderActionStage`
+  (e.g. `BLOCKED`/`APPLIED`) is stored as a plain `str`, so `action.stage.value`
+  raised `AttributeError: 'str' object has no attribute 'value'`. Non-`--json`
+  runs that produced a blocked or applied action — including the Hermes and
+  OpenClaw provider repair paths — aborted with a traceback. Now renders via
+  `str(action.stage)`.
+
 ## [0.1.2] - 2026-05-31
 
 ### Added

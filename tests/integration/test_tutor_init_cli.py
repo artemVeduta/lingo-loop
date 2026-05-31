@@ -250,6 +250,30 @@ def test_init_blocked_when_host_cli_missing(
     assert r["repair_hint"]
 
 
+def test_init_human_render_does_not_crash_on_blocked_actions(
+    fake_home: Path, no_tty: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Regression: the non-``--json`` result render iterates ``action.stage``.
+
+    The base ``TutorModel`` sets ``use_enum_values=True``, so an explicitly-set
+    ``ProviderActionStage`` is stored as a plain ``str``. The old render used
+    ``action.stage.value`` and crashed with
+    ``AttributeError: 'str' object has no attribute 'value'`` whenever a provider
+    produced a blocked or applied action (the Hermes / OpenClaw repair paths).
+    """
+    del fake_home, no_tty
+    monkeypatch.setattr(
+        "language_tutor.installer.seams.RealCommandRunner.which",
+        lambda self, exe: None,
+    )
+    runner = CliRunner()
+    result = runner.invoke(main, ["init", "--provider", "claude", "--yes"])
+    assert result.exit_code == 0, result.output
+    assert result.exception is None
+    assert "Result:" in result.output
+    assert "blocked" in result.output
+
+
 def test_init_interactive_default_lists_providers(
     fake_clis: dict[str, str], fake_home: Path, tty_stdin: None
 ) -> None:
