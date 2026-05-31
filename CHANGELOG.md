@@ -21,8 +21,13 @@ release section.
 
 ## [0.1.3] - 2026-05-31
 
-### Fixed
+### Added
+- **Unified Skill Hub Install:** Created a flat personal skills hub structure resolving skills into `<root>/skills/` for all four supported providers (Claude, Codex, Hermes, OpenClaw).
+- **tutor-judge Skill:** Converted the judge agent (`agents/tutor-judge.md`) into a shared skill (`skills/tutor-judge/SKILL.md`) that is packaged and deployed with the other six learning flows.
+- **Installer Service Seams:** Subclassed installers to support a list of multiple managed areas instead of one single location.
+- **Configuration Root Resolvers:** Implemented custom root path resolution utilizing `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, and `HERMES_HOME` environment variables.
 
+### Fixed
 - `tutor init` no longer crashes rendering its human-readable result. Under the
   base model's `use_enum_values=True`, an explicitly-set `ProviderActionStage`
   (e.g. `BLOCKED`/`APPLIED`) is stored as a plain `str`, so `action.stage.value`
@@ -30,6 +35,9 @@ release section.
   runs that produced a blocked or applied action — including the Hermes and
   OpenClaw provider repair paths — aborted with a traceback. Now renders via
   `str(action.stage)`.
+
+### Removed
+- Outdated Claude (`.claude-plugin`) and Codex (`.codex-plugin`) plugin directory surfaces and manifests, shifting entirely to personal skills hub.
 
 ## [0.1.2] - 2026-05-31
 
