@@ -18,9 +18,9 @@ now share one uniform skills hub destination `<root>/skills/`.
 
 This spec supersedes, for the upstream `lingo-loop` repo, both:
 
-- `docs/superpowers/plans/2026-05-31-lingo-loop-skill-hub-design.md` (base:
+- `docs/internal/superpowers/plans/2026-05-31-lingo-loop-skill-hub-design.md` (base:
   unified Hermes + OpenClaw skill-hub install)
-- `docs/superpowers/plans/2026-05-31-old-lingo-loop-hermes-skill-hub-design.md`
+- `docs/internal/superpowers/plans/2026-05-31-old-lingo-loop-hermes-skill-hub-design.md`
   (`HERMES_HOME` path-resolver clarification, verified against the live Hermes
   container)
 
