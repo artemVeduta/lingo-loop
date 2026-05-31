@@ -934,6 +934,7 @@ class SetupModel(StrEnum):
     PROFILE_DISTRIBUTION = "profile_distribution"
     PLUGIN_PACKAGE = "plugin_package"
     LOCAL_MARKETPLACE_PLUGIN = "local_marketplace_plugin"
+    DIRECTORY_COPY = "directory_copy"
 
 
 class TargetStatus(StrEnum):

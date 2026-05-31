@@ -28,39 +28,18 @@ tutor init
 ```
 
 Select **Claude Code** in the keyboard menu. Arrow keys move, Space toggles, and
-Enter continues/applies; no provider id typing is required. This writes a
-managed plugin registration file at
-`~/.claude/plugins/lingo-loop/plugin.json` (copy of the bundled manifest) and
-verifies the result. Rerun any time to repair drift; learner profile, history,
-and secrets are never touched. Automation form: `tutor init --provider claude
---yes`. Pass `--dry-run --json` to preview without writing.
+Enter continues/applies; no provider id typing is required.
 
-## Manual fallback — load the plugin directly
-
-If you prefer to load the Claude plugin from a clone:
-
-```bash
-# from a clone of the repository
-git clone https://github.com/artemVeduta/lingo-loop.git
-cd lingo-loop
-
-# tell Claude Code to load the plugin from this checkout
-claude plugin install ./.claude-plugin
-```
-
-Then open Claude Code and confirm the `language-tutor` plugin appears in `/plugin` (the manifest name is `language-tutor`; the PyPI distribution is `lingo-loop`).
-
-The plugin manifest declares:
-
-- `name`: `language-tutor` (the in-host plugin identifier; the PyPI distribution is `lingo-loop`)
-- `version`: `0.1.0`
-- `license`: `MIT`
-
-<!-- TODO: verify exact `claude plugin install` syntax against current Claude Code CLI -->
+`tutor init --provider claude --yes` writes the shared tutor skills into the
+personal Claude Code skills hub at `<CLAUDE_CONFIG_DIR|~/.claude>/skills`.
+No Claude plugin manifest is installed. If the top-level `skills` directory is
+created while Claude Code is already running, restart Claude Code before using
+the tutor skills. Rerun any time to repair drift; learner profile, history, and
+secrets are never touched. Pass `--dry-run --json` to preview without writing.
 
 ## Screenshot
 
-<!-- TODO(oss-baseline-assets): capture screenshot of Claude /plugin panel showing the language-tutor plugin (from lingo-loop) enabled -->
+<!-- TODO(oss-baseline-assets): capture screenshot of Claude skill invocation from lingo-loop -->
 *(Screenshot pending — see `docs/internal/launch-checklist.md`.)*
 
 ## First session
@@ -88,9 +67,9 @@ Expected: the six section titles above.
 **Cause:** `uv tool install` placed the CLI in a directory not on `PATH`.
 **Fix:** Add `~/.local/bin` (Linux/macOS) to your shell `PATH`, or run `uv tool update-shell`.
 
-### Error: Claude Code does not list the plugin
-**Cause:** Plugin path was not registered, or Claude Code was started before installing.
-**Fix:** Re-run `claude plugin install ./.claude-plugin` from the repo root, then restart Claude Code.
+### Error: Claude Code does not see the tutor skills
+**Cause:** Claude Code was started before `~/.claude/skills` was created, or `CLAUDE_CONFIG_DIR` points elsewhere.
+**Fix:** Confirm `~/.claude/skills/tutor-setup/SKILL.md` exists, or check `<CLAUDE_CONFIG_DIR>/skills/tutor-setup/SKILL.md`, then restart Claude Code.
 
 ### Error: `Invalid YAML at ~/.config/language-tutor/profile.yaml` (lingo-loop's on-disk module directory is still `language-tutor`)
 **Cause:** The profile YAML was hand-edited into an invalid state.
@@ -99,7 +78,7 @@ Expected: the six section titles above.
 ## Uninstall
 
 ```bash
-claude plugin uninstall language-tutor  # in-host plugin name; PyPI distribution is lingo-loop
+rm -rf ~/.claude/skills/tutor-setup ~/.claude/skills/tutor-vocab ~/.claude/skills/tutor-writing ~/.claude/skills/tutor-reading ~/.claude/skills/tutor-lesson ~/.claude/skills/tutor-progress ~/.claude/skills/tutor-judge
 uv tool uninstall lingo-loop
 ```
 

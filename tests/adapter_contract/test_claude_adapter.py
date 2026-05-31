@@ -33,9 +33,10 @@ def test_claude_lifecycle_is_first_message() -> None:
     assert trigger.command == "tutor session-start --json"
 
 
-def test_claude_baseline_preserved() -> None:
-    for rel in (".claude-plugin/plugin.json", "bin/tutor"):
+def test_claude_skill_hub_baseline_preserved() -> None:
+    for rel in ("skills/tutor-setup/SKILL.md", "skills/tutor-judge/SKILL.md"):
         assert (REPO_ROOT / rel).exists()
+    assert not (REPO_ROOT / (".claude" + "-plugin") / "plugin.json").exists()
     assert not (REPO_ROOT / "hooks").exists(), "hooks/ removed in spec 007"
 
 

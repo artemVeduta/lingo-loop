@@ -7,14 +7,14 @@ Use this when learner wants free writing or structured correction.
 
 Flow:
 
-1. If this conversation has no `session_id` yet, FIRST run `bin/tutor session-start --json '{"host":"<host>"}'` and capture `session_id` from the response. Do this before any other `bin/tutor` call. No SessionStart hooks — session-start is the boot path.
-2. Get prompt with `bin/tutor writing prompt --json`.
-3. IMMEDIATELY, before showing the prompt to the learner, call `bin/tutor checkpoint --json '{"session_id":"sess_...","modality":"writing","step_kind":"prompt_shown","prompt_ref":"<prompt_id>","summary":"<short>"}'`.
+1. If this conversation has no `session_id` yet, FIRST run `tutor session-start --json '{"host":"<host>"}'` and capture `session_id` from the response. Do this before any other `tutor` call. No SessionStart hooks — session-start is the boot path.
+2. Get prompt with `tutor writing prompt --json`.
+3. IMMEDIATELY, before showing the prompt to the learner, call `tutor checkpoint --json '{"session_id":"sess_...","modality":"writing","step_kind":"prompt_shown","prompt_ref":"<prompt_id>","summary":"<short>"}'`.
 4. Ask `tutor-judge` for a `FeedbackEnvelope` JSON object.
-5. Persist validated feedback with `bin/tutor writing record --json '<payload>'`. The payload MUST include `"session_id":"sess_..."` (never `"default"`).
-6. Render with `bin/tutor render feedback --json '<feedback>'`.
+5. Persist validated feedback with `tutor writing record --json '<payload>'`. The payload MUST include `"session_id":"sess_..."` (never `"default"`).
+6. Render with `tutor render feedback --json '<feedback>'`.
 
-Do not persist directly or render through another LLM step. Do NOT call `bin/tutor session-close` or `session-end` automatically — only when the learner explicitly ends the session.
+Do not persist directly or render through another LLM step. Do NOT call `tutor session-close` or `session-end` automatically — only when the learner explicitly ends the session.
 
 ## Payload schemas (build every request against these)
 

@@ -65,11 +65,9 @@ def _table_names() -> set[str]:
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PACKAGE_ROOTS = (
-    ".claude-plugin",
-    ".codex-plugin",
-    ".agents/plugins",
     "openclaw-plugin",
     "hermes-profile",
+    "skills",
 )
 
 

@@ -36,18 +36,38 @@ DOCS_BASE_URL = "https://github.com/artemVeduta/lingo-loop/blob/main/docs/instal
 
 
 @dataclass(frozen=True)
+class ManagedArea:
+    bundled_assets_root_rel: str
+    managed_dir_rel: str
+    files: tuple[str, ...]
+
+
+SKILL_FILES: tuple[str, ...] = (
+    "tutor-setup/SKILL.md",
+    "tutor-vocab/SKILL.md",
+    "tutor-vocab/scripts/run.py",
+    "tutor-writing/SKILL.md",
+    "tutor-writing/scripts/run.py",
+    "tutor-reading/SKILL.md",
+    "tutor-lesson/SKILL.md",
+    "tutor-progress/SKILL.md",
+    "tutor-progress/scripts/run.py",
+    "tutor-judge/SKILL.md",
+)
+
+SKILLS_AREA = ManagedArea(
+    bundled_assets_root_rel="skills",
+    managed_dir_rel="skills",
+    files=SKILL_FILES,
+)
+
+
+@dataclass(frozen=True)
 class ProviderProfile:
     host: HostId
     cli_name: str
     config_root_rel: str
-    # Directory name of the bundled host-package (e.g. ``openclaw-plugin``).
-    # Resolved against the wheel ``_assets`` dir or the editable repo root.
-    bundled_assets_root_rel: str
-    # Directory relative to ``config_root`` where managed files are written.
-    managed_dir_rel: str
-    # Explicit list of relative paths under both the bundled-tree root and the
-    # managed-dir root. Every file is copied and verified one-for-one.
-    files: tuple[str, ...]
+    areas: tuple[ManagedArea, ...]
     next_command: str
 
 
@@ -66,27 +86,45 @@ class BaseProviderInstaller:
     def config_root(self) -> Path:
         return self.ctx.fs.home() / self.profile.config_root_rel
 
-    def managed_dir(self) -> Path:
-        return self.config_root() / self.profile.managed_dir_rel
+    def managed_dir_for(self, area: ManagedArea) -> Path:
+        return self.config_root() / area.managed_dir_rel
 
-    def bundled_root(self) -> Path:
-        return bundled_assets_root_for(self.profile.bundled_assets_root_rel)
+    def bundled_root_for(self, area: ManagedArea) -> Path:
+        return bundled_assets_root_for(area.bundled_assets_root_rel)
 
     def managed_files(self) -> list[Path]:
-        root = self.managed_dir()
-        return [root / rel for rel in self.profile.files]
+        paths: list[Path] = []
+        for area in self.profile.areas:
+            root = self.managed_dir_for(area)
+            paths.extend(root / rel for rel in area.files)
+        return paths
 
     def bundled_files(self) -> list[Path]:
-        root = self.bundled_root()
-        return [root / rel for rel in self.profile.files]
+        paths: list[Path] = []
+        for area in self.profile.areas:
+            root = self.bundled_root_for(area)
+            paths.extend(root / rel for rel in area.files)
+        return paths
 
-    def _bundled_content(self, rel: str) -> str:
-        path = self.bundled_root() / rel
+    def _bundled_content(self, area: ManagedArea, rel: str) -> str:
+        path = self.bundled_root_for(area) / rel
         if not path.exists():
             raise FileNotFoundError(
-                f"bundled asset missing for {self.profile.host.value}: {path}"
+                f"bundled asset missing for {self.profile.host.value}: "
+                f"{area.bundled_assets_root_rel}/{rel}"
             )
         return path.read_text(encoding="utf-8")
+
+    def _iter_declared_files(self) -> list[tuple[ManagedArea, str, Path, Path]]:
+        files: list[tuple[ManagedArea, str, Path, Path]] = []
+        for area in self.profile.areas:
+            managed_root = self.managed_dir_for(area)
+            bundled_root = self.bundled_root_for(area)
+            files.extend(
+                (area, rel, managed_root / rel, bundled_root / rel)
+                for rel in area.files
+            )
+        return files
 
     # -- BLOCKED status helper ----------------------------------------------
 
@@ -125,15 +163,14 @@ class BaseProviderInstaller:
         if not self.ctx.fs.is_dir(config_root):
             hint = (
                 f"Run {self.profile.cli_name} once to create {config_root} "
-                f"before installing the plugin; see {self.docs_url}"
+                f"before installing lingo-loop assets; see {self.docs_url}"
             )
             return self._blocked_status(hint, detected_cli=True, cli_path=cli_path)
 
-        # Check bundled assets are actually present in the distribution.
         missing_bundled: list[str] = []
-        for rel in self.profile.files:
-            if not (self.bundled_root() / rel).exists():
-                missing_bundled.append(rel)
+        for area, rel, _managed_path, bundled_path in self._iter_declared_files():
+            if not bundled_path.exists():
+                missing_bundled.append(f"{area.bundled_assets_root_rel}/{rel}")
         if missing_bundled:
             joined = ", ".join(missing_bundled)
             hint = (
@@ -142,20 +179,13 @@ class BaseProviderInstaller:
             )
             return self._blocked_status(hint, detected_cli=True, cli_path=cli_path)
 
-        # Per-file presence + content comparison.
         any_missing = False
         any_drift = False
-        for rel in self.profile.files:
-            managed_path = self.managed_dir() / rel
+        for area, rel, managed_path, _bundled_path in self._iter_declared_files():
             if not self.ctx.fs.is_file(managed_path):
                 any_missing = True
                 continue
-            try:
-                expected = self._bundled_content(rel)
-            except FileNotFoundError:
-                # Already covered by missing_bundled above, but be defensive.
-                any_drift = True
-                continue
+            expected = self._bundled_content(area, rel)
             current = self.ctx.fs.read_text(managed_path)
             if current != expected:
                 any_drift = True
@@ -164,11 +194,9 @@ class BaseProviderInstaller:
             state = ProviderState.INSTALLED
             hint = None
         else:
-            # Distinguish between a brand-new install (every file missing) and
-            # a partial / drifted state.
             all_missing = all(
-                not self.ctx.fs.is_file(self.managed_dir() / rel)
-                for rel in self.profile.files
+                not self.ctx.fs.is_file(managed_path)
+                for _area, _rel, managed_path, _bundled_path in self._iter_declared_files()
             )
             if all_missing:
                 state = ProviderState.AVAILABLE
@@ -192,21 +220,20 @@ class BaseProviderInstaller:
             docs_url=self.docs_url,
         )
 
-    def _divergent_files(self) -> list[str]:
+    def _divergent_files(self) -> list[tuple[ManagedArea, str, Path]]:
         """Return relative file paths that are missing or content-mismatched."""
 
-        divergent: list[str] = []
-        for rel in self.profile.files:
-            managed_path = self.managed_dir() / rel
+        divergent: list[tuple[ManagedArea, str, Path]] = []
+        for area, rel, managed_path, _bundled_path in self._iter_declared_files():
             if not self.ctx.fs.is_file(managed_path):
-                divergent.append(rel)
+                divergent.append((area, rel, managed_path))
                 continue
             try:
-                expected = self._bundled_content(rel)
+                expected = self._bundled_content(area, rel)
             except FileNotFoundError:
                 continue
             if self.ctx.fs.read_text(managed_path) != expected:
-                divergent.append(rel)
+                divergent.append((area, rel, managed_path))
         return divergent
 
     def plan(self, request: InitRequest) -> ProviderPlan:
@@ -217,7 +244,7 @@ class BaseProviderInstaller:
             actions.append(
                 ProviderInstallAction(
                     kind=ProviderActionKind.BLOCK,
-                    target_path=str(self.managed_dir()),
+                    target_path=str(self.config_root()),
                     description=status.repair_hint or "Host prerequisite missing.",
                     stage=ProviderActionStage.BLOCKED,
                 )
@@ -226,7 +253,7 @@ class BaseProviderInstaller:
             actions.append(
                 ProviderInstallAction(
                     kind=ProviderActionKind.SKIP,
-                    target_path=str(self.managed_dir()),
+                    target_path=str(self.config_root()),
                     description="Already installed; nothing to do.",
                     stage=ProviderActionStage.SKIPPED,
                 )
@@ -239,14 +266,13 @@ class BaseProviderInstaller:
                 actions.append(
                     ProviderInstallAction(
                         kind=ProviderActionKind.SKIP,
-                        target_path=str(self.managed_dir()),
+                        target_path=str(self.config_root()),
                         description="Already installed; nothing to do.",
                         stage=ProviderActionStage.SKIPPED,
                     )
                 )
             else:
-                for rel in divergent:
-                    target = self.managed_dir() / rel
+                for area, rel, target in divergent:
                     actions.append(
                         ProviderInstallAction(
                             kind=ProviderActionKind.WRITE_FILE,
@@ -254,7 +280,7 @@ class BaseProviderInstaller:
                             description=(
                                 f"Write managed {self.display_name} file "
                                 f"{rel} from bundled "
-                                f"{self.profile.bundled_assets_root_rel}/{rel}."
+                                f"{area.bundled_assets_root_rel}/{rel}."
                             ),
                         )
                     )
@@ -265,21 +291,25 @@ class BaseProviderInstaller:
             next_command=self.profile.next_command,
         )
 
-    def _bundled_rel_for_target(self, target_path: str) -> str | None:
-        managed_dir = self.managed_dir()
-        try:
-            rel = Path(target_path).relative_to(managed_dir)
-        except ValueError:
-            return None
-        rel_str = str(rel)
-        return rel_str if rel_str in self.profile.files else None
+    def _bundled_ref_for_target(self, target_path: str) -> tuple[ManagedArea, str] | None:
+        target = Path(target_path)
+        for area in self.profile.areas:
+            managed_dir = self.managed_dir_for(area)
+            try:
+                rel = target.relative_to(managed_dir)
+            except ValueError:
+                continue
+            rel_str = str(rel)
+            if rel_str in area.files:
+                return area, rel_str
+        return None
 
     def apply(self, plan: ProviderPlan, dry_run: bool) -> list[ProviderInstallAction]:
         applied: list[ProviderInstallAction] = []
         for action in plan.actions:
             if action.kind == ProviderActionKind.WRITE_FILE and not dry_run:
-                rel = self._bundled_rel_for_target(action.target_path)
-                if rel is None:
+                ref = self._bundled_ref_for_target(action.target_path)
+                if ref is None:
                     applied.append(
                         action.model_copy(
                             update={
@@ -292,8 +322,9 @@ class BaseProviderInstaller:
                         )
                     )
                     continue
+                area, rel = ref
                 try:
-                    content = self._bundled_content(rel)
+                    content = self._bundled_content(area, rel)
                     self.ctx.fs.write_text(Path(action.target_path), content)
                     applied.append(
                         action.model_copy(update={"stage": ProviderActionStage.APPLIED})
@@ -312,12 +343,11 @@ class BaseProviderInstaller:
         return applied
 
     def verify(self) -> tuple[bool, str | None]:
-        for rel in self.profile.files:
-            managed_path = self.managed_dir() / rel
+        for area, rel, managed_path, _bundled_path in self._iter_declared_files():
             if not self.ctx.fs.is_file(managed_path):
                 return False, f"managed file missing: {managed_path}"
             try:
-                expected = self._bundled_content(rel)
+                expected = self._bundled_content(area, rel)
             except FileNotFoundError as exc:
                 return False, str(exc)
             current = self.ctx.fs.read_text(managed_path)

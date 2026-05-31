@@ -8,24 +8,24 @@ import, tag-filtered drill, cloze practice, review history, or answer correction
 
 **Session precondition (first stateful step of the conversation):** before any
 `vocab start` / `vocab add` / `vocab import` / `vocab answer`, call
-`bin/tutor session-start --json '{"host":"<host>"}'` and capture the returned
+`tutor session-start --json '{"host":"<host>"}'` and capture the returned
 `session_id` (`sess_...`). Reuse it for the rest of the conversation. Do NOT
 call `session-close` or `session-end` automatically.
 
-Run only `bin/tutor` for stateful work:
+Run only `tutor` for stateful work:
 
-- Start queue: `bin/tutor vocab start --json`
-- Start filtered queue: `bin/tutor vocab start --json '<{"tags":["greetings"]}>'`
+- Start queue: `tutor vocab start --json`
+- Start filtered queue: `tutor vocab start --json '<{"tags":["greetings"]}>'`
 - Checkpoint immediately after `vocab start` returns a non-empty queue and
   BEFORE showing the first card:
-  `bin/tutor checkpoint --json '{"session_id":"sess_...","modality":"vocab","step_kind":"prompt_shown","summary":"...","state":{"step_index":0,"total_steps":<queue_len>}}'`
-- Add card: `bin/tutor vocab add --json '<card-json>'`
-- Import seed list: `bin/tutor vocab import --json '<{"path":"cards.json"}>'`
-- Record answer once: `bin/tutor vocab answer --json '<payload>'` — payload
+  `tutor checkpoint --json '{"session_id":"sess_...","modality":"vocab","step_kind":"prompt_shown","summary":"...","state":{"step_index":0,"total_steps":<queue_len>}}'`
+- Add card: `tutor vocab add --json '<card-json>'`
+- Import seed list: `tutor vocab import --json '<{"path":"cards.json"}>'`
+- Record answer once: `tutor vocab answer --json '<payload>'` — payload
   MUST include `"session_id":"sess_..."` (replaces default `"default"`), the
   `"item_id"`, the learner `"answer"`, and a unique `"idempotency_key"` (any
   UUID; dedupes retries). Omitting `idempotency_key` fails validation.
-- Inspect history: `bin/tutor vocab history --json '<{"item_id":"vocab_..."}>'`
+- Inspect history: `tutor vocab history --json '<{"item_id":"vocab_..."}>'`
 
 Queue JSON includes `effective_count`, `active_weak_tags`, `selection_reasons`,
 and `selection_policy`. `review_intensity` means light = 50%, normal = 100%, and

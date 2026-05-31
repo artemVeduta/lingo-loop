@@ -1,18 +1,18 @@
-"""Bundled plugin/profile asset resolution.
+"""Bundled provider asset resolution.
 
-`tutor init` writes managed registration files derived from assets bundled with
-the `lingo-loop` distribution. Each provider profile declares a host-package
-directory (e.g. ``openclaw-plugin``, ``.claude-plugin``) that lives at the
-repository root in editable installs and under
-``language_tutor/_assets/<host-package>/`` in the wheel.
+`tutor init` writes managed registration files for Hermes/OpenClaw and the
+shared flat skill hub for every provider. Provider areas declare a bundled
+asset directory such as ``skills``, ``openclaw-plugin``, or ``hermes-profile``.
+Editable installs resolve those directories from the repo root; wheel installs
+resolve them from ``language_tutor/_assets``.
 
 Resolution order for the assets *root* (the parent of every host-package
 directory):
 
 1. Explicit override via ``LANGUAGE_TUTOR_BUNDLED_ASSETS`` env var (tests).
 2. Editable / source install: repo root inferred from this module's location
-   (``Path(__file__).parents[3]``), which contains ``.claude-plugin/``,
-   ``.codex-plugin/``, ``openclaw-plugin/``, and ``hermes-profile/``.
+   (``Path(__file__).parents[3]``), which contains ``skills/``,
+   ``openclaw-plugin/``, and ``hermes-profile/``.
 3. Wheel install: ``importlib.resources.files("language_tutor") / "_assets"``
    (populated via Hatch ``force-include``).
 
@@ -28,8 +28,7 @@ from pathlib import Path
 from language_tutor.package_assets import package_assets_root
 
 _HOST_PACKAGE_SENTINELS: dict[str, str] = {
-    ".claude-plugin": "plugin.json",
-    ".codex-plugin": "plugin.json",
+    "skills": "tutor-setup/SKILL.md",
     "openclaw-plugin": "package.json",
     "hermes-profile": "distribution.yaml",
 }

@@ -23,8 +23,7 @@ REQUIRED_SKILL_PAYLOAD_FILES: tuple[str, ...] = (
     "skills/tutor-progress/scripts/run.py",
     "skills/tutor-reading/SKILL.md",
     "skills/tutor-lesson/SKILL.md",
-    "agents/tutor-judge.md",
-    "bin/tutor",
+    "skills/tutor-judge/SKILL.md",
 )
 
 REQUIRED_RUNTIME_PAYLOADS: tuple[str, ...] = (

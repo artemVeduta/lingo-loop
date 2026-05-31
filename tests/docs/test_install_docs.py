@@ -240,6 +240,17 @@ def test_language_tutor_only_in_contrast_with_lingo_loop(doc: Path) -> None:
     )
 
 
+def test_claude_and_codex_docs_describe_personal_skill_hub() -> None:
+    claude = (DOCS_INSTALL / "claude.md").read_text(encoding="utf-8")
+    codex = (DOCS_INSTALL / "codex.md").read_text(encoding="utf-8")
+
+    assert "~/.claude/skills" in claude
+    assert "~/.codex/skills" in codex
+    assert "marketplace" not in codex.lower()
+    assert "plugin uninstall language-tutor" not in claude
+    assert "plugin uninstall language-tutor" not in codex
+
+
 # --------------------------------------------------------------------------
 # 6.5 Every `TODO: verify` marker in a public doc must be tracked in the
 #     launch checklist (guards against shipping an untracked unverified claim)

@@ -30,13 +30,13 @@ tutor init
 ```
 
 Select **OpenClaw** in the keyboard menu. Arrow keys move, Space toggles, and
-Enter continues/applies; no provider id typing is required. This writes a
-managed plugin registration at
-`~/.openclaw/plugins/lingo-loop/package.json` (copy of the bundled
-`openclaw-plugin/package.json`) and verifies the result. After it succeeds,
-run `openclaw plugins install lingo-loop` so OpenClaw picks up the plugin.
-Rerun `tutor init` any time to repair drift. Automation form: `tutor init
---provider openclaw --yes`. Use `--dry-run --json` to preview.
+Enter continues/applies; no provider id typing is required. OpenClaw keeps the
+`openclaw-plugin/` registration files under
+`~/.openclaw/plugins/lingo-loop/` and also receives the shared flat tutor skills
+under `~/.openclaw/skills/`. After it succeeds, run `openclaw plugins install
+lingo-loop` so OpenClaw picks up the plugin. Rerun `tutor init` any time to
+repair drift. Automation form: `tutor init --provider openclaw --yes`. Use
+`--dry-run --json` to preview.
 
 `LANGUAGE_TUTOR_HOME` overrides config, data, and state roots; the OpenClaw
 container and service account set `/home/node/.tutor`, while the normal CLI
