@@ -1,7 +1,15 @@
 # Lingo Loop Hermes Skill Hub Install Design
 
 Date: 2026-05-31
-Status: Approved design
+Status: Approved design (revised 2026-05-31 after live-container verification)
+
+## Revision Summary
+
+Verified against the running `hermes-language-tutor` container (image
+`nousresearch/hermes-agent:v2026.5.29.2`). Findings overturned two earlier path
+assumptions. The design now commits to **flat-home mode** and a
+**`HERMES_HOME`-derived path resolver**. See "Runtime Verification" and the
+revised "Upstream Design".
 
 ## Goal
 
@@ -26,9 +34,53 @@ It does not install the tutor flow skills into the Hermes skills hub. The profil
 
 The packaged tutor skills still describe source-layout `bin/tutor` calls. That is correct for source plugin development but wrong for Hermes wheel containers, where the console script on `PATH` is the stable command. The OpenClaw plugin already uses the better convention: `LANGUAGE_TUTOR_TUTOR_BIN` with default `tutor`.
 
+## Runtime Verification
+
+Probed live on compute (`docker exec hermes-language-tutor ...`). Facts:
+
+- `hermes` user: `HOME=/opt/data`, `HERMES_HOME=/opt/data`. Both set to the same
+  value by `main-wrapper.sh` (`export HOME=/opt/data`) and image `ENV
+  HERMES_HOME=/opt/data`.
+- `/opt/data` IS the active Hermes home. It is a **flat home**, not a
+  profile-switching setup. The gateway reads `/opt/data/SOUL.md` and
+  `/opt/data/config.yaml` directly (the homelab-managed files).
+- Skills hub is `/opt/data/skills` (Hermes default `$HERMES_HOME/skills`;
+  `config.yaml` has `skills.external_dirs: []`).
+- `hermes profile list` shows only `◆default`. No `lingo-loop` profile is
+  registered or active.
+- `hermes skills list` shows only `language-tutor-cli` (category `productivity`,
+  state `disabled`). The six tutor flow skills and `tutor-judge` are absent.
+- `/opt/data/skills/language-tutor/` exists but contains only `.gitkeep` — the
+  empty homelab placeholder. This is the core bug.
+- The 0.1.1/0.1.2 `HermesInstaller` wrote its three profile files to
+  `/opt/data/home/.hermes/profiles/lingo-loop/`. That directory is **dead**:
+  runtime `$HOME=/opt/data`, so Hermes would look under
+  `/opt/data/.hermes/profiles/` (which does not exist), and profile mode is not
+  in use anyway. Nothing reads those files.
+
+### Root cause
+
+`BaseProviderInstaller.config_root()` resolves `fs.home() / ".hermes"` and
+ignores `HERMES_HOME`. At image build time `fs.home()` was `/opt/data/home`, so
+managed files landed under a home the runtime never uses. The skills hub was
+never a managed area at all, so flow skills were never materialized.
+
 ## Decisions
 
 Use the upstream installer as the single source of truth for Hermes skill installation.
+
+**Flat-home mode.** This deploy runs Hermes with `HERMES_HOME=/opt/data` as a
+single flat home and does not use Hermes profile switching. The installer
+targets the skills hub derived from `HERMES_HOME` and does **not** write a
+profile distribution into a `profiles/<name>/` subtree. The packaged
+`hermes-profile/` assets (SOUL.md, config.yaml, distribution.yaml) remain in the
+wheel as reference/source-of-truth, but provider init for Hermes installs
+**skills only**. SOUL.md and config.yaml at the home root stay homelab-owned
+(repo-managed), since that is what the gateway actually loads.
+
+Rejected: writing a profile distribution to `$HOME/.hermes/profiles/lingo-loop`.
+Verified dead in the target deploy; profile mode is not active and the runtime
+home differs from the install-time home.
 
 Rejected options:
 
@@ -40,20 +92,28 @@ The six flow skills will use the Hermes category `language-tutor`. The judge age
 
 ## Upstream Design
 
-`HermesInstaller` will own two managed areas:
+`HermesInstaller` will own **one** managed area: the Hermes skills hub under
+`<hermes-data-root>/skills`.
 
-- Hermes profile files under the existing Hermes profile install directory.
-- Hermes skills hub files under `$HERMES_HOME/skills`.
+Path resolution is explicit and `HERMES_HOME`-first. The Hermes data root is
+`HERMES_HOME` when set (expanded), otherwise `~/.hermes` (the user's normal
+Hermes home). The skills hub is always `<hermes-data-root>/skills`. This is the
+fix for the root cause: the resolver must read `HERMES_HOME`, never `fs.home()`
+alone.
 
-Path resolution is explicit. The Hermes data root is `HERMES_HOME` when set, otherwise the user's normal Hermes data location. The skills hub is always `<hermes-data-root>/skills`; tutor skills are never written under the profile directory. In the homelab target container, this resolves to `/opt/data/skills`.
+Resolved targets:
 
-The Hermes profile root remains separate from the skills hub. In the homelab target container, the profile install path is `/opt/data/home/.hermes/profiles/lingo-loop`. On normal CLI installs, it remains the user's Hermes profile path. Implementation should keep this as a narrow Hermes-specific path resolver instead of hardcoding `/opt/data` in shared installer code.
+- Container (homelab): `HERMES_HOME=/opt/data` → skills hub `/opt/data/skills`.
+- macOS / normal CLI: `HERMES_HOME` unset → skills hub `~/.hermes/skills`.
 
-Managed profile files:
+The installer keeps this as a narrow Hermes-specific path resolver. It does not
+hardcode `/opt/data` in shared installer code.
 
-- `profiles/lingo-loop/distribution.yaml`
-- `profiles/lingo-loop/config.yaml`
-- `profiles/lingo-loop/SOUL.md`
+No profile distribution is written. SOUL.md and config.yaml at the Hermes home
+root remain homelab/repo-managed (that is what the gateway loads). The packaged
+`hermes-profile/` files stay in the wheel as source-of-truth and for
+`tutor doctor` payload checks, but `tutor init --provider hermes` does not copy
+them into a `profiles/<name>/` directory.
 
 Managed skills hub files:
 
@@ -68,9 +128,25 @@ Managed skills hub files:
 - `skills/language-tutor/tutor-lesson/SKILL.md`
 - `skills/autonomous-ai-agents/tutor-judge/SKILL.md`
 
-The installer copies from package assets into these paths, detects drift per file, and repairs only missing or content-divergent files. It does not touch learner state, secrets, memories, sessions, or unrelated Hermes skills.
+The installer copies from package assets into these paths, detects drift per file, and repairs only missing or content-divergent files. It does not touch learner state, secrets, memories, sessions, the home-root SOUL.md/config.yaml, or unrelated Hermes skills. It must overwrite the empty `skills/language-tutor/.gitkeep` placeholder with the real flow skills.
 
-The Hermes profile manifest will no longer contain the dead `skills: ../skills` pointer. It will declare the packaged profile accurately and leave actual skill materialization to `tutor init --provider hermes --yes`.
+The packaged `hermes-profile/distribution.yaml` keeps its descriptive metadata but no longer contains the dead `skills: ../skills` pointer. It is reference-only; nothing in flat mode installs it.
+
+## Portable Install
+
+The same instruction installs on any host where the `tutor` console script and
+Hermes share a `HERMES_HOME` — container or laptop:
+
+```bash
+pip install lingo-loop        # or pipx / uv tool install
+tutor init --provider hermes --yes
+```
+
+`hermes profile install github.com/...` is **not** required and not used. That
+command is Hermes-native whole-agent profile distribution (profile mode); this
+design ships skills only and lets the host keep its own SOUL/config. The only
+per-host difference is the resolved skills hub: `/opt/data/skills` in the
+container vs `~/.hermes/skills` on a laptop, both derived from `HERMES_HOME`.
 
 ## Skill Command Contract
 
@@ -151,8 +227,9 @@ Secrets remain outside package assets and provider init flows.
 
 Upstream `lingo-loop` tests:
 
-- `HermesInstaller` declares profile files and all Hermes skills hub files.
-- `tutor init --provider hermes --yes` writes profile files, six flow skills, and `tutor-judge`.
+- `HermesInstaller` declares all Hermes skills hub files (six flow skills + `tutor-judge`) and no `profiles/<name>/` files.
+- Skills hub root resolves from `HERMES_HOME` when set, else `~/.hermes/skills`. A test sets `HERMES_HOME` and asserts the resolved hub path; another unsets it and asserts the `~/.hermes` fallback. The resolver never uses `fs.home()` when `HERMES_HOME` is present.
+- `tutor init --provider hermes --yes` writes six flow skills and `tutor-judge` into the resolved skills hub, and writes no profile distribution.
 - Second init is idempotent.
 - Single-file drift repairs only the divergent file.
 - Missing packaged assets are reported by exact relative path.
@@ -242,6 +319,8 @@ Run this after the updated `hermes-language-tutor` service is rebuilt and restar
 ## Non-Goals
 
 - No homelab copy of tutor skill bodies.
+- No Hermes profile-mode distribution install; flat-home skills-only install only.
+- No installer ownership of home-root SOUL.md/config.yaml; those stay homelab-managed.
 - No data migration between Hermes and OpenClaw tutor state.
 - No public internet exposure changes.
 - No speculative new tutor flows beyond the six existing flow skills.
