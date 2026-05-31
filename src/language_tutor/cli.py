@@ -1024,7 +1024,7 @@ def init_cmd(
             verified = "verified" if r.verified else str(r.status.state)
             click.echo(f"  {r.status.display_name:<14} {verified}")
             for action in r.actions:
-                stage = action.stage.value
+                stage = str(action.stage)
                 marker = "✓" if action.stage == ProviderActionStage.APPLIED else "-"
                 click.echo(f"    {marker} {stage}: {action.target_path}")
             if r.next_command:
