@@ -35,9 +35,9 @@ PROFILES = (
 def _expected_wheel_paths() -> list[str]:
     paths: list[str] = []
     for profile in PROFILES:
-        host_package = profile.bundled_assets_root_rel
-        for rel in profile.files:
-            paths.append(f"language_tutor/_assets/{host_package}/{rel}")
+        for area in profile.areas:
+            for rel in area.files:
+                paths.append(f"language_tutor/_assets/{area.bundled_assets_root_rel}/{rel}")
     return paths
 
 

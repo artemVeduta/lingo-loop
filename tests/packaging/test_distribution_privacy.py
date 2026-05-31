@@ -12,14 +12,9 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Distribution roots that hosts may package. Each must stay free of user-owned data.
 PACKAGE_ROOTS = (
-    ".claude-plugin",
-    ".codex-plugin",
-    ".agents/plugins",
     "openclaw-plugin",
     "hermes-profile",
     "skills",
-    "hooks",
-    "agents",
 )
 
 # Forbidden, machine-local / learner-owned artifacts that must never be packaged.
@@ -57,18 +52,18 @@ def test_setup_package_requires_user_owned_exclusions() -> None:
     with pytest.raises(ValidationError):
         SetupPackage(
             host=HostId.CLAUDE,
-            root_path=".claude-plugin",
-            manifest_paths=[".claude-plugin/plugin.json"],
+            root_path="skills",
+            manifest_paths=["skills/tutor-setup/SKILL.md"],
             excluded_paths=["nothing-useful"],
-            verification_command="claude plugin validate",
+            verification_command="tutor init --provider claude --yes --dry-run --json",
         )
 
 
 def test_setup_package_accepts_full_exclusions() -> None:
     package = SetupPackage(
         host=HostId.CLAUDE,
-        root_path=".claude-plugin",
-        manifest_paths=[".claude-plugin/plugin.json"],
+        root_path="skills",
+        manifest_paths=["skills/tutor-setup/SKILL.md"],
         excluded_paths=[
             "secrets",
             "memories",
@@ -78,7 +73,7 @@ def test_setup_package_accepts_full_exclusions() -> None:
             "local",
             "*.sqlite",
         ],
-        verification_command="claude plugin validate",
+        verification_command="tutor init --provider claude --yes --dry-run --json",
     )
     assert package.host == HostId.CLAUDE.value
 

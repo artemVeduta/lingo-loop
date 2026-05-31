@@ -159,8 +159,8 @@ def test_host_setup_failure_reports_affected_paths_when_unsafe() -> None:
         host="codex",
         phase="update",
         category="invalid_configuration",
-        detail="manifest rewrite touched a tracked file",
+        detail="skill hub rewrite touched a tracked file",
         data_safe=False,
-        affected_paths=[".codex-plugin/plugin.json"],
+        affected_paths=["skills/tutor-setup/SKILL.md"],
     )
-    assert ".codex-plugin/plugin.json" in failure.data_safety
+    assert "skills/tutor-setup/SKILL.md" in failure.data_safety

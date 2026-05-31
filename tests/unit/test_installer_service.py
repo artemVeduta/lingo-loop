@@ -49,22 +49,19 @@ def make_ctx(
 
 def _managed_path(host: HostId) -> Path:
     suffix = {
-        HostId.CLAUDE: ".claude/plugins/lingo-loop/plugin.json",
-        HostId.CODEX: ".codex/plugins/lingo-loop/plugin.json",
-        HostId.HERMES: ".hermes/profiles/lingo-loop/distribution.yaml",
-        HostId.OPENCLAW: ".openclaw/plugins/lingo-loop/package.json",
+        HostId.CLAUDE: ".claude/skills/tutor-setup/SKILL.md",
+        HostId.CODEX: ".codex/skills/tutor-setup/SKILL.md",
+        HostId.HERMES: ".hermes/skills/tutor-setup/SKILL.md",
+        HostId.OPENCLAW: ".openclaw/skills/tutor-setup/SKILL.md",
     }[host]
     return HOME / suffix
 
 
 def _bundled(host: HostId) -> str:
-    rel = {
-        HostId.CLAUDE: ".claude-plugin/plugin.json",
-        HostId.CODEX: ".codex-plugin/plugin.json",
-        HostId.HERMES: "hermes-profile/distribution.yaml",
-        HostId.OPENCLAW: "openclaw-plugin/package.json",
-    }[host]
-    return (bundled_assets_root() / rel).read_text(encoding="utf-8")
+    del host
+    return (bundled_assets_root() / "skills/tutor-setup/SKILL.md").read_text(
+        encoding="utf-8"
+    )
 
 
 @pytest.mark.parametrize("host", list(HostId))
@@ -88,6 +85,10 @@ def test_detect_available_writes_file(host: HostId) -> None:
     assert result.results[0].verified
     written = ctx.fs.read_text(_managed_path(host))
     assert written == _bundled(host)
+    if host == HostId.HERMES:
+        assert ctx.fs.is_file(HOME / ".hermes/profiles/lingo-loop/distribution.yaml")
+    if host == HostId.OPENCLAW:
+        assert ctx.fs.is_file(HOME / ".openclaw/plugins/lingo-loop/package.json")
     assert result.results[0].actions[0].stage == ProviderActionStage.APPLIED
 
 

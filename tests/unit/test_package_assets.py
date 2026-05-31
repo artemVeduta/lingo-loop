@@ -76,5 +76,9 @@ def test_required_runtime_payloads_cover_migrations_and_skill_helpers() -> None:
     assert "skills/tutor-setup/SKILL.md" in REQUIRED_RUNTIME_PAYLOADS
     assert "skills/tutor-vocab/scripts/run.py" in REQUIRED_RUNTIME_PAYLOADS
     assert "skills/tutor-writing/scripts/run.py" in REQUIRED_RUNTIME_PAYLOADS
-    assert "agents/tutor-judge.md" in REQUIRED_RUNTIME_PAYLOADS
-    assert "bin/tutor" in REQUIRED_RUNTIME_PAYLOADS
+    assert "skills/tutor-progress/scripts/run.py" in REQUIRED_RUNTIME_PAYLOADS
+    assert "skills/tutor-judge/SKILL.md" in REQUIRED_RUNTIME_PAYLOADS
+    assert "agents" + "/tutor-judge.md" not in REQUIRED_RUNTIME_PAYLOADS
+    assert "bin" + "/tutor" not in REQUIRED_RUNTIME_PAYLOADS
+    assert ".claude" + "-plugin/plugin.json" not in REQUIRED_RUNTIME_PAYLOADS
+    assert ".codex" + "-plugin/plugin.json" not in REQUIRED_RUNTIME_PAYLOADS

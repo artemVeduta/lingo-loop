@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 from language_tutor.installer.providers.base import (
+    SKILLS_AREA,
     BaseProviderInstaller,
     ProviderProfile,
 )
@@ -12,8 +16,12 @@ class ClaudeInstaller(BaseProviderInstaller):
         host=HostId.CLAUDE,
         cli_name="claude",
         config_root_rel=".claude",
-        bundled_assets_root_rel=".claude-plugin",
-        managed_dir_rel="plugins/lingo-loop",
-        files=("plugin.json",),
-        next_command="In an open Claude Code session, run `/reload-plugins`.",
+        areas=(SKILLS_AREA,),
+        next_command="Restart Claude Code if the skills directory was created mid-session.",
     )
+
+    def config_root(self) -> Path:
+        configured = os.environ.get("CLAUDE_CONFIG_DIR")
+        if configured:
+            return Path(configured).expanduser()
+        return super().config_root()

@@ -9,13 +9,25 @@ from click.testing import CliRunner
 
 from language_tutor.cli import main
 
-# (provider flag, managed file relative to $HOME) for all four supported hosts.
-# Mirrors each ProviderProfile's config_root_rel / managed_dir_rel / files[0].
-PROVIDER_MANAGED_FILES = [
-    ("claude", ".claude/plugins/lingo-loop/plugin.json"),
-    ("codex", ".codex/plugins/lingo-loop/plugin.json"),
-    ("hermes", ".hermes/profiles/lingo-loop/distribution.yaml"),
-    ("openclaw", ".openclaw/plugins/lingo-loop/package.json"),
+PROVIDER_REQUIRED_FILES = [
+    ("claude", [".claude/skills/tutor-setup/SKILL.md", ".claude/skills/tutor-judge/SKILL.md"]),
+    ("codex", [".codex/skills/tutor-setup/SKILL.md", ".codex/skills/tutor-judge/SKILL.md"]),
+    (
+        "hermes",
+        [
+            ".hermes/profiles/lingo-loop/distribution.yaml",
+            ".hermes/skills/tutor-setup/SKILL.md",
+            ".hermes/skills/tutor-judge/SKILL.md",
+        ],
+    ),
+    (
+        "openclaw",
+        [
+            ".openclaw/plugins/lingo-loop/package.json",
+            ".openclaw/skills/tutor-setup/SKILL.md",
+            ".openclaw/skills/tutor-judge/SKILL.md",
+        ],
+    ),
 ]
 
 
@@ -101,7 +113,7 @@ def test_init_dry_run_json_emits_init_result(
     assert payload["schema_version"] == 1
     assert payload["results"][0]["host"] == "claude"
     assert payload["results"][0]["actions"][0]["stage"] == "planned"
-    assert not (fake_home / ".claude" / "plugins" / "lingo-loop" / "plugin.json").exists()
+    assert not (fake_home / ".claude" / "skills" / "tutor-setup" / "SKILL.md").exists()
 
 
 def test_init_dry_run_json_without_provider_does_not_prompt(
@@ -138,7 +150,7 @@ def test_init_writes_managed_file_and_is_idempotent(
         main, ["init", "--provider", "claude", "--yes", "--json"]
     )
     assert first.exit_code == 0, first.output
-    managed = fake_home / ".claude" / "plugins" / "lingo-loop" / "plugin.json"
+    managed = fake_home / ".claude" / "skills" / "tutor-setup" / "SKILL.md"
     assert managed.exists()
 
     second = runner.invoke(
@@ -152,10 +164,32 @@ def test_init_writes_managed_file_and_is_idempotent(
     assert r["verified"] is True
 
 
-@pytest.mark.parametrize("provider, managed_rel", PROVIDER_MANAGED_FILES)
+def test_init_writes_managed_file_and_is_idempotent_human_readable(
+    fake_clis: dict[str, str], fake_home: Path, no_tty: None
+) -> None:
+    del fake_clis, no_tty
+    runner = CliRunner()
+    first = runner.invoke(
+        main, ["init", "--provider", "claude", "--yes"]
+    )
+    assert first.exit_code == 0, first.output
+    assert "Result:" in first.output
+    assert "applied" in first.output
+    managed = fake_home / ".claude" / "skills" / "tutor-setup" / "SKILL.md"
+    assert managed.exists()
+
+    second = runner.invoke(
+        main, ["init", "--provider", "claude", "--yes"]
+    )
+    assert second.exit_code == 0, second.output
+    assert "Result:" in second.output
+    assert "skipped" in second.output
+
+
+@pytest.mark.parametrize("provider, required_rels", PROVIDER_REQUIRED_FILES)
 def test_init_writes_managed_file_and_is_idempotent_per_provider(
     provider: str,
-    managed_rel: str,
+    required_rels: list[str],
     fake_clis: dict[str, str],
     fake_home: Path,
     no_tty: None,
@@ -165,8 +199,9 @@ def test_init_writes_managed_file_and_is_idempotent_per_provider(
     runner = CliRunner()
     first = runner.invoke(main, ["init", "--provider", provider, "--yes", "--json"])
     assert first.exit_code == 0, first.output
-    managed = fake_home / managed_rel
-    assert managed.exists(), f"{provider}: expected managed file at {managed}"
+    for rel in required_rels:
+        managed = fake_home / rel
+        assert managed.exists(), f"{provider}: expected managed file at {managed}"
 
     second = runner.invoke(main, ["init", "--provider", provider, "--yes", "--json"])
     assert second.exit_code == 0, second.output
@@ -178,17 +213,17 @@ def test_init_writes_managed_file_and_is_idempotent_per_provider(
     assert r["verified"] is True
 
 
-@pytest.mark.parametrize("provider, managed_rel", PROVIDER_MANAGED_FILES)
+@pytest.mark.parametrize("provider, required_rels", PROVIDER_REQUIRED_FILES)
 def test_init_never_reads_or_writes_anthropic_api_key_per_provider(
     provider: str,
-    managed_rel: str,
+    required_rels: list[str],
     fake_clis: dict[str, str],
     fake_home: Path,
     no_tty: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """tutor init must not consume or persist ANTHROPIC_API_KEY (checklist C, secrets)."""
-    del fake_clis, managed_rel, no_tty
+    del fake_clis, required_rels, no_tty
     sentinel = "sk-ant-SENTINEL-do-not-persist"
     monkeypatch.setenv("ANTHROPIC_API_KEY", sentinel)
 
@@ -289,7 +324,7 @@ def test_init_interactive_default_lists_providers(
     assert "Install Hermes first" not in result.output
     assert "docs/install/hermes.md" not in result.output
     assert "Aborted." in result.output
-    assert not (fake_home / ".claude" / "plugins" / "lingo-loop" / "plugin.json").exists()
+    assert not (fake_home / ".claude" / "skills" / "tutor-setup" / "SKILL.md").exists()
 
 
 def test_init_interactive_keyboard_menu_applies_selection(
@@ -300,8 +335,8 @@ def test_init_interactive_keyboard_menu_applies_selection(
     result = runner.invoke(main, ["init"], input="\x1b[B \n\x1b[B\n")
     assert result.exit_code == 0, result.output
     assert "Result:" in result.output
-    assert (fake_home / ".claude" / "plugins" / "lingo-loop" / "plugin.json").exists()
-    assert (fake_home / ".codex" / "plugins" / "lingo-loop" / "plugin.json").exists()
+    assert (fake_home / ".claude" / "skills" / "tutor-setup" / "SKILL.md").exists()
+    assert (fake_home / ".codex" / "skills" / "tutor-setup" / "SKILL.md").exists()
 
 
 def test_init_interactive_keyboard_menu_redraws_in_place(

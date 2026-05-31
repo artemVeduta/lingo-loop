@@ -67,8 +67,10 @@ def test_init_writes_only_under_per_host_config_root() -> None:
         assert first in {".claude", ".codex", ".hermes", ".openclaw"}, (
             f"installer wrote outside per-host config roots: {path}"
         )
-        assert "lingo-loop" in rel.parts, (
-            f"managed file not scoped to lingo-loop dir: {path}"
+        is_registration_file = "lingo-loop" in rel.parts
+        is_skill_file = len(rel.parts) >= 3 and rel.parts[1] == "skills"
+        assert is_registration_file or is_skill_file, (
+            f"managed file not scoped to registration or skills area: {path}"
         )
 
 
@@ -80,7 +82,10 @@ def test_dry_run_writes_nothing_anywhere() -> None:
 
 def test_repair_does_not_touch_unrelated_files() -> None:
     ctx = _ctx_all_hosts()
-    pre = HOME / ".claude" / "settings.json"
-    ctx.fs.write_text(pre, '{"user":"data"}')
+    settings = HOME / ".claude" / "settings.json"
+    unrelated_skill = HOME / ".claude" / "skills" / "gws-search" / "SKILL.md"
+    ctx.fs.write_text(settings, '{"user":"data"}')
+    ctx.fs.write_text(unrelated_skill, "# user skill\n")
     run_init(ctx, InitRequest(providers=[HostId.CLAUDE], yes=True))
-    assert ctx.fs.read_text(pre) == '{"user":"data"}'
+    assert ctx.fs.read_text(settings) == '{"user":"data"}'
+    assert ctx.fs.read_text(unrelated_skill) == "# user skill\n"

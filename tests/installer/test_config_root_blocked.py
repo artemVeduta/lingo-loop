@@ -84,6 +84,16 @@ def test_plan_emits_block_action_when_config_root_missing(host: HostId) -> None:
     assert pp.actions[0].stage == ProviderActionStage.BLOCKED
 
 
+def test_hermes_missing_env_root_reports_hermes_home(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.setenv("HERMES_HOME", "/opt/data")
+    ctx = _ctx(precreated_roots=[])
+    result = run_init(ctx, InitRequest(providers=[HostId.HERMES], yes=True))
+    hint = result.results[0].repair_hint
+    assert hint is not None
+    assert "/opt/data" in hint
+    assert str(HOME / ".hermes") not in hint
+
+
 def test_detect_unblocked_once_config_root_exists() -> None:
     # Smoke-test: precreate every config root and detection proceeds past the
     # missing-config-root guard.

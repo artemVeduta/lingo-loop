@@ -32,29 +32,31 @@
 
 ```bash
 # 1. Install the CLI
-uv tool install lingo-loop==0.1.2
+uv tool install lingo-loop==0.1.3
 
-# 2. Detect AI hosts and install plugin wiring for the ones you use
+# 2. Detect AI hosts and install tutor skills for the ones you use
 tutor doctor --json
 tutor init
 
 # 3. Write your learner profile (native + target language)
 tutor setup write --json '{"profile":{"native_language":"en","target_language":"uk"},"preferences":{}}'
 
-# 4. Inside Claude, run /reload-plugins, then ask: "start a reading session"
+# 4. Restart Claude if needed, then ask: "start a reading session"
 ```
 
 `tutor init` detects Claude, Codex, Hermes, and OpenClaw and shows a keyboard
 menu: arrow keys move, Space toggles providers, and Enter continues/applies.
+All four providers receive the shared `skills/<skill-name>/SKILL.md` hub. Hermes
+and OpenClaw also receive their registration files.
 Rerun any time to repair drift — it never touches your learner profile, history,
 or secrets.
 Non-interactive form: `tutor init --provider claude --yes` (also `--dry-run`,
 `--json`).
 
-If `0.1.2` has not propagated yet, use the source-tag fallback:
+If `0.1.3` has not propagated yet, use the source-tag fallback:
 
 ```bash
-uv tool install "git+https://github.com/artemVeduta/lingo-loop@v0.1.1"
+uv tool install "git+https://github.com/artemVeduta/lingo-loop@v0.1.2"
 ```
 
 Full Claude install doc: [`docs/install/claude.md`](docs/install/claude.md)

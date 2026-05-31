@@ -10,7 +10,7 @@
 ## Step 0 — Install the tutor CLI
 
 ```bash
-uv tool install lingo-loop==0.1.2
+uv tool install lingo-loop==0.1.3
 tutor doctor --json
 tutor init --provider openclaw --yes
 openclaw plugins install ~/.openclaw/plugins/lingo-loop --force
@@ -18,7 +18,7 @@ openclaw plugins enable language-tutor  # language-tutor is the OpenClaw plugin 
 openclaw plugins inspect language-tutor --runtime --json  # language-tutor is the OpenClaw plugin shipped by lingo-loop
 
 # Source tag fallback until the fixed package is available:
-# uv tool install "git+https://github.com/artemVeduta/lingo-loop@v0.1.1"
+# uv tool install "git+https://github.com/artemVeduta/lingo-loop@v0.1.2"
 ```
 
 > The distribution name is `lingo-loop` but the Python module installed on disk is still `language_tutor`. This is intentional for v0.1; see [troubleshooting](../troubleshooting.md).
@@ -30,13 +30,13 @@ tutor init
 ```
 
 Select **OpenClaw** in the keyboard menu. Arrow keys move, Space toggles, and
-Enter continues/applies; no provider id typing is required. This writes a
-managed plugin registration at
-`~/.openclaw/plugins/lingo-loop/package.json` (copy of the bundled
-`openclaw-plugin/package.json`) and verifies the result. After it succeeds,
-run `openclaw plugins install lingo-loop` so OpenClaw picks up the plugin.
-Rerun `tutor init` any time to repair drift. Automation form: `tutor init
---provider openclaw --yes`. Use `--dry-run --json` to preview.
+Enter continues/applies; no provider id typing is required. OpenClaw keeps the
+`openclaw-plugin/` registration files under
+`~/.openclaw/plugins/lingo-loop/` and also receives the shared flat tutor skills
+under `~/.openclaw/skills/`. After it succeeds, run `openclaw plugins install
+lingo-loop` so OpenClaw picks up the plugin. Rerun `tutor init` any time to
+repair drift. Automation form: `tutor init --provider openclaw --yes`. Use
+`--dry-run --json` to preview.
 
 `LANGUAGE_TUTOR_HOME` overrides config, data, and state roots; the OpenClaw
 container and service account set `/home/node/.tutor`, while the normal CLI
