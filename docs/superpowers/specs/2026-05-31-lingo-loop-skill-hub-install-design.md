@@ -1,7 +1,20 @@
 # Lingo Loop Skill Hub Install Design (Four Providers)
 
 Date: 2026-05-31
-Status: Approved design
+Status: Approved design (rev. 2026-05-31 — Claude/Codex switched from
+plugin-bundled skills to the provider personal skills hub; the Claude/Codex
+plugin path is dropped)
+
+Revision note: validation against the four provider docs
+(hermes-agent.nousresearch.com/docs, docs.openclaw.ai,
+code.claude.com/docs, developers.openai.com/codex) confirmed that Claude
+(`~/.claude/skills/<name>/SKILL.md`) and Codex (`~/.codex/skills/<name>/SKILL.md`)
+both auto-discover a **personal skills hub** with no plugin and no marketplace
+registration — the same flat file-drop model Hermes and OpenClaw already use. A
+marketplace plugin would surface the skill markdown but cannot install the
+`tutor` Python engine the skills shell out to, so click-install never yields a
+working tutor. The Claude/Codex plugin is therefore dropped; all four providers
+now share one uniform skills hub destination `<root>/skills/`.
 
 This spec supersedes, for the upstream `lingo-loop` repo, both:
 
@@ -29,7 +42,7 @@ Make every supported provider surface the seven tutor skills (six flows plus
 `tutor-judge`) in its skill hub, materialized by `tutor init --provider <p>`
 from one shared asset tree shipped in the wheel.
 
-The four flows the learner sees: setup, vocab, writing, reading, lesson,
+The six flows the learner sees: setup, vocab, writing, reading, lesson,
 progress; plus the `tutor-judge` grader.
 
 ## Core Decisions
@@ -60,8 +73,17 @@ progress; plus the `tutor-judge` grader.
    stays thin: it declares its areas and overrides only its root resolver. This
    is the "basic installer extended by per-provider logic" — plain subclassing.
 
-5. **Claude and Codex install plugin-bundled skills.** The skills land under the
-   existing `plugins/lingo-loop/` directory, not a separate personal skills hub.
+5. **Claude and Codex install into the personal skills hub — no plugin.** Both
+   providers auto-discover flat `SKILL.md` under their personal hub
+   (`<CLAUDE_CONFIG_DIR|~/.claude>/skills/`,
+   `<CODEX_HOME|~/.codex>/skills/`), enabled by default, with no plugin manifest
+   and no marketplace registration. The Claude/Codex plugin path is dropped: the
+   manifests carried only metadata (no commands, no hooks), so the plugin was a
+   pure skill-wrapper that the personal hub replaces more reliably. A marketplace
+   plugin is explicitly rejected — it ships skill markdown but not the `tutor`
+   Python engine the skills depend on, so click-install yields a non-working
+   tutor. This makes all four providers a single model: `tutor init` drops the
+   flat skill tree into `<root>/skills/`.
 
 6. **Hermes keeps the profile and adds skills.** The three profile files stay a
    managed area; the skills hub is added as a second managed area. Hermes paths
@@ -100,13 +122,20 @@ is removed; `tutor-judge/SKILL.md` is added under the skills mappings. Editable
 installs resolve assets from the repo `skills/`; wheel installs from
 `_assets/skills/`.
 
-Code references to update when judge moves:
+Code references to update when judge moves and the Claude/Codex plugin is dropped:
 
 - `src/language_tutor/package_assets.py` — drop `agents/tutor-judge.md`, add the
-  judge skill path.
-- `src/language_tutor/adapters/claude.py` — `plugin_root_components`
-  `"judge_agent": "agents/tutor-judge.md"` → `"judge_skill":
-  "skills/tutor-judge/SKILL.md"`.
+  judge skill path; drop the `.claude-plugin/plugin.json` and
+  `.codex-plugin/plugin.json` `force-include` entries.
+- `src/language_tutor/adapters/claude.py` — `plugin_root_components` no longer
+  describes a plugin. Repoint it at the skills hub (`"judge_skill":
+  "skills/tutor-judge/SKILL.md"`, the six flow skills, no `"manifest"`), or
+  remove it if nothing consumes the plugin manifest path anymore.
+- Delete the now-unused `.claude-plugin/plugin.json` and
+  `.codex-plugin/plugin.json` manifests from the repo (don't ship dead files).
+- `src/language_tutor/installer/providers/claude.py` and `codex.py` — drop the
+  plugin registration area; declare a single skills area rooted at
+  `<config_root>/skills`.
 
 ## Installer Architecture
 
@@ -123,13 +152,15 @@ class ManagedArea:
 ```
 
 `ProviderProfile` carries `areas: tuple[ManagedArea, ...]` (plus the existing
-`host`, `cli_name`, `config_root_rel`, `next_command`). Every provider has
-**two** areas:
+`host`, `cli_name`, `config_root_rel`, `next_command`). The area count varies by
+provider:
 
-- a **registration area** — the plugin manifest or profile files (per-provider,
-  as today),
-- a **skills area** — bundled root `skills` (the shared `_assets/skills/` tree),
-  the seven-file list above, destination per provider.
+- a **skills area** (every provider) — bundled root `skills` (the shared
+  `_assets/skills/` tree), the seven-file list above, destination
+  `<config_root>/skills` for all four,
+- a **registration area** (Hermes and OpenClaw only) — Hermes profile files,
+  OpenClaw plugin/channel files (per-provider, as today). Claude and Codex have
+  **no** registration area; they ship the skills area alone.
 
 ### Base behavior (unchanged per-file logic, now per-area)
 
@@ -169,16 +200,20 @@ applied to Codex for parity (container/CLI portability).
 
 | Provider | registration area dest | skills area dest |
 |---|---|---|
-| Claude | `<root>/plugins/lingo-loop/plugin.json` | `<root>/plugins/lingo-loop/skills/` |
-| Codex | `<root>/plugins/lingo-loop/plugin.json` | `<root>/plugins/lingo-loop/skills/` |
+| Claude | — (none) | `<root>/skills/` |
+| Codex | — (none) | `<root>/skills/` |
 | OpenClaw | `<root>/plugins/lingo-loop/<7 plugin files>` | `<root>/skills/` |
 | Hermes | `<root>/profiles/lingo-loop/<3 profile files>` | `<root>/skills/` |
 
-- Claude/Codex: skills are **plugin-bundled** (under the plugin dir). The Codex
-  `plugin.json` already declares `"skills": "./skills/"`; the Claude
-  `plugin.json` is the existing manifest.
-- OpenClaw: existing seven plugin files stay; skills go to the auto-discovered
-  hub `<root>/skills/` (flat, alongside `gws-*`).
+- Claude: skills go to the personal hub `<CLAUDE_CONFIG_DIR|~/.claude>/skills/`,
+  auto-discovered and enabled by default, live-watched (a brand-new top-level
+  skills dir created mid-session needs one restart). No plugin.
+- Codex: skills go to the personal hub `<CODEX_HOME|~/.codex>/skills/`,
+  auto-discovered globally across projects. Codex loads skills at startup, so
+  the post-init step is "restart Codex". No plugin, no marketplace.
+- OpenClaw: existing seven plugin/channel files stay; skills go to the
+  auto-discovered managed hub `<root>/skills/` (flat, alongside `gws-*`), which
+  outranks plugin-bundled skills in OpenClaw's precedence order.
 - Hermes: existing three profile files stay (`distribution.yaml`,
   `config.yaml`, `SOUL.md`); skills go to `<HERMES_HOME>/skills/`.
 
@@ -222,9 +257,10 @@ tutor init --provider <hermes|openclaw|claude|codex> --yes
 
 The only per-host difference is the resolved root (e.g. `HERMES_HOME=/opt/data`
 → `/opt/data/skills` in a container vs `~/.hermes/skills` on a laptop). No
-provider-native whole-agent distribution command (`hermes profile install …`)
-is required; this design ships skills (and, where applicable, the existing
-plugin/profile registration files) only.
+provider-native whole-agent distribution command (`hermes profile install …`,
+nor a Claude/Codex marketplace plugin) is required; this design ships skills to
+`<root>/skills/` for all four providers, plus — for Hermes and OpenClaw only —
+the existing profile/plugin registration files.
 
 ## Skill Command Contract
 
@@ -251,10 +287,13 @@ Shared:
 
 Per provider:
 
-- The profile declares both areas (registration + skills) and exactly the seven
-  skill files.
-- `tutor init --provider <p> --yes` writes the registration area and the seven
+- Hermes and OpenClaw profiles declare both areas (registration + skills);
+  Claude and Codex declare a single skills area. Every profile lists exactly the
+  seven skill files for its skills area.
+- `tutor init --provider <p> --yes` writes the declared areas and the seven
   skills into the resolved destination; second init is idempotent.
+- Claude/Codex write skills to `<config_root>/skills` and create no plugin
+  manifest; `.claude-plugin`/`.codex-plugin` are not referenced by packaging.
 - The installer does not delete or modify unrelated skills (`gws-*`) or the
   registration files of other providers.
 
@@ -270,15 +309,20 @@ Resolver tests:
 
 Verify before tagging the release:
 
-1. **Plain-flat discovery per provider.** Confirm each provider discovers a flat
-   `skills/<name>/SKILL.md` carrying only `name` + `description` (no Hermes
-   category dir, no OpenClaw metadata block). OpenClaw auto-discovery of the
-   `gws-*` hub is the precedent; confirm the equivalent for Hermes, Claude
-   (plugin-bundled), and Codex (plugin-bundled, restart to reload).
-2. **Skills enabled by default per provider.** Determine whether discovered
-   skills are enabled or disabled on each provider. Any enable step is a homelab
-   concern and out of scope here, but the finding is recorded for the homelab
-   work.
+1. **Plain-flat hub discovery per provider.** Confirm each provider discovers a
+   flat `<root>/skills/<name>/SKILL.md` carrying only `name` + `description` (no
+   Hermes category dir, no OpenClaw metadata block). OpenClaw auto-discovery of
+   the `gws-*` managed hub is the precedent; confirm the equivalent for Hermes
+   (`$HERMES_HOME/skills`), Claude (`~/.claude/skills`, live-watched), and Codex
+   (`~/.codex/skills`, restart to reload). Codex gotcha: the entry file must be
+   named exactly `SKILL.md` — `SKILL.MD` is silently skipped (codex#20637); the
+   shared tree already uses `SKILL.md`, so assert it in packaging tests.
+2. **Skills enabled by default per provider.** Hermes, OpenClaw, Claude, and
+   Codex all enable discovered hub skills by default. OpenClaw adds a per-agent
+   allowlist (`agents.defaults.skills`, `agents.list[].skills`) that can hide
+   skills regardless of discovery — confirm the tutor skills are not excluded.
+   Any enable/allowlist step is a homelab concern and out of scope here, but the
+   finding is recorded for the homelab work.
 
 ## Non-Goals
 
@@ -286,7 +330,9 @@ Verify before tagging the release:
   quick-commands).
 - No per-provider frontmatter rendering or build-time skill generator.
 - No Hermes category subfolders or OpenClaw `metadata.openclaw` block.
-- No personal-hub install for Claude/Codex (plugin-bundled only).
+- No plugin-bundled or marketplace install for Claude/Codex (personal skills
+  hub only). The `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`
+  manifests are removed.
 - No data migration of learner state between providers.
 - No new tutor flows beyond the six existing flows plus `tutor-judge`.
 - No behavior change to unrelated agents or `gws-*` skills.
