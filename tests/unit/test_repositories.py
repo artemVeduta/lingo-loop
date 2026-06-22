@@ -109,6 +109,54 @@ def test_import_merges_additive_metadata_without_review_reset(tmp_path) -> None:
         conn.close()
 
 
+def test_import_vocabulary_item_inner_runs_inside_caller_transaction(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    from language_tutor.dal.sqlite_store import connect, transaction
+
+    conn = connect(tmp_path / "db.sqlite3")
+    try:
+        repo = TutorRepository(conn)
+        item = VocabularyItem(
+            id=new_id("vocab"),
+            target_language="uk",
+            prompt="hello",
+            lemma="привіт",
+            accepted_answers=["привіт"],
+            tags=["greetings"],
+            sources=["manual"],
+        )
+        # Call the nestable inner form inside an outer transaction.
+        with transaction(conn):
+            status, item_id = repo._import_vocabulary_item_inner(item)
+            assert status == "created"
+            assert item_id.startswith("vocab_")
+        # Outer transaction committed by the context manager; row is visible.
+        stored = repo.get_vocabulary_item(item_id)
+        assert stored.lemma == "привіт"
+    finally:
+        conn.close()
+
+
+def test_import_vocabulary_item_public_contract_unchanged(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    conn = connect(tmp_path / "db.sqlite3")
+    try:
+        repo = TutorRepository(conn)
+        item = VocabularyItem(
+            id=new_id("vocab"),
+            target_language="uk",
+            prompt="hello",
+            lemma="привіт",
+            accepted_answers=["привіт"],
+            tags=["greetings"],
+            sources=["manual"],
+        )
+        status, item_id = repo.import_vocabulary_item(item)
+        assert status == "created"
+        assert item_id.startswith("vocab_")
+        assert repo.get_vocabulary_item(item_id).lemma == "привіт"
+    finally:
+        conn.close()
+
+
 def test_tag_filter_is_inclusive_and_reports_not_due_count(tmp_path) -> None:  # type: ignore[no-untyped-def]
     conn = connect(tmp_path / "db.sqlite3")
     try:
