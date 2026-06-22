@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from datetime import datetime
+from typing import Any
 
 from language_tutor.dal.sqlite_store import transaction
 from language_tutor.errors import TutorError
@@ -15,6 +17,7 @@ from language_tutor.schemas import (
     BookLookupResult,
     BookSession,
 )
+from language_tutor.vocab import normalize_text
 
 
 class BookRepository:
@@ -167,6 +170,24 @@ class BookRepository:
         ).fetchone()
         return self._row_to_lookup_result(row)
 
+    def _find_word_lookup(self, book_session_id: str, content_norm: str) -> BookLookupResult | None:
+        row = self.conn.execute(
+            "SELECT * FROM book_lookups WHERE book_session_id = ? AND kind = 'word' AND content_norm = ?",
+            (book_session_id, content_norm),
+        ).fetchone()
+        if row is None:
+            return None
+        # Rendering for the deduped row: re-read the explanation blob.
+        explanation = json.loads(str(row["explanation_json"]))
+        rendered = _render_lookup(str(row["kind"]), str(row["content"]), explanation)
+        return BookLookupResult(
+            lookup_id=str(row["lookup_id"]),
+            vocab_item_id=str(row["vocab_item_id"]) if row["vocab_item_id"] is not None else None,
+            deduped=True,
+            created_at=_parse_iso(row["created_at"]),
+            rendered=rendered,
+        )
+
     def get_lookups(self, book_session_id: str) -> BookLog:
         rows = self.conn.execute(
             "SELECT * FROM book_lookups WHERE book_session_id = ? ORDER BY created_at ASC, lookup_id ASC",
@@ -247,3 +268,24 @@ def _uuid_hex() -> str:
 
 def _parse_iso(value: str) -> datetime:
     return datetime.fromisoformat(str(value))
+
+
+def _render_lookup(kind: str, content: str, explanation: dict[str, Any]) -> str:
+    if kind == "word":
+        translation = str(explanation.get("translation", "")).strip()
+        gloss = explanation.get("gloss")
+        gloss_str = str(gloss).strip() if gloss else None
+        rendered = f"**{content}**"
+        if gloss_str:
+            rendered += f" — {gloss_str}"
+        if translation and normalize_text(translation) != normalize_text(content):
+            rendered += f" (translation: {translation})"
+        return rendered
+    if kind == "sentence":
+        return f"> {content}\n\n{explanation.get('translation', '')}"
+    if kind == "passage":
+        body = explanation.get("translation") or explanation.get("explanation", "")
+        return f"> {content}\n\n{body}"
+    if kind == "question":
+        return f"Q: {content}\nA: {explanation.get('answer', '')}"
+    return ""
