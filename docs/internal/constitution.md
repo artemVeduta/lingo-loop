@@ -1,3 +1,10 @@
+---
+type: Convention
+title: language-tutor Constitution
+description: Governs the project's non-negotiable principles for architecture, scope, data ownership, testing, skill creation, and review gates.
+timestamp: 2026-06-22
+---
+
 <!--
 Sync Impact Report
 Version change: 1.1.1 -> 1.2.0

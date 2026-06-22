@@ -1,3 +1,10 @@
+---
+type: Reference
+title: Install lingo-loop for Claude Code
+description: Step-by-step guide to installing the lingo-loop tutor CLI and wiring its skills into Claude Code.
+timestamp: 2026-06-22
+---
+
 # Install lingo-loop for Claude Code
 
 > Verification pending — not yet confirmed against a specific Claude Code CLI release. <!-- TODO: verify against current Claude Code release, then set "Last verified: YYYY-MM-DD against Claude Code vX.Y" -->

@@ -1,3 +1,10 @@
+---
+type: Reference
+title: Troubleshooting
+description: Cross-host index of common install-time, runtime, and host-wiring errors for lingo-loop, with recovery steps.
+timestamp: 2026-06-22
+---
+
 # Troubleshooting
 
 Cross-host index of common errors. For host-specific issues, jump to that host's install doc:

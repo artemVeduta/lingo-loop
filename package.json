@@ -1,0 +1,10 @@
+{
+  "name": "lingo-loop-docs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Documentation tooling for lingo-loop (OKF v0.1 bundle validator). Not a published package.",
+  "scripts": {
+    "docs:validate": "node scripts/validate-docs.mjs",
+    "docs:validate:test": "node --test scripts/*.test.mjs"
+  }
+}

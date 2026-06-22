@@ -1,3 +1,10 @@
+---
+type: Reference
+title: Install lingo-loop for OpenClaw
+description: Step-by-step guide to installing the lingo-loop tutor CLI and wiring its plugin and skills into OpenClaw.
+timestamp: 2026-06-22
+---
+
 # Install lingo-loop for OpenClaw
 
 > Verification pending — not yet confirmed against a specific OpenClaw release. <!-- TODO: verify against current OpenClaw release, then set "Last verified: YYYY-MM-DD against OpenClaw vX.Y" -->

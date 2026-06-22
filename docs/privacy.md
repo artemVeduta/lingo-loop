@@ -1,3 +1,10 @@
+---
+type: Reference
+title: Privacy
+description: How lingo-loop handles learner data as a local-first tool that collects no telemetry and stores everything on the user's own machine.
+timestamp: 2026-06-22
+---
+
 # Privacy
 
 `lingo-loop` is **local-first**. The tutor CLI stores all learner data on the same machine that runs it and makes no network calls of its own.

@@ -3,12 +3,10 @@ Enforce `docs/constitution.md` for architecture, scope, data
 ownership, testing, and review gates.
 <!-- SPECKIT END -->
 
-**Documentation**
-[ARCHITECTURE.md](docs/ARCHITECTURE.md)
-[FEATURES.md](docs/internal/FEATURES.md)
-[PITFALLS.md](docs/internal/PITFALLS.md)
-[PROJECT.md](docs/internal/PROJECT.md)
-[REQUIREMENTS.md](docs/internal/REQUIREMENTS.md)
-[ROADMAP.md](docs/internal/ROADMAP.md)
-[STACK.md](docs/internal/STACK.md)
-[SUMMARY.md](docs/internal/SUMMARY.md)
+## Documentation
+
+- Repo knowledge lives in an OKF v0.1 bundle at [docs/](docs/index.md). The lifecycle
+  policy (single source of truth) is
+  [docs/conventions/documentation.md](docs/conventions/documentation.md).
+- Scaffold a concept with the `docs-add` skill; check conformance with `docs-validate`
+  (`npm run docs:validate` — advisory, never blocks).
