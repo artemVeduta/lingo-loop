@@ -1259,9 +1259,9 @@ architecture layers or new persistence:
 
 ## Phase 6 Addendum — Agent Adapter Setup (2026-05-22)
 
-Spec 006 adds a host-adapter layer above the existing local-first core without
-touching pedagogy, scheduling, feedback semantics, progress calculation, or DAL
-ownership.
+The agent adapter setup work adds a host-adapter layer above the existing
+local-first core without touching pedagogy, scheduling, feedback semantics,
+progress calculation, or DAL ownership.
 
 - **Capability/lifecycle contracts** (`src/language_tutor/schemas.py`):
   `HostSetupTarget`, `OfficialSourceEvidence`, `HostSetupProfileContract`,
