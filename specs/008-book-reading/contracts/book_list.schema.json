@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "BookListEntry": {
+      "additionalProperties": false,
+      "description": "One book session inside a ``tutor book list`` result.",
+      "properties": {
+        "author": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Author"
+        },
+        "book_session_id": {
+          "pattern": "^book_[A-Za-z0-9]+$",
+          "title": "Book Session Id",
+          "type": "string"
+        },
+        "closed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Closed At"
+        },
+        "lookup_count": {
+          "minimum": 0,
+          "title": "Lookup Count",
+          "type": "integer"
+        },
+        "session_id": {
+          "pattern": "^sess_[A-Za-z0-9]+$",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "title": "Started At",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "open",
+            "closed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "book_session_id",
+        "session_id",
+        "title",
+        "status",
+        "started_at",
+        "lookup_count"
+      ],
+      "title": "BookListEntry",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Output of ``tutor book list`` — all book sessions, open first.",
+  "properties": {
+    "sessions": {
+      "items": {
+        "$ref": "#/$defs/BookListEntry"
+      },
+      "title": "Sessions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "sessions"
+  ],
+  "title": "BookList",
+  "type": "object"
+}
