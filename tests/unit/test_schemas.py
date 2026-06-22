@@ -9,9 +9,7 @@ from pydantic import ValidationError
 from language_tutor.schemas import (
     AnswerEvent,
     BookList,
-    BookListEntry,
     BookLog,
-    BookLogEntry,
     BookLookupResult,
     BookRecordInput,
     BookSession,

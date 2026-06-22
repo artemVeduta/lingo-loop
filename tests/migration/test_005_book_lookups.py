@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import sqlite3
 from pathlib import Path
 
@@ -132,10 +133,8 @@ def test_005_rebuild_is_atomic_on_mid_rebuild_failure(tmp_path) -> None:  # type
     poisoned = sql[: drop_pos + len("DROP TABLE checkpoints;")] + "\nSELECT no_such_function_x();\n"
     conn = connect(tmp_path / "db.sqlite3", migrate=False)
     try:
-        try:
+        with contextlib.suppress(sqlite3.OperationalError):
             conn.executescript(poisoned)
-        except sqlite3.OperationalError:
-            pass
         conn.rollback()
     finally:
         conn.close()
