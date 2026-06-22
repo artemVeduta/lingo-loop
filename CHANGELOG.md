@@ -19,6 +19,18 @@ release section.
 
 ### Removed
 
+## [0.1.5] - 2026-06-22
+
+### Added
+- **Tutor Book:** Added book reading companion flow (`tutor-book` skill).
+
+### Changed
+- **Docs:** Migrated repository documentation to OKF v0.1 bundle (PR #29).
+
+### Fixed
+
+### Removed
+
 ## [0.1.4] - 2026-05-31
 
 ### Added
