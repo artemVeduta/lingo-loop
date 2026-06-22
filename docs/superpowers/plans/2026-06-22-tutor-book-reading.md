@@ -12,16 +12,14 @@
 
 ---
 
-## Parallelism map
+## Implementation work packages (reduced subagent count)
 
-The work decomposes into independent units. There is ONE cross-cutting prerequisite: the `import_vocabulary_item` → `_import_vocabulary_item_inner` refactor (Task 1) must land before the `book.py` SRS-feeding path (Task 5). Recommended dispatch:
+Dispatch one subagent per work package, not one subagent per task. Each package worker executes the enclosed tasks in order, preserves the TDD steps inside each task, and still commits at the task boundaries shown below. This reduces the implementation fan-out from 9 subagents to 3 implementation subagents + 1 final verification pass.
 
-- **Batch 1:** Task 1 (vocab refactor) — blocking prerequisite.
-- **Batch 2 (parallel):** Task 2 (migration+enums), Task 3 (schemas), Task 7 (skill), Task 8 (spec docs) — all independent.
-- **Batch 3:** Task 4 (BookRepository) — needs Tasks 2 + 3.
-- **Batch 4:** Task 5 (book.py handlers) — needs Tasks 1 + 3 + 4.
-- **Batch 5:** Task 6 (CLI + integration/golden tests) — needs Task 5.
-- **Batch 6:** Task 9 (full suite + lint + typecheck) — needs all.
+- **Batch 1: Package A — Data Foundation (Tasks 1-4).** One subagent owns the nestable vocab import refactor, migration/enums/registration, book pydantic schemas/schema generation, and `BookRepository`. This package is the cross-cutting prerequisite for the runtime path and the skill/spec contract copies.
+- **Batch 2 (parallel after Package A): Package B — Runtime User Flow (Tasks 5-6).** One subagent owns `book.py`, `find_or_create_vocab_card_for_book`, rendering, CLI registration, integration tests, golden tests, and fixtures.
+- **Batch 2 (parallel after Package A): Package C — Skill + Spec Contracts (Tasks 7-8).** One subagent owns `skills/tutor-book/SKILL.md`, payload registration, `specs/008-book-reading/`, contract schema copies, pressure scenarios, RED/GREEN/REFACTOR evidence, and the skill inventory bump. Because this worker is already a subagent, it satisfies Constitution VIII's "subagent per skill" gate if its prompt explicitly requires the writing-skills helper read and changed-files report.
+- **Batch 3: Package D — Final Verification (Task 9).** Main agent or one final verifier runs the full suite, lint, typecheck, schema-regeneration diff, and fixes only drift introduced by Packages A-C.
 
 ---
 
@@ -62,6 +60,12 @@ The work decomposes into independent units. There is ONE cross-cutting prerequis
 - `tests/migration/test_migrations.py` — `[1,2,3,4]` → `[1,2,3,4,5]` (2 places) + add `005_book_lookups.sql` to the missing-files tuple.
 - `tests/unit/test_schemas.py` — add `test_book_schema_mirrors_export`.
 - `schemas/book_record.schema.json` (+ 4 others) — generated into `schemas/`.
+
+---
+
+## Work Package A: Data Foundation (single subagent)
+
+Execute Tasks 1-4 in order. Commit after each task as written; do not split this package unless the worker is blocked by unrelated worktree conflicts.
 
 ---
 
@@ -1284,6 +1288,12 @@ first then closed, newest first, with lookup_count."
 
 ---
 
+## Work Package B: Runtime User Flow (single subagent)
+
+Execute Tasks 5-6 in order after Package A lands. This package may run in parallel with Package C.
+
+---
+
 ## Task 5: `book.py` handlers + `find_or_create_vocab_card_for_book` + rendering
 
 **Files:**
@@ -2326,6 +2336,12 @@ resume, list ordering, and the echo-translation skip path. Golden test pins the
 
 ---
 
+## Work Package C: Skill + Spec Contracts (single subagent)
+
+Execute Tasks 7-8 in order after Package A lands, because Task 8 copies the generated `schemas/book_*.schema.json` files. This package may run in parallel with Package B. The package worker is the required skill-authoring subagent for Constitution VIII and must read the writing-skills helper before editing `skills/tutor-book/SKILL.md`.
+
+---
+
 ## Task 7: `tutor-book` skill + payload registration (constitution VIII gate)
 
 **Why a dedicated task:** Constitution Principle VIII (`docs/internal/constitution.md:133-148`) requires every `SKILL.md` creation to use a subagent per skill, explicitly read the local writing-skills helper, report changed files, and produce documented RED/GREEN/REFACTOR pressure evidence. The skill-payload contract test (`tests/installer/test_skill_payload_contract.py::test_canonical_skill_tree_contains_exact_files`) fails until `SKILL_FILES` exactly matches the on-disk `skills/` tree, so the skill file and the three registration lists must land together.
@@ -2347,9 +2363,9 @@ The existing `tests/installer/test_skill_payload_contract.py` already enforces:
 Run: `python -m pytest tests/installer/test_skill_payload_contract.py -v`
 Expected: FAIL at `test_canonical_skill_tree_contains_exact_files` — once `skills/tutor-book/SKILL.md` is created it will appear on disk but not in `SKILL_FILES`, so the lists must be updated in lockstep. (If the file does not exist yet, the test passes; the gate activates the moment the file is added.)
 
-- [ ] **Step 2: Dispatch a subagent to author `skills/tutor-book/SKILL.md`**
+- [ ] **Step 2: Author `skills/tutor-book/SKILL.md` in the package subagent context**
 
-Per constitution VIII, dispatch a subagent (via the Task tool) with this prompt — it MUST read the local writing-skills helper and report changed files:
+Per constitution VIII, this package worker is the required skill-authoring subagent when Package C is dispatched as a subagent. If Task 7 is executed inline instead, dispatch a dedicated subagent with this same prompt. In both cases, the worker MUST read the local writing-skills helper and report changed files:
 
 > Author `skills/tutor-book/SKILL.md` for the lingo-loop project. Before writing, read the local writing-skills helper at `/Users/artem.veduta/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/writing-skills` (if present; otherwise the 6.0.3 path under `~/.cache/opencode/packages/superpowers.../skills/writing-skills`) and follow its guidance. Also read the peer skill `skills/tutor-reading/SKILL.md` verbatim — `tutor-book` is modeled on it and ships NO `scripts/run.py` shim (it invokes the `tutor` console binary directly).
 >
@@ -2518,6 +2534,12 @@ and adds the tutor-book row."
 
 ---
 
+## Work Package D: Final Verification (main agent or one verifier subagent)
+
+Execute Task 9 after Packages A-C all land. Fix only drift introduced by the package work; do not perform unrelated refactors.
+
+---
+
 ## Task 9: Full suite + lint + typecheck
 
 **Files:** None (verification only; fix any drift in the files touched by Tasks 1-8).
@@ -2605,7 +2627,7 @@ git commit -m "chore: fix lint/typecheck drift from book feature"
 
 **Plan complete and saved to `docs/superpowers/plans/2026-06-22-tutor-book-reading.md`. Two execution options:**
 
-**1. Subagent-Driven (recommended)** — I dispatch a fresh subagent per task, review between tasks, fast iteration. Matches the user's request to fan out parallel subagents. Tasks 2, 3, 7, 8 can run in parallel after Task 1; Tasks 4→5→6 are sequential; Task 9 is the final gate.
+**1. Subagent-Driven (recommended)** — Dispatch one fresh subagent per work package, not per task: Package A first, then Packages B and C in parallel, then Package D as the final verification gate. This matches the user's request to use parallel subagents while reducing subagent count.
 
 **2. Inline Execution** — Execute tasks in this session using executing-plans, batch execution with checkpoints for review.
 
