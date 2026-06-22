@@ -8,7 +8,16 @@ from typing import Any, cast
 import click
 from pydantic import BaseModel, ValidationError
 
+from language_tutor.book import (
+    close_book,
+    list_book,
+    log_book,
+    record_book,
+    resume_book,
+    start_book,
+)
 from language_tutor.boot_context import build_boot_context, render_boot_context
+from language_tutor.dal.book_repository import BookRepository
 from language_tutor.dal.paths import resolve_paths
 from language_tutor.dal.repositories import TutorRepository
 from language_tutor.dal.sqlite_store import connect
@@ -21,6 +30,12 @@ from language_tutor.progress import progress_report
 from language_tutor.progress_rendering import render_progress_markdown
 from language_tutor.reading import record_reading, start_reading
 from language_tutor.schemas import (
+    BookCloseInput,
+    BookListInput,
+    BookLogInput,
+    BookRecordInput,
+    BookResumeInput,
+    BookStartInput,
     BootContext,
     CheckpointModality,
     CheckpointStepKind,
@@ -886,6 +901,208 @@ def lesson_start(json_output: bool, payload: str) -> None:
 def lesson_record(json_output: bool, payload: str) -> None:
     del json_output
     _emit_text_modality_record(payload, record_lesson)
+
+
+@main.group()
+def book() -> None:
+    """Book-reading companion: per-book lookup log + SRS vocab feeding."""
+
+
+@book.command("start")
+@click.option("--json-output", "--json", "json_output", is_flag=True)
+@click.argument("payload", required=True)
+def book_start(json_output: bool, payload: str) -> None:
+    del json_output
+    try:
+        data = BookStartInput.model_validate(parse_payload(payload))
+        repo, conn = open_repo()
+        try:
+            book_repo = BookRepository(conn)
+            emit(start_book(book_repo, session_id=data.session_id, title=data.title, author=data.author, now=_utc_now()))
+            conn.commit()
+        finally:
+            conn.close()
+    except (TutorError, ValidationError, KeyError) as exc:
+        if isinstance(exc, TutorError):
+            fail_json(exc)
+        if isinstance(exc, KeyError):
+            fail_json(
+                TutorError(
+                    "session_not_found",
+                    f"Session {data.session_id} does not exist.",
+                    "Call session-start first and thread its session_id.",
+                )
+            )
+        fail_json(
+            TutorError(
+                "invalid_book_start",
+                "Book start payload failed validation.",
+                "Pass BookStartInput JSON with session_id and a non-empty title.",
+            )
+        )
+
+
+@book.command("record")
+@click.option("--json-output", "--json", "json_output", is_flag=True)
+@click.argument("payload", required=True)
+def book_record(json_output: bool, payload: str) -> None:
+    del json_output
+    try:
+        state = read_setup(resolve_paths())
+        data = BookRecordInput.model_validate(parse_payload(payload))
+        repo, conn = open_repo()
+        try:
+            book_repo = BookRepository(conn)
+            emit(
+                record_book(
+                    book_repo=book_repo,
+                    tutor_repo=repo,
+                    book_session_id=data.book_session_id,
+                    kind=data.kind,
+                    content=data.content,
+                    context=data.context,
+                    explanation=data.explanation,
+                    target_language=state.profile.target_language,
+                    now=_utc_now(),
+                )
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except (TutorError, ValidationError, KeyError) as exc:
+        if isinstance(exc, TutorError):
+            fail_json(exc)
+        if isinstance(exc, KeyError):
+            fail_json(
+                TutorError(
+                    "book_session_not_found",
+                    f"Book session {data.book_session_id} does not exist.",
+                    "Call `tutor book start` or `tutor book resume` first.",
+                )
+            )
+        fail_json(
+            TutorError(
+                "invalid_book_record",
+                "Book record payload failed validation.",
+                "Pass BookRecordInput JSON with a valid kind/content/explanation.",
+            )
+        )
+
+
+@book.command("resume")
+@click.option("--json-output", "--json", "json_output", is_flag=True)
+@click.argument("payload", required=True)
+def book_resume(json_output: bool, payload: str) -> None:
+    del json_output
+    try:
+        data = BookResumeInput.model_validate(parse_payload(payload))
+        repo, conn = open_repo()
+        try:
+            book_repo = BookRepository(conn)
+            session = resume_book(book_repo, title=data.title)
+            if session is None:
+                raise TutorError(
+                    "no_open_book_session",
+                    f"No open reading session for '{data.title}'.",
+                    "Start one with `tutor book start`.",
+                )
+            emit(session)
+        finally:
+            conn.close()
+    except (TutorError, ValidationError) as exc:
+        if isinstance(exc, TutorError):
+            fail_json(exc)
+        fail_json(
+            TutorError(
+                "invalid_book_resume",
+                "Book resume payload failed validation.",
+                "Pass BookResumeInput JSON with a title.",
+            )
+        )
+
+
+@book.command("log")
+@click.option("--json-output", "--json", "json_output", is_flag=True)
+@click.argument("payload", required=True)
+def book_log(json_output: bool, payload: str) -> None:
+    del json_output
+    try:
+        data = BookLogInput.model_validate(parse_payload(payload))
+        repo, conn = open_repo()
+        try:
+            book_repo = BookRepository(conn)
+            emit(log_book(book_repo, book_session_id=data.book_session_id))
+        finally:
+            conn.close()
+    except (TutorError, ValidationError) as exc:
+        if isinstance(exc, TutorError):
+            fail_json(exc)
+        fail_json(
+            TutorError(
+                "invalid_book_log",
+                "Book log payload failed validation.",
+                "Pass BookLogInput JSON with a book_session_id.",
+            )
+        )
+
+
+@book.command("list")
+@click.option("--json-output", "--json", "json_output", is_flag=True)
+@click.argument("payload", required=False, default="{}")
+def book_list(json_output: bool, payload: str) -> None:
+    del json_output
+    try:
+        BookListInput.model_validate(parse_payload(payload))
+        repo, conn = open_repo()
+        try:
+            book_repo = BookRepository(conn)
+            emit(list_book(book_repo))
+        finally:
+            conn.close()
+    except (TutorError, ValidationError) as exc:
+        if isinstance(exc, TutorError):
+            fail_json(exc)
+        fail_json(
+            TutorError(
+                "invalid_book_list",
+                "Book list payload failed validation.",
+                "Pass an empty JSON object {}.",
+            )
+        )
+
+
+@book.command("close")
+@click.option("--json-output", "--json", "json_output", is_flag=True)
+@click.argument("payload", required=True)
+def book_close(json_output: bool, payload: str) -> None:
+    del json_output
+    try:
+        data = BookCloseInput.model_validate(parse_payload(payload))
+        repo, conn = open_repo()
+        try:
+            book_repo = BookRepository(conn)
+            emit(close_book(book_repo, book_session_id=data.book_session_id, now=_utc_now()))
+            conn.commit()
+        finally:
+            conn.close()
+    except (TutorError, ValidationError, KeyError) as exc:
+        if isinstance(exc, TutorError):
+            fail_json(exc)
+        if isinstance(exc, KeyError):
+            fail_json(
+                TutorError(
+                    "book_session_not_found",
+                    f"Book session {data.book_session_id} does not exist.",
+                    "Call `tutor book list` to find a book_session_id.",
+                )
+            )
+        fail_json(
+            TutorError(
+                "invalid_book_close",
+                "Book close payload failed validation.",
+                "Pass BookCloseInput JSON with a book_session_id.",
+            )
+        )
 
 
 @main.group()
