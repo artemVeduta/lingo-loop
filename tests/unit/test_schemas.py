@@ -8,6 +8,13 @@ from pydantic import ValidationError
 
 from language_tutor.schemas import (
     AnswerEvent,
+    BookList,
+    BookListEntry,
+    BookLog,
+    BookLogEntry,
+    BookLookupResult,
+    BookRecordInput,
+    BookSession,
     FeedbackEnvelope,
     LearnerPreferences,
     LearnerProfile,
@@ -61,6 +68,19 @@ def test_text_modality_schema_mirrors_export(tmp_path: Path) -> None:
         ("lesson_exercise.schema.json", ValidatedTextExercise.__name__),
         ("lesson_result.schema.json", TextModalityResult.__name__),
         ("transcript_drill.schema.json", ValidatedTextExercise.__name__),
+    ):
+        schema = json.loads((tmp_path / filename).read_text())
+        assert schema["title"] == title
+
+
+def test_book_schema_mirrors_export(tmp_path: Path) -> None:
+    export_json_schemas(tmp_path)
+    for filename, title in (
+        ("book_record.schema.json", BookRecordInput.__name__),
+        ("book_session.schema.json", BookSession.__name__),
+        ("book_lookup_result.schema.json", BookLookupResult.__name__),
+        ("book_log.schema.json", BookLog.__name__),
+        ("book_list.schema.json", BookList.__name__),
     ):
         schema = json.loads((tmp_path / filename).read_text())
         assert schema["title"] == title

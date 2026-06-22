@@ -1409,6 +1409,105 @@ class InitResult(TutorModel):
     results: list[ProviderResult]
 
 
+class BookStartInput(TutorModel):
+    """CLI input for ``tutor book start``."""
+
+    session_id: str
+    title: str
+    author: str | None = None
+
+
+class BookRecordInput(TutorModel):
+    """CLI input for ``tutor book record`` — the one complex book payload."""
+
+    book_session_id: str
+    kind: Literal["word", "sentence", "passage", "question"]
+    content: str
+    context: str | None = None
+    explanation: dict[str, Any]
+
+
+class BookResumeInput(TutorModel):
+    """CLI input for ``tutor book resume``."""
+
+    title: str
+
+
+class BookLogInput(TutorModel):
+    """CLI input for ``tutor book log``."""
+
+    book_session_id: str
+
+
+class BookCloseInput(TutorModel):
+    """CLI input for ``tutor book close``."""
+
+    book_session_id: str
+
+
+class BookListInput(TutorModel):
+    """CLI input for ``tutor book list`` (empty)."""
+
+
+class BookSession(TutorModel):
+    """A per-book reading session row."""
+
+    book_session_id: str = Field(pattern=r"^book_[A-Za-z0-9]+$")
+    session_id: str = Field(pattern=r"^sess_[A-Za-z0-9]+$")
+    title: str
+    author: str | None = None
+    status: Literal["open", "closed"] = "open"
+    started_at: datetime
+    closed_at: datetime | None = None
+
+
+class BookLookupResult(TutorModel):
+    """Output of ``tutor book record`` — the persisted lookup + rendered markdown."""
+
+    lookup_id: str = Field(pattern=r"^lookup_[A-Za-z0-9]+$")
+    vocab_item_id: str | None = None
+    deduped: bool
+    created_at: datetime
+    rendered: str
+
+
+class BookLogEntry(TutorModel):
+    """One lookup inside a ``tutor book log`` result."""
+
+    lookup_id: str = Field(pattern=r"^lookup_[A-Za-z0-9]+$")
+    kind: Literal["word", "sentence", "passage", "question"]
+    content: str
+    created_at: datetime
+    rendered: str
+
+
+class BookLog(TutorModel):
+    """Output of ``tutor book log`` — ordered lookups + a rendered numbered list."""
+
+    book_session_id: str = Field(pattern=r"^book_[A-Za-z0-9]+$")
+    lookups: list[BookLogEntry]
+    rendered: str
+
+
+class BookListEntry(TutorModel):
+    """One book session inside a ``tutor book list`` result."""
+
+    book_session_id: str = Field(pattern=r"^book_[A-Za-z0-9]+$")
+    session_id: str = Field(pattern=r"^sess_[A-Za-z0-9]+$")
+    title: str
+    author: str | None = None
+    status: Literal["open", "closed"]
+    started_at: datetime
+    closed_at: datetime | None = None
+    lookup_count: int = Field(ge=0)
+
+
+class BookList(TutorModel):
+    """Output of ``tutor book list`` — all book sessions, open first."""
+
+    sessions: list[BookListEntry]
+
+
 def export_json_schemas(output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     mapping: dict[str, type[BaseModel]] = {
@@ -1432,6 +1531,11 @@ def export_json_schemas(output_dir: Path) -> None:
         "lesson_exercise.schema.json": ValidatedTextExercise,
         "lesson_result.schema.json": TextModalityResult,
         "transcript_drill.schema.json": ValidatedTextExercise,
+        "book_record.schema.json": BookRecordInput,
+        "book_session.schema.json": BookSession,
+        "book_lookup_result.schema.json": BookLookupResult,
+        "book_log.schema.json": BookLog,
+        "book_list.schema.json": BookList,
         "host_capability_profile.schema.json": AdapterCapabilityProfile,
         "host_setup_profile.schema.json": HostSetupProfileContract,
         "lifecycle_trigger.schema.json": BootContextTrigger,
