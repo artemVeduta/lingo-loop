@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
-Enforce `docs/constitution.md` for architecture, scope, data
+Enforce `docs/internal/constitution.md` for architecture, scope, data
 ownership, testing, and review gates.
 <!-- SPECKIT END -->
 
