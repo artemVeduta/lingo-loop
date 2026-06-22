@@ -53,6 +53,7 @@ SKILL_FILES: tuple[str, ...] = (
     "tutor-progress/SKILL.md",
     "tutor-progress/scripts/run.py",
     "tutor-judge/SKILL.md",
+    "tutor-book/SKILL.md",
 )
 
 SKILLS_AREA = ManagedArea(
