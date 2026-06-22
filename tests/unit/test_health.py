@@ -31,6 +31,7 @@ def _make_source_tree(root: Path) -> None:
         "tutor-reading",
         "tutor-lesson",
         "tutor-judge",
+        "tutor-book",
     ):
         skill_dir = root / "skills" / skill
         skill_dir.mkdir(parents=True)
@@ -51,6 +52,7 @@ def _make_runtime_payload(root: Path) -> None:
         "migrations/002_vocab_depth.sql",
         "migrations/003_progress_indexes.sql",
         "migrations/004_sessions_checkpoints.sql",
+        "migrations/005_book_lookups.sql",
         "skills/tutor-setup/SKILL.md",
         "skills/tutor-vocab/SKILL.md",
         "skills/tutor-vocab/scripts/run.py",
@@ -61,6 +63,7 @@ def _make_runtime_payload(root: Path) -> None:
         "skills/tutor-reading/SKILL.md",
         "skills/tutor-lesson/SKILL.md",
         "skills/tutor-judge/SKILL.md",
+        "skills/tutor-book/SKILL.md",
     ):
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -78,6 +81,7 @@ def test_source_checkout_runtime_payload_checks_ok(
         "migrations/002_vocab_depth.sql",
         "migrations/003_progress_indexes.sql",
         "migrations/004_sessions_checkpoints.sql",
+        "migrations/005_book_lookups.sql",
     ):
         path = repo / rel
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -153,6 +157,7 @@ def test_report_is_json_serialisable_with_status(
         "migrations/002_vocab_depth.sql",
         "migrations/003_progress_indexes.sql",
         "migrations/004_sessions_checkpoints.sql",
+        "migrations/005_book_lookups.sql",
     ):
         path = repo / rel
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -174,6 +179,7 @@ def test_doctor_fails_on_permission_error(
         "migrations/002_vocab_depth.sql",
         "migrations/003_progress_indexes.sql",
         "migrations/004_sessions_checkpoints.sql",
+        "migrations/005_book_lookups.sql",
     ):
         path = repo / rel
         path.parent.mkdir(parents=True, exist_ok=True)

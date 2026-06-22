@@ -1,0 +1,296 @@
+{
+  "$defs": {
+    "BookPassageExplanation": {
+      "additionalProperties": false,
+      "description": "Agent explanation for a passage lookup.",
+      "properties": {
+        "explanation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Explanation"
+        },
+        "translation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Translation"
+        }
+      },
+      "title": "BookPassageExplanation",
+      "type": "object"
+    },
+    "BookQuestionExplanation": {
+      "additionalProperties": false,
+      "description": "Agent explanation for a question about the text.",
+      "properties": {
+        "answer": {
+          "title": "Answer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "answer"
+      ],
+      "title": "BookQuestionExplanation",
+      "type": "object"
+    },
+    "BookTranslationExplanation": {
+      "additionalProperties": false,
+      "description": "Agent explanation for a sentence lookup.",
+      "properties": {
+        "translation": {
+          "title": "Translation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "translation"
+      ],
+      "title": "BookTranslationExplanation",
+      "type": "object"
+    },
+    "BookWordExplanation": {
+      "additionalProperties": false,
+      "description": "Agent explanation for a word lookup.",
+      "properties": {
+        "gloss": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gloss"
+        },
+        "translation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Translation"
+        }
+      },
+      "title": "BookWordExplanation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "word"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "explanation": {
+            "additionalProperties": false,
+            "properties": {
+              "gloss": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "translation": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "sentence"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "explanation": {
+            "additionalProperties": false,
+            "properties": {
+              "translation": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "translation"
+            ],
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "passage"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "explanation": {
+            "additionalProperties": false,
+            "anyOf": [
+              {
+                "required": [
+                  "translation"
+                ]
+              },
+              {
+                "required": [
+                  "explanation"
+                ]
+              }
+            ],
+            "properties": {
+              "explanation": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "translation": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "question"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "explanation": {
+            "additionalProperties": false,
+            "properties": {
+              "answer": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "answer"
+            ],
+            "type": "object"
+          }
+        }
+      }
+    }
+  ],
+  "description": "CLI input for ``tutor book record`` — the one complex book payload.",
+  "properties": {
+    "book_session_id": {
+      "pattern": "^book_[A-Za-z0-9]+$",
+      "title": "Book Session Id",
+      "type": "string"
+    },
+    "content": {
+      "title": "Content",
+      "type": "string"
+    },
+    "context": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Context"
+    },
+    "explanation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BookWordExplanation"
+        },
+        {
+          "$ref": "#/$defs/BookTranslationExplanation"
+        },
+        {
+          "$ref": "#/$defs/BookPassageExplanation"
+        },
+        {
+          "$ref": "#/$defs/BookQuestionExplanation"
+        }
+      ],
+      "title": "Explanation"
+    },
+    "kind": {
+      "enum": [
+        "word",
+        "sentence",
+        "passage",
+        "question"
+      ],
+      "title": "Kind",
+      "type": "string"
+    }
+  },
+  "required": [
+    "book_session_id",
+    "kind",
+    "content",
+    "explanation"
+  ],
+  "title": "BookRecordInput",
+  "type": "object"
+}

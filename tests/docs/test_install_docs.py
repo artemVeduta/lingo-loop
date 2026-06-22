@@ -4,8 +4,9 @@ For every install doc (``docs/install/*.md``) and ``README.md``:
 
 1. Every fenced shell block's ``tutor`` invocations must reference real
    subcommands and flags (asserted via ``tutor <leaf> --help``).
-2. Every relative markdown link target must resolve to an existing file under
-   the repo root.
+2. Every markdown link target must resolve to an existing file: plain relative
+   links against the doc's own directory, and bundle-relative absolute links
+   (e.g. ``/install/claude.md``) against the docs bundle root (``docs/``).
 3. Every documented ``config_root`` path must match the installer's
    ``config_root()`` value on macOS (compared via ``Path.expanduser()``).
 4. The string ``language-tutor`` must not appear on a line unless that same
@@ -30,7 +31,8 @@ from language_tutor.installer.providers.openclaw import OpenClawInstaller
 from language_tutor.installer.seams import FakeCommandRunner, FakeFilesystem
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DOCS_INSTALL = REPO_ROOT / "docs" / "install"
+DOCS_ROOT = REPO_ROOT / "docs"
+DOCS_INSTALL = DOCS_ROOT / "install"
 README = REPO_ROOT / "README.md"
 
 DOC_FILES: list[Path] = sorted(DOCS_INSTALL.glob("*.md")) + [README]
@@ -169,7 +171,13 @@ def test_relative_links_resolve(doc: Path) -> None:
         path_part = target.split("#", 1)[0]
         if not path_part:
             continue
-        candidate = (doc.parent / path_part).resolve()
+        # OKF cross-references are bundle-relative absolute (e.g.
+        # ``/install/claude.md``) and resolve against the docs bundle root;
+        # plain relative links resolve against the doc's own directory.
+        if path_part.startswith("/"):
+            candidate = (DOCS_ROOT / path_part.lstrip("/")).resolve()
+        else:
+            candidate = (doc.parent / path_part).resolve()
         if not candidate.exists():
             errors.append(f"{doc.name}: broken link `{target}` -> {candidate}")
     assert not errors, "\n".join(errors)

@@ -46,12 +46,14 @@ def _now() -> datetime:
 
 def test_session_schema_mirror_has_required_fields() -> None:
     schema = _load_schema("session.schema.json")
-    assert schema["$id"] == "schemas/session.schema.json"
     required = set(schema["required"])  # type: ignore[arg-type]
     assert required == {"id", "host", "status", "started_at", "last_seen_at"}
     props = schema["properties"]  # type: ignore[index]
-    assert props["status"]["enum"] == ["open", "closed"]  # type: ignore[index]
-    assert props["host"]["enum"] == ["claude", "codex", "openclaw", "hermes"]  # type: ignore[index]
+    defs = schema["$defs"]  # type: ignore[index]
+    assert props["status"]["$ref"] == "#/$defs/SessionStatus"  # type: ignore[index]
+    assert props["host"]["$ref"] == "#/$defs/HostId"  # type: ignore[index]
+    assert defs["SessionStatus"]["enum"] == ["open", "closed"]  # type: ignore[index]
+    assert set(defs["HostId"]["enum"]) == {"claude", "codex", "openclaw", "hermes"}  # type: ignore[index]
 
 
 def test_session_open_validates_against_pydantic_and_mirror() -> None:
@@ -167,7 +169,12 @@ def test_boot_result_validates_against_mirror() -> None:
 
 def test_prior_session_label_enum_matches_mirror() -> None:
     schema = _load_schema("boot_result.schema.json")
-    items_schema = schema["properties"]["context"]["properties"]["prior_sessions"]["items"]  # type: ignore[index]
-    assert set(items_schema["properties"]["label"]["enum"]) == {  # type: ignore[index]
+    context_schema = schema["$defs"]["BootContext"]  # type: ignore[index]
+    items_schema = context_schema["properties"]["prior_sessions"]["items"]  # type: ignore[index]
+    assert items_schema["$ref"] == "#/$defs/PriorSessionEntry"  # type: ignore[index]
+    prior_session = schema["$defs"]["PriorSessionEntry"]  # type: ignore[index]
+    label_ref = prior_session["properties"]["label"]["$ref"]  # type: ignore[index]
+    assert label_ref == "#/$defs/SessionLabel"
+    assert set(schema["$defs"]["SessionLabel"]["enum"]) == {  # type: ignore[index]
         label.value for label in SessionLabel
     }

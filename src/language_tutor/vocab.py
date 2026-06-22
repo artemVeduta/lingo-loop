@@ -405,6 +405,37 @@ def add_vocab_card(
     )
 
 
+def find_or_create_vocab_card_for_book(
+    repo: TutorRepository,
+    *,
+    word: str,
+    translation: str,
+    gloss: str | None,
+    book_source: str,
+    target_language: str,
+) -> tuple[Literal["created", "updated", "skipped"], str]:
+    """Find-or-create the global SRS card for a book word lookup.
+
+    Composes a VocabularyCardDefinition (card_type=standard, target=word -> lemma,
+    prompt=word, accepted_answers=[translation], tags=["from-book"], source=book)
+    and reuses item_from_definition + the nestable import_vocabulary_item_nested
+    so the card write merges into the caller's outer transaction. The card is
+    deduped globally by standard:<word>:<word>.
+    """
+    definition = VocabularyCardDefinition(
+        card_type="standard",
+        target=word,
+        prompt=word,
+        accepted_answers=[translation],
+        hint=gloss,
+        notes=[gloss] if gloss else None,
+        source=book_source,
+        tags=["from-book"],
+    )
+    item = item_from_definition(definition, target_language, repo.create_id("vocab"))
+    return repo.import_vocabulary_item_nested(item)
+
+
 def import_seed_list(
     repo: TutorRepository,
     request: SeedImportRequest,

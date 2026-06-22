@@ -8,6 +8,11 @@ from pydantic import ValidationError
 
 from language_tutor.schemas import (
     AnswerEvent,
+    BookList,
+    BookLog,
+    BookLookupResult,
+    BookRecordInput,
+    BookSession,
     FeedbackEnvelope,
     LearnerPreferences,
     LearnerProfile,
@@ -64,6 +69,76 @@ def test_text_modality_schema_mirrors_export(tmp_path: Path) -> None:
     ):
         schema = json.loads((tmp_path / filename).read_text())
         assert schema["title"] == title
+
+
+def test_book_schema_mirrors_export(tmp_path: Path) -> None:
+    export_json_schemas(tmp_path)
+    for filename, title in (
+        ("book_record.schema.json", BookRecordInput.__name__),
+        ("book_session.schema.json", BookSession.__name__),
+        ("book_lookup_result.schema.json", BookLookupResult.__name__),
+        ("book_log.schema.json", BookLog.__name__),
+        ("book_list.schema.json", BookList.__name__),
+    ):
+        schema = json.loads((tmp_path / filename).read_text())
+        assert schema["title"] == title
+
+
+def test_committed_schemas_match_fresh_export(tmp_path: Path) -> None:
+    # schemas/ is the canonical generator output: every committed file must equal a
+    # fresh export. This guards against drift and makes verbatim copies elsewhere
+    # (e.g. under specs/) provably redundant — there is one source of truth.
+    schema_dir = Path(__file__).resolve().parents[2] / "schemas"
+    export_json_schemas(tmp_path)
+    committed = sorted(p.name for p in schema_dir.glob("*.schema.json"))
+    exported = sorted(p.name for p in tmp_path.glob("*.schema.json"))
+    assert committed == exported, "schemas/ file set differs from export_json_schemas() output"
+    for name in committed:
+        assert (schema_dir / name).read_text(encoding="utf-8") == (
+            tmp_path / name
+        ).read_text(encoding="utf-8"), f"{name} is stale; re-run export_json_schemas(schemas/)"
+
+
+def test_book_record_schema_constrains_explanation_shape(tmp_path: Path) -> None:
+    export_json_schemas(tmp_path)
+    schema = json.loads((tmp_path / "book_record.schema.json").read_text())
+    explanation = schema["properties"]["explanation"]
+    assert explanation != {"type": "object"}
+    assert any("$ref" in option for option in explanation["anyOf"])
+    question_condition = next(
+        condition
+        for condition in schema["allOf"]
+        if condition["if"]["properties"]["kind"]["const"] == "question"
+    )
+    question_explanation = question_condition["then"]["properties"]["explanation"]
+    assert question_explanation["required"] == ["answer"]
+    assert set(question_explanation["properties"]) == {"answer"}
+
+
+def test_book_record_input_rejects_mismatched_explanation_shape() -> None:
+    with pytest.raises(ValidationError):
+        BookRecordInput.model_validate(
+            {
+                "book_session_id": "book_ab12",
+                "kind": "question",
+                "content": "Why?",
+                "explanation": {"translation": "Because."},
+            }
+        )
+
+
+def test_book_record_input_rejects_word_with_question_body() -> None:
+    # A word lookup must carry a word explanation, not a question/answer body.
+    # The typed union alone would silently parse this as BookQuestionExplanation.
+    with pytest.raises(ValidationError):
+        BookRecordInput.model_validate(
+            {
+                "book_session_id": "book_ab12",
+                "kind": "word",
+                "content": "Hund",
+                "explanation": {"answer": "a dog"},
+            }
+        )
 
 
 def test_answer_event_accepts_text_modality_skills() -> None:

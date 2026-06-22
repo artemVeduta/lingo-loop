@@ -61,7 +61,7 @@ def test_004_is_idempotent_when_reapplied(tmp_path) -> None:  # type: ignore[no-
             int(row["version"])
             for row in second.execute("SELECT version FROM migration_records ORDER BY version")
         ]
-        assert versions == [1, 2, 3, 4]
+        assert versions == [1, 2, 3, 4, 5]
     finally:
         second.close()
 
@@ -73,7 +73,7 @@ def test_004_is_sequential_version_four(tmp_path) -> None:  # type: ignore[no-un
             int(row["version"])
             for row in conn.execute("SELECT version FROM migration_records ORDER BY version")
         ]
-        assert versions == [1, 2, 3, 4]
+        assert versions == [1, 2, 3, 4, 5]
         names = {
             str(row["name"])
             for row in conn.execute("SELECT name FROM migration_records WHERE version = 4")

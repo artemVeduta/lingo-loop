@@ -1,6 +1,11 @@
 ---
 paths:
   - "src/**/*.py"
+  - "migrations/**/*.sql"
+  - "schemas/**/*.schema.json"
+  - "skills/**/*"
+  - "hermes-profile/**/*"
+  - "openclaw-plugin/**/*"
 ---
 
 # Keep docs in sync with source

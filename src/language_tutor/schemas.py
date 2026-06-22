@@ -4,7 +4,7 @@ import json
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Annotated, Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
@@ -85,6 +85,7 @@ class CheckpointStepKind(StrEnum):
     PROMPT_SHOWN = "prompt_shown"
     FEEDBACK_SHOWN = "feedback_shown"
     PROGRESS_SHOWN = "progress_shown"
+    ANSWER_RECORDED = "answer_recorded"
 
 
 class SessionLabel(StrEnum):
@@ -103,6 +104,7 @@ class CheckpointModality(StrEnum):
     VOCAB = "vocab"
     WRITING = "writing"
     PROGRESS = "progress"
+    BOOK = "book"
 
 
 class LearnerProfile(TutorModel):
@@ -1407,11 +1409,245 @@ class InitResult(TutorModel):
     results: list[ProviderResult]
 
 
+BookKind = Literal["word", "sentence", "passage", "question"]
+BookSessionId = Annotated[str, Field(pattern=r"^book_[A-Za-z0-9]+$")]
+
+
+class BookStartInput(TutorModel):
+    """CLI input for ``tutor book start``."""
+
+    session_id: str
+    title: str
+    author: str | None = None
+
+
+class BookWordExplanation(TutorModel):
+    """Agent explanation for a word lookup."""
+
+    translation: str | None = None
+    gloss: str | None = None
+
+
+class BookTranslationExplanation(TutorModel):
+    """Agent explanation for a sentence lookup."""
+
+    translation: str
+
+
+class BookPassageExplanation(TutorModel):
+    """Agent explanation for a passage lookup."""
+
+    translation: str | None = None
+    explanation: str | None = None
+
+    @model_validator(mode="after")
+    def require_translation_or_explanation(self) -> BookPassageExplanation:
+        if not (self.translation or self.explanation):
+            raise ValueError("passage explanation requires translation or explanation")
+        return self
+
+
+class BookQuestionExplanation(TutorModel):
+    """Agent explanation for a question about the text."""
+
+    answer: str
+
+
+BookExplanation = (
+    BookWordExplanation
+    | BookTranslationExplanation
+    | BookPassageExplanation
+    | BookQuestionExplanation
+)
+
+
+class BookRecordInput(TutorModel):
+    """CLI input for ``tutor book record`` — the one complex book payload."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        use_enum_values=True,
+        json_schema_extra={
+            "allOf": [
+                {
+                    "if": {"properties": {"kind": {"const": "word"}}, "required": ["kind"]},
+                    "then": {
+                        "properties": {
+                            "explanation": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "properties": {
+                                    "translation": {"type": ["string", "null"]},
+                                    "gloss": {"type": ["string", "null"]},
+                                },
+                            }
+                        }
+                    },
+                },
+                {
+                    "if": {"properties": {"kind": {"const": "sentence"}}, "required": ["kind"]},
+                    "then": {
+                        "properties": {
+                            "explanation": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "required": ["translation"],
+                                "properties": {"translation": {"type": "string"}},
+                            }
+                        }
+                    },
+                },
+                {
+                    "if": {"properties": {"kind": {"const": "passage"}}, "required": ["kind"]},
+                    "then": {
+                        "properties": {
+                            "explanation": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "anyOf": [
+                                    {"required": ["translation"]},
+                                    {"required": ["explanation"]},
+                                ],
+                                "properties": {
+                                    "translation": {"type": ["string", "null"]},
+                                    "explanation": {"type": ["string", "null"]},
+                                },
+                            }
+                        }
+                    },
+                },
+                {
+                    "if": {"properties": {"kind": {"const": "question"}}, "required": ["kind"]},
+                    "then": {
+                        "properties": {
+                            "explanation": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "required": ["answer"],
+                                "properties": {"answer": {"type": "string"}},
+                            }
+                        }
+                    },
+                },
+            ]
+        },
+    )
+
+    book_session_id: BookSessionId
+    kind: BookKind
+    content: str
+    context: str | None = None
+    explanation: BookExplanation
+
+    @model_validator(mode="after")
+    def validate_explanation_matches_kind(self) -> BookRecordInput:
+        # Smart-union parsing is kind-blind: a word body with an ``answer`` field
+        # parses as BookQuestionExplanation, and a bare ``translation`` always
+        # parses as BookWordExplanation regardless of kind. Re-validate the body
+        # against the variant this kind actually requires so the stored explanation
+        # is deterministically the right type (extra fields are rejected by the
+        # variant's extra="forbid"). This is the single source of the kind->shape rule.
+        body = self.explanation.model_dump(exclude_none=True)
+        if self.kind == "word":
+            self.explanation = BookWordExplanation.model_validate(body)
+        elif self.kind == "sentence":
+            self.explanation = BookTranslationExplanation.model_validate(body)
+        elif self.kind == "passage":
+            self.explanation = BookPassageExplanation.model_validate(body)
+        else:
+            self.explanation = BookQuestionExplanation.model_validate(body)
+        return self
+
+
+class BookResumeInput(TutorModel):
+    """CLI input for ``tutor book resume``."""
+
+    title: str
+
+
+class BookLogInput(TutorModel):
+    """CLI input for ``tutor book log``."""
+
+    book_session_id: BookSessionId
+
+
+class BookCloseInput(TutorModel):
+    """CLI input for ``tutor book close``."""
+
+    book_session_id: BookSessionId
+
+
+class BookListInput(TutorModel):
+    """CLI input for ``tutor book list`` (empty)."""
+
+
+class BookSession(TutorModel):
+    """A per-book reading session row."""
+
+    book_session_id: BookSessionId
+    session_id: str = Field(pattern=r"^sess_[A-Za-z0-9]+$")
+    title: str
+    author: str | None = None
+    status: Literal["open", "closed"] = "open"
+    started_at: datetime
+    closed_at: datetime | None = None
+
+
+class BookLookupResult(TutorModel):
+    """Output of ``tutor book record`` — the persisted lookup + rendered markdown."""
+
+    lookup_id: str = Field(pattern=r"^lookup_[A-Za-z0-9]+$")
+    vocab_item_id: str | None = None
+    deduped: bool
+    created_at: datetime
+    rendered: str
+
+
+class BookLogEntry(TutorModel):
+    """One lookup inside a ``tutor book log`` result."""
+
+    lookup_id: str = Field(pattern=r"^lookup_[A-Za-z0-9]+$")
+    kind: BookKind
+    content: str
+    created_at: datetime
+    rendered: str
+
+
+class BookLog(TutorModel):
+    """Output of ``tutor book log`` — ordered lookups + a rendered numbered list."""
+
+    book_session_id: BookSessionId
+    lookups: list[BookLogEntry]
+    rendered: str
+
+
+class BookListEntry(TutorModel):
+    """One book session inside a ``tutor book list`` result."""
+
+    book_session_id: BookSessionId
+    session_id: str = Field(pattern=r"^sess_[A-Za-z0-9]+$")
+    title: str
+    author: str | None = None
+    status: Literal["open", "closed"]
+    started_at: datetime
+    closed_at: datetime | None = None
+    lookup_count: int = Field(ge=0)
+
+
+class BookList(TutorModel):
+    """Output of ``tutor book list`` — all book sessions, open first."""
+
+    sessions: list[BookListEntry]
+
+
 def export_json_schemas(output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     mapping: dict[str, type[BaseModel]] = {
         "boot_context.schema.json": BootContext,
         "feedback_envelope.schema.json": FeedbackEnvelope,
+        "boot_result.schema.json": BootResult,
+        "session.schema.json": Session,
+        "checkpoint.schema.json": Checkpoint,
         "session_analysis.schema.json": SessionAnalysis,
         "answer_event.schema.json": AnswerEvent,
         "vocabulary_card_definition.schema.json": VocabularyCardDefinition,
@@ -1430,6 +1666,11 @@ def export_json_schemas(output_dir: Path) -> None:
         "lesson_exercise.schema.json": ValidatedTextExercise,
         "lesson_result.schema.json": TextModalityResult,
         "transcript_drill.schema.json": ValidatedTextExercise,
+        "book_record.schema.json": BookRecordInput,
+        "book_session.schema.json": BookSession,
+        "book_lookup_result.schema.json": BookLookupResult,
+        "book_log.schema.json": BookLog,
+        "book_list.schema.json": BookList,
         "host_capability_profile.schema.json": AdapterCapabilityProfile,
         "host_setup_profile.schema.json": HostSetupProfileContract,
         "lifecycle_trigger.schema.json": BootContextTrigger,

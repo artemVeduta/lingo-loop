@@ -149,43 +149,54 @@ class TutorRepository:
         )
         return item.id
 
+    def import_vocabulary_item_nested(
+        self, item: VocabularyItem
+    ) -> tuple[Literal["created", "updated", "skipped"], str]:
+        """Find-or-create a vocab item *without* opening its own transaction.
+
+        Nestable seam for callers that need the write to merge into an outer
+        transaction (e.g. ``book.record_book`` co-committing an SRS card with a
+        lookup row). ``import_vocabulary_item`` is the transaction-owning wrapper.
+        """
+        current_id = self.find_vocabulary_duplicate(item)
+        if current_id is None:
+            return "created", self.insert_vocabulary_item(item)
+        row = self.conn.execute(
+            "SELECT * FROM vocabulary_items WHERE id = ?", (current_id,)
+        ).fetchone()
+        current = self._row_to_vocab(row)
+        accepted_answers, changed_answers = merge_display_values(
+            current.accepted_answers, item.accepted_answers
+        )
+        notes, changed_notes = merge_display_values(current.notes, item.notes)
+        sources, changed_sources = merge_display_values(current.sources, item.sources)
+        tags, changed_tags = merge_tags(current.tags, item.tags)
+        changed = changed_answers or changed_notes or changed_sources or changed_tags
+        if not changed:
+            return "skipped", current_id
+        self.conn.execute(
+            """
+            UPDATE vocabulary_items
+            SET accepted_answers_json = ?, notes_json = ?, sources_json = ?,
+                tags_json = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                json.dumps(accepted_answers, ensure_ascii=False),
+                json.dumps(notes, ensure_ascii=False),
+                json.dumps(sources, ensure_ascii=False),
+                json.dumps(tags, ensure_ascii=False),
+                now_iso(),
+                current_id,
+            ),
+        )
+        return "updated", current_id
+
     def import_vocabulary_item(
         self, item: VocabularyItem
     ) -> tuple[Literal["created", "updated", "skipped"], str]:
         with transaction(self.conn):
-            current_id = self.find_vocabulary_duplicate(item)
-            if current_id is None:
-                return "created", self.insert_vocabulary_item(item)
-            row = self.conn.execute(
-                "SELECT * FROM vocabulary_items WHERE id = ?", (current_id,)
-            ).fetchone()
-            current = self._row_to_vocab(row)
-            accepted_answers, changed_answers = merge_display_values(
-                current.accepted_answers, item.accepted_answers
-            )
-            notes, changed_notes = merge_display_values(current.notes, item.notes)
-            sources, changed_sources = merge_display_values(current.sources, item.sources)
-            tags, changed_tags = merge_tags(current.tags, item.tags)
-            changed = changed_answers or changed_notes or changed_sources or changed_tags
-            if not changed:
-                return "skipped", current_id
-            self.conn.execute(
-                """
-                UPDATE vocabulary_items
-                SET accepted_answers_json = ?, notes_json = ?, sources_json = ?,
-                    tags_json = ?, updated_at = ?
-                WHERE id = ?
-                """,
-                (
-                    json.dumps(accepted_answers, ensure_ascii=False),
-                    json.dumps(notes, ensure_ascii=False),
-                    json.dumps(sources, ensure_ascii=False),
-                    json.dumps(tags, ensure_ascii=False),
-                    now_iso(),
-                    current_id,
-                ),
-            )
-            return "updated", current_id
+            return self.import_vocabulary_item_nested(item)
 
     def due_vocabulary(self, limit: int, now: datetime) -> list[VocabularyItem]:
         rows = self.conn.execute(
