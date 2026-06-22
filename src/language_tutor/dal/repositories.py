@@ -149,9 +149,15 @@ class TutorRepository:
         )
         return item.id
 
-    def _import_vocabulary_item_inner(
+    def import_vocabulary_item_nested(
         self, item: VocabularyItem
     ) -> tuple[Literal["created", "updated", "skipped"], str]:
+        """Find-or-create a vocab item *without* opening its own transaction.
+
+        Nestable seam for callers that need the write to merge into an outer
+        transaction (e.g. ``book.record_book`` co-committing an SRS card with a
+        lookup row). ``import_vocabulary_item`` is the transaction-owning wrapper.
+        """
         current_id = self.find_vocabulary_duplicate(item)
         if current_id is None:
             return "created", self.insert_vocabulary_item(item)
@@ -190,7 +196,7 @@ class TutorRepository:
         self, item: VocabularyItem
     ) -> tuple[Literal["created", "updated", "skipped"], str]:
         with transaction(self.conn):
-            return self._import_vocabulary_item_inner(item)
+            return self.import_vocabulary_item_nested(item)
 
     def due_vocabulary(self, limit: int, now: datetime) -> list[VocabularyItem]:
         rows = self.conn.execute(

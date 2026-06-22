@@ -109,7 +109,7 @@ def test_import_merges_additive_metadata_without_review_reset(tmp_path) -> None:
         conn.close()
 
 
-def test_import_vocabulary_item_inner_runs_inside_caller_transaction(tmp_path) -> None:  # type: ignore[no-untyped-def]
+def test_import_vocabulary_item_nested_runs_inside_caller_transaction(tmp_path) -> None:  # type: ignore[no-untyped-def]
     from language_tutor.dal.sqlite_store import connect, transaction
 
     conn = connect(tmp_path / "db.sqlite3")
@@ -124,9 +124,9 @@ def test_import_vocabulary_item_inner_runs_inside_caller_transaction(tmp_path) -
             tags=["greetings"],
             sources=["manual"],
         )
-        # Call the nestable inner form inside an outer transaction.
+        # Call the nestable form inside an outer transaction.
         with transaction(conn):
-            status, item_id = repo._import_vocabulary_item_inner(item)
+            status, item_id = repo.import_vocabulary_item_nested(item)
             assert status == "created"
             assert item_id.startswith("vocab_")
         # Outer transaction committed by the context manager; row is visible.

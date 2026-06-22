@@ -57,12 +57,14 @@ the item dedup key `standard:<word>:<word>`).
 
 - **BookSession**: `book_session_id` (PK, `book_...`), `session_id` (FK → sessions),
   `title`, `title_norm`, `author?`, `status` (`open`|`closed`), `started_at`,
-  `closed_at?`. Output schema: [contracts/book_session.schema.json](contracts/book_session.schema.json).
+  `closed_at?`. Output schema: `schemas/book_session.schema.json` (`BookSession` in
+  `src/language_tutor/schemas.py`).
 - **BookLookup**: `lookup_id` (PK, `lookup_...`), `book_session_id` (FK → book_sessions),
   `kind`, `content`, `content_norm?` (word dedup key), `context?`, `explanation_json`,
   `vocab_item_id?` (FK → vocabulary_items `ON DELETE SET NULL`), `created_at`. Input
-  schema: [contracts/book_record.schema.json](contracts/book_record.schema.json);
-  output: [contracts/book_lookup_result.schema.json](contracts/book_lookup_result.schema.json).
+  schema: `schemas/book_record.schema.json` (`BookRecordInput`); output:
+  `schemas/book_lookup_result.schema.json` (`BookLookupResult`) — both in
+  `src/language_tutor/schemas.py`.
 
 Referential integrity uses real DDL `REFERENCES` (enforced at runtime via
 `PRAGMA foreign_keys=ON`), with belt-and-suspenders app-layer existence checks that

@@ -237,6 +237,7 @@
   "description": "CLI input for ``tutor book record`` — the one complex book payload.",
   "properties": {
     "book_session_id": {
+      "pattern": "^book_[A-Za-z0-9]+$",
       "title": "Book Session Id",
       "type": "string"
     },

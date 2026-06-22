@@ -4,7 +4,8 @@ Six subcommands under the `tutor book` group. Implemented in `src/language_tutor
 the `@main.group()` and subcommand functions live in `src/language_tutor/cli.py`.
 Every command takes `--json '<payload>'` and returns JSON; errors use the repo's
 existing `{"error": {...}}` envelope. JSON shapes: [book-json.md](book-json.md);
-schema mirrors: `book_*.schema.json` in this directory.
+canonical schemas: `schemas/book_*.schema.json` (generated from the pydantic models
+in `src/language_tutor/schemas.py`).
 
 The skill mints a tutor `session_id` via `tutor session-start` first, then threads both
 `session_id` (for `tutor checkpoint`) and `book_session_id` (for `book record`/`log`/
@@ -30,7 +31,7 @@ tutor book start --json '{"session_id":"sess_...","title":"<title>","author":"<a
 
 ### Output
 
-Conforms to `book_session.schema.json`:
+Conforms to `schemas/book_session.schema.json` (`BookSession`):
 
 ```json
 { "book_session_id": "book_...", "session_id": "sess_...", "title": "...",
@@ -66,7 +67,7 @@ tutor book record --json '{"book_session_id":"book_...","kind":"word","content":
 
 ### Input
 
-Conforms to `book_record.schema.json`:
+Conforms to `schemas/book_record.schema.json` (`BookRecordInput`):
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -78,7 +79,7 @@ Conforms to `book_record.schema.json`:
 
 ### Output
 
-Conforms to `book_lookup_result.schema.json`:
+Conforms to `schemas/book_lookup_result.schema.json` (`BookLookupResult`):
 
 ```json
 { "lookup_id": "lookup_...", "vocab_item_id": "vocab_...", "deduped": false,
@@ -136,7 +137,7 @@ tutor book resume --json '{"title":"<title>"}'
 
 ### Output
 
-Conforms to `book_session.schema.json` (the matched OPEN book session).
+Conforms to `schemas/book_session.schema.json` (`BookSession`) — the matched OPEN book session.
 
 ### Behavior
 
@@ -169,7 +170,7 @@ tutor book log --json '{"book_session_id":"book_..."}'
 
 ### Output
 
-Conforms to `book_log.schema.json`:
+Conforms to `schemas/book_log.schema.json` (`BookLog`):
 
 ```json
 { "book_session_id": "book_...", "lookups": [
@@ -211,7 +212,7 @@ No required fields. (An empty `{}` payload is the normal input.)
 
 ### Output
 
-Conforms to `book_list.schema.json`:
+Conforms to `schemas/book_list.schema.json` (`BookList`):
 
 ```json
 { "sessions": [
@@ -255,7 +256,7 @@ tutor book close --json '{"book_session_id":"book_..."}'
 
 ### Output
 
-Conforms to `book_session.schema.json` with `status:"closed"` and `closed_at` set.
+Conforms to `schemas/book_session.schema.json` (`BookSession`) with `status:"closed"` and `closed_at` set.
 
 ### Behavior
 

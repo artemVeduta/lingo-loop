@@ -1,8 +1,11 @@
 # Contract: Book Reading JSON
 
-JSON shapes for the `tutor book` command group. Schema mirrors live alongside this
-file as `book_*.schema.json` (frozen copies of the canonical `schemas/` files emitted
-by `export_json_schemas` from the backing pydantic models in `src/language_tutor/schemas.py`).
+JSON shapes for the `tutor book` command group. The canonical, machine-checkable
+schemas are the generator output in `schemas/book_*.schema.json`, emitted by
+`export_json_schemas()` from the backing pydantic models in
+`src/language_tutor/schemas.py` (`BookRecordInput`, `BookSession`, `BookLookupResult`,
+`BookLog`, `BookList`). This doc describes the contract in prose and cites those
+sources; it does not reproduce them.
 
 ## Shared Literals
 
@@ -20,7 +23,8 @@ by `export_json_schemas` from the backing pydantic models in `src/language_tutor
 
 ## BookRecordInput
 
-`tutor book record` input. Schema: [book_record.schema.json](book_record.schema.json).
+`tutor book record` input. Canonical schema: `schemas/book_record.schema.json`
+(generated from `BookRecordInput` in `src/language_tutor/schemas.py`).
 
 Required fields:
 
@@ -54,8 +58,9 @@ content; the CLI validates and persists (the repo pattern).
 
 ## BookSession
 
-Output of `book start`, `book resume`, and `book close`. Schema:
-[book_session.schema.json](book_session.schema.json).
+Output of `book start`, `book resume`, and `book close`. Canonical schema:
+`schemas/book_session.schema.json` (generated from `BookSession` in
+`src/language_tutor/schemas.py`).
 
 Required fields:
 
@@ -79,8 +84,9 @@ Rules:
 
 ## BookLookupResult
 
-Output of `tutor book record`. Schema:
-[book_lookup_result.schema.json](book_lookup_result.schema.json).
+Output of `tutor book record`. Canonical schema:
+`schemas/book_lookup_result.schema.json` (generated from `BookLookupResult` in
+`src/language_tutor/schemas.py`).
 
 Required fields:
 
@@ -121,7 +127,8 @@ Rules:
 
 ## BookLog
 
-Output of `tutor book log`. Schema: [book_log.schema.json](book_log.schema.json).
+Output of `tutor book log`. Canonical schema: `schemas/book_log.schema.json`
+(generated from `BookLog` in `src/language_tutor/schemas.py`).
 
 Required fields:
 
@@ -141,7 +148,8 @@ Rules:
 
 ## BookList
 
-Output of `tutor book list`. Schema: [book_list.schema.json](book_list.schema.json).
+Output of `tutor book list`. Canonical schema: `schemas/book_list.schema.json`
+(generated from `BookList` in `src/language_tutor/schemas.py`).
 
 Required fields:
 

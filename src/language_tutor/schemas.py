@@ -4,7 +4,7 @@ import json
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Annotated, Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
@@ -1409,6 +1409,10 @@ class InitResult(TutorModel):
     results: list[ProviderResult]
 
 
+BookKind = Literal["word", "sentence", "passage", "question"]
+BookSessionId = Annotated[str, Field(pattern=r"^book_[A-Za-z0-9]+$")]
+
+
 class BookStartInput(TutorModel):
     """CLI input for ``tutor book start``."""
 
@@ -1447,6 +1451,14 @@ class BookQuestionExplanation(TutorModel):
     """Agent explanation for a question about the text."""
 
     answer: str
+
+
+BookExplanation = (
+    BookWordExplanation
+    | BookTranslationExplanation
+    | BookPassageExplanation
+    | BookQuestionExplanation
+)
 
 
 class BookRecordInput(TutorModel):
@@ -1521,26 +1533,29 @@ class BookRecordInput(TutorModel):
         },
     )
 
-    book_session_id: str
-    kind: Literal["word", "sentence", "passage", "question"]
+    book_session_id: BookSessionId
+    kind: BookKind
     content: str
     context: str | None = None
-    explanation: (
-        BookWordExplanation
-        | BookTranslationExplanation
-        | BookPassageExplanation
-        | BookQuestionExplanation
-    )
+    explanation: BookExplanation
 
     @model_validator(mode="after")
     def validate_explanation_matches_kind(self) -> BookRecordInput:
-        fields = self.explanation.model_dump(exclude_none=True)
-        if self.kind == "sentence" and "translation" not in fields:
-            raise ValueError("sentence explanation requires translation")
-        if self.kind == "passage" and not ({"translation", "explanation"} & fields.keys()):
-            raise ValueError("passage explanation requires translation or explanation")
-        if self.kind == "question" and "answer" not in fields:
-            raise ValueError("question explanation requires answer")
+        # Smart-union parsing is kind-blind: a word body with an ``answer`` field
+        # parses as BookQuestionExplanation, and a bare ``translation`` always
+        # parses as BookWordExplanation regardless of kind. Re-validate the body
+        # against the variant this kind actually requires so the stored explanation
+        # is deterministically the right type (extra fields are rejected by the
+        # variant's extra="forbid"). This is the single source of the kind->shape rule.
+        body = self.explanation.model_dump(exclude_none=True)
+        if self.kind == "word":
+            self.explanation = BookWordExplanation.model_validate(body)
+        elif self.kind == "sentence":
+            self.explanation = BookTranslationExplanation.model_validate(body)
+        elif self.kind == "passage":
+            self.explanation = BookPassageExplanation.model_validate(body)
+        else:
+            self.explanation = BookQuestionExplanation.model_validate(body)
         return self
 
 
@@ -1553,13 +1568,13 @@ class BookResumeInput(TutorModel):
 class BookLogInput(TutorModel):
     """CLI input for ``tutor book log``."""
 
-    book_session_id: str
+    book_session_id: BookSessionId
 
 
 class BookCloseInput(TutorModel):
     """CLI input for ``tutor book close``."""
 
-    book_session_id: str
+    book_session_id: BookSessionId
 
 
 class BookListInput(TutorModel):
@@ -1569,7 +1584,7 @@ class BookListInput(TutorModel):
 class BookSession(TutorModel):
     """A per-book reading session row."""
 
-    book_session_id: str = Field(pattern=r"^book_[A-Za-z0-9]+$")
+    book_session_id: BookSessionId
     session_id: str = Field(pattern=r"^sess_[A-Za-z0-9]+$")
     title: str
     author: str | None = None
@@ -1592,7 +1607,7 @@ class BookLogEntry(TutorModel):
     """One lookup inside a ``tutor book log`` result."""
 
     lookup_id: str = Field(pattern=r"^lookup_[A-Za-z0-9]+$")
-    kind: Literal["word", "sentence", "passage", "question"]
+    kind: BookKind
     content: str
     created_at: datetime
     rendered: str
@@ -1601,7 +1616,7 @@ class BookLogEntry(TutorModel):
 class BookLog(TutorModel):
     """Output of ``tutor book log`` — ordered lookups + a rendered numbered list."""
 
-    book_session_id: str = Field(pattern=r"^book_[A-Za-z0-9]+$")
+    book_session_id: BookSessionId
     lookups: list[BookLogEntry]
     rendered: str
 
@@ -1609,7 +1624,7 @@ class BookLog(TutorModel):
 class BookListEntry(TutorModel):
     """One book session inside a ``tutor book list`` result."""
 
-    book_session_id: str = Field(pattern=r"^book_[A-Za-z0-9]+$")
+    book_session_id: BookSessionId
     session_id: str = Field(pattern=r"^sess_[A-Za-z0-9]+$")
     title: str
     author: str | None = None

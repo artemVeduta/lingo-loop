@@ -245,7 +245,7 @@ def test_list_orders_open_first_then_closed(tmp_path) -> None:  # type: ignore[n
         conn.close()
 
 
-def test_get_lookups_orders_by_created_at_ascending(tmp_path) -> None:  # type: ignore[no-untyped-def]
+def test_read_lookups_orders_by_created_at_ascending(tmp_path) -> None:  # type: ignore[no-untyped-def]
     conn = connect(tmp_path / "db.sqlite3")
     try:
         _seed_session(conn)
@@ -263,7 +263,9 @@ def test_get_lookups_orders_by_created_at_ascending(tmp_path) -> None:  # type: 
             content_norm=None, context=None, explanation_json='{"translation":"2"}',
             vocab_item_id=None, now=datetime(2026, 6, 22, 12, 0, 0, tzinfo=UTC),
         )
-        lookups = repo.get_lookups(session.book_session_id)
-        assert [lk.content for lk in lookups.lookups] == ["two", "one"]
+        lookups = repo.read_lookups(session.book_session_id)
+        assert [lk.content for lk in lookups] == ["two", "one"]
+        # explanation_json is carried forward from the single query (no N+1 re-read).
+        assert lookups[0].explanation == {"translation": "2"}
     finally:
         conn.close()

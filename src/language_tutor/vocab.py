@@ -418,7 +418,7 @@ def find_or_create_vocab_card_for_book(
 
     Composes a VocabularyCardDefinition (card_type=standard, target=word -> lemma,
     prompt=word, accepted_answers=[translation], tags=["from-book"], source=book)
-    and reuses item_from_definition + the nestable _import_vocabulary_item_inner
+    and reuses item_from_definition + the nestable import_vocabulary_item_nested
     so the card write merges into the caller's outer transaction. The card is
     deduped globally by standard:<word>:<word>.
     """
@@ -433,7 +433,7 @@ def find_or_create_vocab_card_for_book(
         tags=["from-book"],
     )
     item = item_from_definition(definition, target_language, repo.create_id("vocab"))
-    return repo._import_vocabulary_item_inner(item)  # pyright: ignore[reportPrivateUsage]
+    return repo.import_vocabulary_item_nested(item)
 
 
 def import_seed_list(
