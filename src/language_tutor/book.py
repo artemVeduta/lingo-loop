@@ -10,7 +10,7 @@ from language_tutor.dal.book_repository import BookRepository
 from language_tutor.dal.repositories import TutorRepository
 from language_tutor.dal.sqlite_store import transaction
 from language_tutor.errors import TutorError
-from language_tutor.schemas import BookList, BookLog, BookLookupResult, BookSession
+from language_tutor.schemas import BookList, BookLog, BookLogEntry, BookLookupResult, BookSession
 from language_tutor.vocab import find_or_create_vocab_card_for_book, normalize_text
 
 
@@ -97,7 +97,7 @@ def record_book(
                     book_source=book_source,
                     target_language=target_language,
                 )
-                result = book_repo._record_lookup_inner(
+                result = book_repo._record_lookup_inner(  # pyright: ignore[reportPrivateUsage]
                     book_session_id=book_session_id,
                     kind=kind,
                     content=content,
@@ -151,7 +151,7 @@ def resume_book(repo: BookRepository, *, title: str) -> BookSession | None:
 
 def log_book(repo: BookRepository, *, book_session_id: str) -> BookLog:
     log = repo.get_lookups(book_session_id)
-    entries = []
+    entries: list[BookLogEntry] = []
     for _n, entry in enumerate(log.lookups, start=1):
         explanation = json.loads(_read_explanation(repo, entry.lookup_id))
         rendered = render_lookup(entry.kind, entry.content, explanation)
@@ -172,18 +172,19 @@ def close_book(repo: BookRepository, *, book_session_id: str, now: datetime) -> 
 
 def _validate_explanation_shape(kind: str, explanation: dict[str, Any]) -> None:
     if kind == "word":
-        if "translation" not in explanation:
-            raise TutorError(
-                "invalid_book_record",
-                "word explanation requires a 'translation' field (may be empty).",
-                "Pass {\"translation\": \"...\", \"gloss\"?: \"...\"}.",
-            )
+        return
     elif kind in ("sentence", "passage"):
-        if "translation" not in explanation:
+        if kind == "sentence" and "translation" not in explanation:
             raise TutorError(
                 "invalid_book_record",
-                f"{kind} explanation requires a 'translation' field.",
+                "sentence explanation requires a 'translation' field.",
                 "Pass {\"translation\": \"...\"}.",
+            )
+        if kind == "passage" and not ({"translation", "explanation"} & explanation.keys()):
+            raise TutorError(
+                "invalid_book_record",
+                "passage explanation requires a 'translation' or 'explanation' field.",
+                "Pass {\"translation\": \"...\"} or {\"explanation\": \"...\"}.",
             )
     elif kind == "question" and "answer" not in explanation:
         raise TutorError(

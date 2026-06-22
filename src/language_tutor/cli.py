@@ -913,9 +913,10 @@ def book() -> None:
 @click.argument("payload", required=True)
 def book_start(json_output: bool, payload: str) -> None:
     del json_output
+    data: BookStartInput | None = None
     try:
         data = BookStartInput.model_validate(parse_payload(payload))
-        repo, conn = open_repo()
+        _repo, conn = open_repo()
         try:
             book_repo = BookRepository(conn)
             emit(start_book(book_repo, session_id=data.session_id, title=data.title, author=data.author, now=_utc_now()))
@@ -926,10 +927,11 @@ def book_start(json_output: bool, payload: str) -> None:
         if isinstance(exc, TutorError):
             fail_json(exc)
         if isinstance(exc, KeyError):
+            session_id = data.session_id if data is not None else "<unknown>"
             fail_json(
                 TutorError(
                     "session_not_found",
-                    f"Session {data.session_id} does not exist.",
+                    f"Session {session_id} does not exist.",
                     "Call session-start first and thread its session_id.",
                 )
             )
@@ -947,6 +949,7 @@ def book_start(json_output: bool, payload: str) -> None:
 @click.argument("payload", required=True)
 def book_record(json_output: bool, payload: str) -> None:
     del json_output
+    data: BookRecordInput | None = None
     try:
         state = read_setup(resolve_paths())
         data = BookRecordInput.model_validate(parse_payload(payload))
@@ -961,7 +964,7 @@ def book_record(json_output: bool, payload: str) -> None:
                     kind=data.kind,
                     content=data.content,
                     context=data.context,
-                    explanation=data.explanation,
+                    explanation=data.explanation.model_dump(exclude_none=True),
                     target_language=state.profile.target_language,
                     now=_utc_now(),
                 )
@@ -973,10 +976,11 @@ def book_record(json_output: bool, payload: str) -> None:
         if isinstance(exc, TutorError):
             fail_json(exc)
         if isinstance(exc, KeyError):
+            book_session_id = data.book_session_id if data is not None else "<unknown>"
             fail_json(
                 TutorError(
                     "book_session_not_found",
-                    f"Book session {data.book_session_id} does not exist.",
+                    f"Book session {book_session_id} does not exist.",
                     "Call `tutor book start` or `tutor book resume` first.",
                 )
             )
@@ -996,7 +1000,7 @@ def book_resume(json_output: bool, payload: str) -> None:
     del json_output
     try:
         data = BookResumeInput.model_validate(parse_payload(payload))
-        repo, conn = open_repo()
+        _repo, conn = open_repo()
         try:
             book_repo = BookRepository(conn)
             session = resume_book(book_repo, title=data.title)
@@ -1026,17 +1030,27 @@ def book_resume(json_output: bool, payload: str) -> None:
 @click.argument("payload", required=True)
 def book_log(json_output: bool, payload: str) -> None:
     del json_output
+    data: BookLogInput | None = None
     try:
         data = BookLogInput.model_validate(parse_payload(payload))
-        repo, conn = open_repo()
+        _repo, conn = open_repo()
         try:
             book_repo = BookRepository(conn)
             emit(log_book(book_repo, book_session_id=data.book_session_id))
         finally:
             conn.close()
-    except (TutorError, ValidationError) as exc:
+    except (TutorError, ValidationError, KeyError) as exc:
         if isinstance(exc, TutorError):
             fail_json(exc)
+        if isinstance(exc, KeyError):
+            book_session_id = data.book_session_id if data is not None else "<unknown>"
+            fail_json(
+                TutorError(
+                    "book_session_not_found",
+                    f"Book session {book_session_id} does not exist.",
+                    "Call `tutor book start` or `tutor book resume` first.",
+                )
+            )
         fail_json(
             TutorError(
                 "invalid_book_log",
@@ -1053,7 +1067,7 @@ def book_list(json_output: bool, payload: str) -> None:
     del json_output
     try:
         BookListInput.model_validate(parse_payload(payload))
-        repo, conn = open_repo()
+        _repo, conn = open_repo()
         try:
             book_repo = BookRepository(conn)
             emit(list_book(book_repo))
@@ -1076,9 +1090,10 @@ def book_list(json_output: bool, payload: str) -> None:
 @click.argument("payload", required=True)
 def book_close(json_output: bool, payload: str) -> None:
     del json_output
+    data: BookCloseInput | None = None
     try:
         data = BookCloseInput.model_validate(parse_payload(payload))
-        repo, conn = open_repo()
+        _repo, conn = open_repo()
         try:
             book_repo = BookRepository(conn)
             emit(close_book(book_repo, book_session_id=data.book_session_id, now=_utc_now()))
@@ -1089,10 +1104,11 @@ def book_close(json_output: bool, payload: str) -> None:
         if isinstance(exc, TutorError):
             fail_json(exc)
         if isinstance(exc, KeyError):
+            book_session_id = data.book_session_id if data is not None else "<unknown>"
             fail_json(
                 TutorError(
                     "book_session_not_found",
-                    f"Book session {data.book_session_id} does not exist.",
+                    f"Book session {book_session_id} does not exist.",
                     "Call `tutor book list` to find a book_session_id.",
                 )
             )

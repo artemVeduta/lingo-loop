@@ -1,6 +1,6 @@
 -- Rebuild checkpoints to accept 'book' modality and 'answer_recorded' step_kind.
 -- SQLite cannot ALTER a CHECK constraint, so the table is rebuilt inside an
--- explicit BEGIN/COMMIT so a mid-rebuild failure rolls back atomically.
+-- explicit BEGIN/COMMIT so any mid-migration failure rolls back atomically.
 -- Statement order is load-bearing: create new -> copy -> drop old (frees index
 -- names) -> rename -> reindex. Do NOT use CREATE INDEX IF NOT EXISTS here.
 BEGIN;
@@ -25,8 +25,6 @@ ALTER TABLE checkpoints_new RENAME TO checkpoints;
 
 CREATE INDEX idx_checkpoints_session ON checkpoints(session_id, created_at);
 CREATE INDEX idx_checkpoints_created ON checkpoints(created_at);
-
-COMMIT;
 
 CREATE TABLE book_sessions (
   book_session_id  TEXT PRIMARY KEY,
@@ -58,3 +56,5 @@ CREATE TABLE book_lookups (
 
 CREATE INDEX idx_book_lookups_session ON book_lookups(book_session_id);
 CREATE UNIQUE INDEX idx_book_lookups_word ON book_lookups(book_session_id, content_norm) WHERE kind='word';
+
+COMMIT;

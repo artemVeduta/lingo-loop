@@ -78,6 +78,7 @@ packages = ["src/language_tutor"]
 "migrations/002_vocab_depth.sql" = "language_tutor/_assets/migrations/002_vocab_depth.sql"
 "migrations/003_progress_indexes.sql" = "language_tutor/_assets/migrations/003_progress_indexes.sql"
 "migrations/004_sessions_checkpoints.sql" = "language_tutor/_assets/migrations/004_sessions_checkpoints.sql"
+"migrations/005_book_lookups.sql" = "language_tutor/_assets/migrations/005_book_lookups.sql"
 "skills/tutor-setup/SKILL.md" = "language_tutor/_assets/skills/tutor-setup/SKILL.md"
 "skills/tutor-vocab/SKILL.md" = "language_tutor/_assets/skills/tutor-vocab/SKILL.md"
 "skills/tutor-vocab/scripts/run.py" = "language_tutor/_assets/skills/tutor-vocab/scripts/run.py"

@@ -11,6 +11,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 import sys
+import tomllib
 import zipfile
 from pathlib import Path
 
@@ -80,3 +81,10 @@ def test_wheel_bundles_runtime_payloads(built_wheel: Path) -> None:
     assert not missing, (
         "Wheel is missing runtime payload files:\n  - " + "\n  - ".join(missing)
     )
+
+
+def test_wheel_force_include_declares_runtime_payloads() -> None:
+    pyproject = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    force_include = pyproject["tool"]["hatch"]["build"]["targets"]["wheel"]["force-include"]
+    missing = [rel for rel in REQUIRED_RUNTIME_PAYLOADS if rel not in force_include]
+    assert not missing, "Runtime payloads missing from wheel force-include: " + ", ".join(missing)

@@ -189,6 +189,11 @@ class BookRepository:
         )
 
     def get_lookups(self, book_session_id: str) -> BookLog:
+        session_row = self.conn.execute(
+            "SELECT 1 FROM book_sessions WHERE book_session_id = ?", (book_session_id,)
+        ).fetchone()
+        if session_row is None:
+            raise KeyError(book_session_id)
         rows = self.conn.execute(
             "SELECT * FROM book_lookups WHERE book_session_id = ? ORDER BY created_at ASC, lookup_id ASC",
             (book_session_id,),

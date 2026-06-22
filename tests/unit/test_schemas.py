@@ -84,6 +84,34 @@ def test_book_schema_mirrors_export(tmp_path: Path) -> None:
         assert schema["title"] == title
 
 
+def test_book_record_schema_constrains_explanation_shape(tmp_path: Path) -> None:
+    export_json_schemas(tmp_path)
+    schema = json.loads((tmp_path / "book_record.schema.json").read_text())
+    explanation = schema["properties"]["explanation"]
+    assert explanation != {"type": "object"}
+    assert any("$ref" in option for option in explanation["anyOf"])
+    question_condition = next(
+        condition
+        for condition in schema["allOf"]
+        if condition["if"]["properties"]["kind"]["const"] == "question"
+    )
+    question_explanation = question_condition["then"]["properties"]["explanation"]
+    assert question_explanation["required"] == ["answer"]
+    assert set(question_explanation["properties"]) == {"answer"}
+
+
+def test_book_record_input_rejects_mismatched_explanation_shape() -> None:
+    with pytest.raises(ValidationError):
+        BookRecordInput.model_validate(
+            {
+                "book_session_id": "book_ab12",
+                "kind": "question",
+                "content": "Why?",
+                "explanation": {"translation": "Because."},
+            }
+        )
+
+
 def test_answer_event_accepts_text_modality_skills() -> None:
     for skill in ("vocab", "writing", "reading", "lesson"):
         event = AnswerEvent(

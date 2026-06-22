@@ -26,11 +26,16 @@ Run only `tutor` for stateful work:
    `tutor checkpoint --json '{"session_id":"sess_...","modality":"book","step_kind":"prompt_shown","summary":"Started reading <title>","state":{"book_session_id":"book_...","title":"<title>"}}'`.
    Only after the checkpoint returns do you tell the learner the session is ready.
 3. Lookup loop — for each thing the learner does not understand:
-   a. The learner types a `word`, `sentence`, `passage`, or `question` (optionally
-      with surrounding `context`). You generate the explanation:
-      - `word`: `{"translation":"<native-lang>","gloss"?:"<short gloss>"}` —
-        `translation` may be absent/empty (the word is still logged; it just feeds no
-        SRS card). A translation that is just the word echoed back is treated as
+    a. The learner types a `word`, `sentence`, `passage`, or `question` (optionally
+       with surrounding `context`). You generate the explanation:
+      If the learner pastes a whole chapter or an overly long excerpt, do not try to
+      process it as one lookup; ask them to choose a sentence/short passage or give a
+      bounded summary of the specific excerpt they selected. If the pasted content is
+      not in the learner's configured target language, reject it and ask for target-
+      language text before calling `tutor book record`.
+       - `word`: `{"translation":"<native-lang>","gloss"?:"<short gloss>"}` —
+         `translation` may be absent/empty (the word is still logged; it just feeds no
+         SRS card). A translation that is just the word echoed back is treated as
         absent for SRS purposes.
       - `sentence` / `passage`: `{"translation":"..."}` (or explanation).
       - `question`: `{"answer":"..."}`.
@@ -39,10 +44,13 @@ Run only `tutor` for stateful work:
       The result is `{lookup_id, vocab_item_id?, deduped, created_at, rendered}`. The
       lookup is always persisted; `deduped:true` means this normalized word already had
       a lookup row in this book (no duplicate SRS card).
-   c. Checkpoint the recorded answer:
-      `tutor checkpoint --json '{"session_id":"sess_...","modality":"book","step_kind":"answer_recorded","summary":"Looked up <text>","state":{"book_session_id":"book_...","lookup_id":"lookup_...","kind":"word"}}'`.
-   d. Display the `rendered` markdown field returned by `tutor book record` to the
-      learner. Do not reformat it yourself — the CLI owns rendering.
+    c. Checkpoint the recorded answer:
+       `tutor checkpoint --json '{"session_id":"sess_...","modality":"book","step_kind":"answer_recorded","summary":"Looked up <text>","state":{"book_session_id":"book_...","lookup_id":"lookup_...","kind":"word"}}'`.
+    d. Display the `rendered` markdown field returned by `tutor book record` to the
+       learner. Do not reformat it yourself — the CLI owns rendering.
+      If `tutor book record` returns `book_session_closed`, do not show the raw error.
+      Tell the learner the reading session is closed and offer to start a new session
+      with `tutor book start` or resume an open one with `tutor book list` / `tutor book resume`.
 4. Review log — when the learner asks "what have I looked up?":
    `tutor book log --json '{"book_session_id":"book_..."}'` returns all lookups ordered
    by `created_at` ascending, each with its own `rendered` field. Display the
