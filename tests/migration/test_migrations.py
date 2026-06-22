@@ -97,7 +97,7 @@ def test_vocab_depth_migration_backfills_metadata_and_preserves_reviews(tmp_path
         assert int(review_count["count"]) == 1
         assert int(mistake_count["count"]) == 1
         assert int(summary_count["count"]) == 1
-        assert int(migration_count["count"]) == 4
+        assert int(migration_count["count"]) == 5
     finally:
         migrated.close()
 
@@ -150,7 +150,7 @@ def test_progress_index_migration_order_and_indexes(tmp_path) -> None:  # type: 
         indexes = {
             row["name"] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='index'")
         }
-        assert versions == [1, 2, 3, 4]
+        assert versions == [1, 2, 3, 4, 5]
         assert {
             "idx_progress_sessions_created",
             "idx_progress_reviews_session_time",
@@ -174,6 +174,7 @@ def test_missing_packaged_migrations_fail_with_exact_names(
         "migrations/002_vocab_depth.sql",
         "migrations/003_progress_indexes.sql",
         "migrations/004_sessions_checkpoints.sql",
+        "migrations/005_book_lookups.sql",
     )
 
     with pytest.raises(TutorError) as excinfo:

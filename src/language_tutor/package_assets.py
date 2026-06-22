@@ -11,6 +11,7 @@ REQUIRED_MIGRATION_FILES: tuple[str, ...] = (
     "migrations/002_vocab_depth.sql",
     "migrations/003_progress_indexes.sql",
     "migrations/004_sessions_checkpoints.sql",
+    "migrations/005_book_lookups.sql",
 )
 
 REQUIRED_SKILL_PAYLOAD_FILES: tuple[str, ...] = (

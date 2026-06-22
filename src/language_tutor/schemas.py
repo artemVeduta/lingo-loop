@@ -85,6 +85,7 @@ class CheckpointStepKind(StrEnum):
     PROMPT_SHOWN = "prompt_shown"
     FEEDBACK_SHOWN = "feedback_shown"
     PROGRESS_SHOWN = "progress_shown"
+    ANSWER_RECORDED = "answer_recorded"
 
 
 class SessionLabel(StrEnum):
@@ -103,6 +104,7 @@ class CheckpointModality(StrEnum):
     VOCAB = "vocab"
     WRITING = "writing"
     PROGRESS = "progress"
+    BOOK = "book"
 
 
 class LearnerProfile(TutorModel):
