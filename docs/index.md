@@ -29,3 +29,7 @@ An Open Knowledge Format (OKF) v0.1 bundle. Lifecycle policy:
 - [Privacy](/privacy.md) - local-first data handling: no telemetry, everything on the user's machine
 - [Troubleshooting](/troubleshooting.md) - common install-time, runtime, and host-wiring errors with recovery steps
 - [Install](/install/index.md) - per-host install guides (Claude, Codex, Hermes, OpenClaw)
+
+## Superseded
+
+- [Architecture (moved)](/ARCHITECTURE.md) - superseded pointer to [/specifications/architecture-overview.md](/specifications/architecture-overview.md)
