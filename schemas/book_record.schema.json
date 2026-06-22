@@ -1,0 +1,49 @@
+{
+  "additionalProperties": false,
+  "description": "CLI input for ``tutor book record`` — the one complex book payload.",
+  "properties": {
+    "book_session_id": {
+      "title": "Book Session Id",
+      "type": "string"
+    },
+    "content": {
+      "title": "Content",
+      "type": "string"
+    },
+    "context": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Context"
+    },
+    "explanation": {
+      "additionalProperties": true,
+      "title": "Explanation",
+      "type": "object"
+    },
+    "kind": {
+      "enum": [
+        "word",
+        "sentence",
+        "passage",
+        "question"
+      ],
+      "title": "Kind",
+      "type": "string"
+    }
+  },
+  "required": [
+    "book_session_id",
+    "kind",
+    "content",
+    "explanation"
+  ],
+  "title": "BookRecordInput",
+  "type": "object"
+}
