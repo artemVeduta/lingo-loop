@@ -1,36 +1,278 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "schemas/boot_result.schema.json",
-  "title": "BootResult",
-  "description": "Output of `session-start`. Backward-compatible: existing boot-context consumers keep using the bare BootContext via the unchanged `boot-context` command.",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["session_id", "context"],
-  "properties": {
-    "session_id": { "type": "string", "pattern": "^sess_[A-Za-z0-9]+$" },
-    "context": {
-      "type": "object",
-      "description": "Existing BootContext shape, extended with a prior-session history block.",
-      "required": ["sections"],
+  "$defs": {
+    "BootContext": {
+      "additionalProperties": false,
       "properties": {
-        "sections": { "type": "array", "items": { "type": "object" } },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "max_rendered_chars": {
+          "default": 6000,
+          "title": "Max Rendered Chars",
+          "type": "integer"
+        },
+        "preferences": {
+          "$ref": "#/$defs/LearnerPreferences"
+        },
         "prior_sessions": {
-          "type": "array",
-          "maxItems": 3,
-          "description": "N most-recent prior sessions by last_seen_at, most-recent-first, with read-time label. Trimmed to token budget.",
           "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["session_id", "label", "last_seen_at"],
-            "properties": {
-              "session_id": { "type": "string" },
-              "label": { "enum": ["open", "stale", "abandoned", "closed"] },
-              "last_seen_at": { "type": "string", "format": "date-time" },
-              "summary": { "type": ["string", "null"] }
-            }
-          }
+            "$ref": "#/$defs/PriorSessionEntry"
+          },
+          "title": "Prior Sessions",
+          "type": "array"
+        },
+        "profile": {
+          "$ref": "#/$defs/LearnerProfile"
+        },
+        "sections": {
+          "items": {
+            "$ref": "#/$defs/BootSection"
+          },
+          "title": "Sections",
+          "type": "array"
         }
-      }
+      },
+      "required": [
+        "profile",
+        "preferences",
+        "sections"
+      ],
+      "title": "BootContext",
+      "type": "object"
+    },
+    "BootSection": {
+      "additionalProperties": false,
+      "properties": {
+        "lines": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Lines",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "BootSection",
+      "type": "object"
+    },
+    "FeedbackVerbosity": {
+      "enum": [
+        "concise",
+        "standard",
+        "detailed"
+      ],
+      "title": "FeedbackVerbosity",
+      "type": "string"
+    },
+    "LearnerPreferences": {
+      "additionalProperties": false,
+      "properties": {
+        "ascii_fallback": {
+          "default": false,
+          "title": "Ascii Fallback",
+          "type": "boolean"
+        },
+        "feedback_verbosity": {
+          "$ref": "#/$defs/FeedbackVerbosity",
+          "default": "concise"
+        },
+        "review_intensity": {
+          "$ref": "#/$defs/ReviewIntensity",
+          "default": "normal"
+        },
+        "schema_version": {
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "session_length": {
+          "default": 10,
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Session Length",
+          "type": "integer"
+        },
+        "streak_grace_days": {
+          "default": 1,
+          "maximum": 14,
+          "minimum": 0,
+          "title": "Streak Grace Days",
+          "type": "integer"
+        },
+        "transliteration_tolerance": {
+          "default": false,
+          "title": "Transliteration Tolerance",
+          "type": "boolean"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        }
+      },
+      "title": "LearnerPreferences",
+      "type": "object"
+    },
+    "LearnerProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "interests": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Interests",
+          "type": "array"
+        },
+        "level_target": {
+          "default": "A1",
+          "title": "Level Target",
+          "type": "string"
+        },
+        "native_language": {
+          "title": "Native Language",
+          "type": "string"
+        },
+        "schema_version": {
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "target_language": {
+          "title": "Target Language",
+          "type": "string"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        }
+      },
+      "required": [
+        "native_language",
+        "target_language"
+      ],
+      "title": "LearnerProfile",
+      "type": "object"
+    },
+    "PriorSessionEntry": {
+      "additionalProperties": false,
+      "description": "N most-recent prior session entry surfaced in the boot context history.",
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/SessionLabel"
+        },
+        "last_seen_at": {
+          "format": "date-time",
+          "title": "Last Seen At",
+          "type": "string"
+        },
+        "session_id": {
+          "pattern": "^sess_[A-Za-z0-9]+$",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Summary"
+        }
+      },
+      "required": [
+        "session_id",
+        "label",
+        "last_seen_at"
+      ],
+      "title": "PriorSessionEntry",
+      "type": "object"
+    },
+    "ReviewIntensity": {
+      "enum": [
+        "light",
+        "normal",
+        "heavy"
+      ],
+      "title": "ReviewIntensity",
+      "type": "string"
+    },
+    "SessionLabel": {
+      "description": "Read-time derived session label. Never stored (FR-018).",
+      "enum": [
+        "open",
+        "stale",
+        "abandoned",
+        "closed"
+      ],
+      "title": "SessionLabel",
+      "type": "string"
     }
-  }
+  },
+  "additionalProperties": false,
+  "description": "Output of ``session-start``: minted session id plus extended boot context.",
+  "properties": {
+    "context": {
+      "$ref": "#/$defs/BootContext"
+    },
+    "session_id": {
+      "pattern": "^sess_[A-Za-z0-9]+$",
+      "title": "Session Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "session_id",
+    "context"
+  ],
+  "title": "BootResult",
+  "type": "object"
 }

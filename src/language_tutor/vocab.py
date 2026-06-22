@@ -433,7 +433,7 @@ def find_or_create_vocab_card_for_book(
         tags=["from-book"],
     )
     item = item_from_definition(definition, target_language, repo.create_id("vocab"))
-    return repo._import_vocabulary_item_inner(item)
+    return repo._import_vocabulary_item_inner(item)  # pyright: ignore[reportPrivateUsage]
 
 
 def import_seed_list(

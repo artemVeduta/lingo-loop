@@ -1,24 +1,82 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "schemas/session.schema.json",
-  "title": "Session",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["id", "host", "status", "started_at", "last_seen_at"],
-  "properties": {
-    "id": { "type": "string", "pattern": "^sess_[A-Za-z0-9]+$" },
-    "host": { "enum": ["claude", "codex", "openclaw", "hermes"] },
-    "host_conversation_id": { "type": ["string", "null"] },
-    "status": { "enum": ["open", "closed"] },
-    "started_at": { "type": "string", "format": "date-time" },
-    "last_seen_at": { "type": "string", "format": "date-time" },
-    "closed_at": { "type": ["string", "null"], "format": "date-time" }
-  },
-  "allOf": [
-    {
-      "if": { "properties": { "status": { "const": "closed" } } },
-      "then": { "required": ["closed_at"], "properties": { "closed_at": { "type": "string" } } },
-      "else": { "properties": { "closed_at": { "type": "null" } } }
+  "$defs": {
+    "HostId": {
+      "enum": [
+        "hermes",
+        "openclaw",
+        "claude",
+        "codex"
+      ],
+      "title": "HostId",
+      "type": "string"
+    },
+    "SessionStatus": {
+      "description": "Stored session status. ``stale``/``abandoned`` are derived labels only.",
+      "enum": [
+        "open",
+        "closed"
+      ],
+      "title": "SessionStatus",
+      "type": "string"
     }
-  ]
+  },
+  "additionalProperties": false,
+  "description": "Stored tutor session (FR-001, FR-004, FR-007).\n\nStatus is only ``open`` or ``closed``; ``stale``/``abandoned`` are derived\nat read time and never persisted (FR-018).",
+  "properties": {
+    "closed_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Closed At"
+    },
+    "host": {
+      "$ref": "#/$defs/HostId"
+    },
+    "host_conversation_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Host Conversation Id"
+    },
+    "id": {
+      "pattern": "^sess_[A-Za-z0-9]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "last_seen_at": {
+      "format": "date-time",
+      "title": "Last Seen At",
+      "type": "string"
+    },
+    "started_at": {
+      "format": "date-time",
+      "title": "Started At",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/SessionStatus"
+    }
+  },
+  "required": [
+    "id",
+    "host",
+    "status",
+    "started_at",
+    "last_seen_at"
+  ],
+  "title": "Session",
+  "type": "object"
 }

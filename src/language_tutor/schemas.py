@@ -1417,14 +1417,131 @@ class BookStartInput(TutorModel):
     author: str | None = None
 
 
+class BookWordExplanation(TutorModel):
+    """Agent explanation for a word lookup."""
+
+    translation: str | None = None
+    gloss: str | None = None
+
+
+class BookTranslationExplanation(TutorModel):
+    """Agent explanation for a sentence lookup."""
+
+    translation: str
+
+
+class BookPassageExplanation(TutorModel):
+    """Agent explanation for a passage lookup."""
+
+    translation: str | None = None
+    explanation: str | None = None
+
+    @model_validator(mode="after")
+    def require_translation_or_explanation(self) -> BookPassageExplanation:
+        if not (self.translation or self.explanation):
+            raise ValueError("passage explanation requires translation or explanation")
+        return self
+
+
+class BookQuestionExplanation(TutorModel):
+    """Agent explanation for a question about the text."""
+
+    answer: str
+
+
 class BookRecordInput(TutorModel):
     """CLI input for ``tutor book record`` — the one complex book payload."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        use_enum_values=True,
+        json_schema_extra={
+            "allOf": [
+                {
+                    "if": {"properties": {"kind": {"const": "word"}}, "required": ["kind"]},
+                    "then": {
+                        "properties": {
+                            "explanation": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "properties": {
+                                    "translation": {"type": ["string", "null"]},
+                                    "gloss": {"type": ["string", "null"]},
+                                },
+                            }
+                        }
+                    },
+                },
+                {
+                    "if": {"properties": {"kind": {"const": "sentence"}}, "required": ["kind"]},
+                    "then": {
+                        "properties": {
+                            "explanation": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "required": ["translation"],
+                                "properties": {"translation": {"type": "string"}},
+                            }
+                        }
+                    },
+                },
+                {
+                    "if": {"properties": {"kind": {"const": "passage"}}, "required": ["kind"]},
+                    "then": {
+                        "properties": {
+                            "explanation": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "anyOf": [
+                                    {"required": ["translation"]},
+                                    {"required": ["explanation"]},
+                                ],
+                                "properties": {
+                                    "translation": {"type": ["string", "null"]},
+                                    "explanation": {"type": ["string", "null"]},
+                                },
+                            }
+                        }
+                    },
+                },
+                {
+                    "if": {"properties": {"kind": {"const": "question"}}, "required": ["kind"]},
+                    "then": {
+                        "properties": {
+                            "explanation": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "required": ["answer"],
+                                "properties": {"answer": {"type": "string"}},
+                            }
+                        }
+                    },
+                },
+            ]
+        },
+    )
 
     book_session_id: str
     kind: Literal["word", "sentence", "passage", "question"]
     content: str
     context: str | None = None
-    explanation: dict[str, Any]
+    explanation: (
+        BookWordExplanation
+        | BookTranslationExplanation
+        | BookPassageExplanation
+        | BookQuestionExplanation
+    )
+
+    @model_validator(mode="after")
+    def validate_explanation_matches_kind(self) -> BookRecordInput:
+        fields = self.explanation.model_dump(exclude_none=True)
+        if self.kind == "sentence" and "translation" not in fields:
+            raise ValueError("sentence explanation requires translation")
+        if self.kind == "passage" and not ({"translation", "explanation"} & fields.keys()):
+            raise ValueError("passage explanation requires translation or explanation")
+        if self.kind == "question" and "answer" not in fields:
+            raise ValueError("question explanation requires answer")
+        return self
 
 
 class BookResumeInput(TutorModel):
@@ -1513,6 +1630,9 @@ def export_json_schemas(output_dir: Path) -> None:
     mapping: dict[str, type[BaseModel]] = {
         "boot_context.schema.json": BootContext,
         "feedback_envelope.schema.json": FeedbackEnvelope,
+        "boot_result.schema.json": BootResult,
+        "session.schema.json": Session,
+        "checkpoint.schema.json": Checkpoint,
         "session_analysis.schema.json": SessionAnalysis,
         "answer_event.schema.json": AnswerEvent,
         "vocabulary_card_definition.schema.json": VocabularyCardDefinition,

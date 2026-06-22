@@ -62,7 +62,8 @@
       "enum": [
         "profile_distribution",
         "plugin_package",
-        "local_marketplace_plugin"
+        "local_marketplace_plugin",
+        "directory_copy"
       ],
       "title": "SetupModel",
       "type": "string"
