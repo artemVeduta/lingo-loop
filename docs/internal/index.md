@@ -5,6 +5,7 @@ Maintainer-facing governance plus superseded pointers to docs that moved into th
 ## Governance
 
 - [Constitution](/internal/constitution.md) - non-negotiable project principles (architecture, scope, data ownership, testing, review gates)
+- [Launch checklist](/internal/launch-checklist.md) - launch-blocking public documentation assets and TODO: verify tracking
 
 ## Superseded (moved into the bundle taxonomy)
 
