@@ -1,3 +1,10 @@
+---
+type: Reference
+title: Configuration
+description: How lingo-loop's tutor CLI is configured via profile.yaml, preferences.yaml, and environment variables, with file locations and validation.
+timestamp: 2026-06-22
+---
+
 # Configuration
 
 `lingo-loop` (CLI: `tutor`) is configured through two YAML files and a small set of environment variables. All state is local; see [privacy](privacy.md).

@@ -1,3 +1,10 @@
+---
+type: Reference
+title: Install lingo-loop for Hermes
+description: Step-by-step guide to installing the lingo-loop tutor CLI and wiring its profile and skills into Hermes.
+timestamp: 2026-06-22
+---
+
 # Install lingo-loop for Hermes
 
 > Verification pending — not yet confirmed against a specific Hermes release. <!-- TODO: verify against current Hermes release, then set "Last verified: YYYY-MM-DD against Hermes vX.Y" -->
