@@ -88,6 +88,7 @@ packages = ["src/language_tutor"]
 "skills/tutor-reading/SKILL.md" = "language_tutor/_assets/skills/tutor-reading/SKILL.md"
 "skills/tutor-lesson/SKILL.md" = "language_tutor/_assets/skills/tutor-lesson/SKILL.md"
 "skills/tutor-judge/SKILL.md" = "language_tutor/_assets/skills/tutor-judge/SKILL.md"
+"skills/tutor-book/SKILL.md" = "language_tutor/_assets/skills/tutor-book/SKILL.md"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

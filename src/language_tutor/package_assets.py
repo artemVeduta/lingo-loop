@@ -25,6 +25,7 @@ REQUIRED_SKILL_PAYLOAD_FILES: tuple[str, ...] = (
     "skills/tutor-reading/SKILL.md",
     "skills/tutor-lesson/SKILL.md",
     "skills/tutor-judge/SKILL.md",
+    "skills/tutor-book/SKILL.md",
 )
 
 REQUIRED_RUNTIME_PAYLOADS: tuple[str, ...] = (
