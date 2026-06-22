@@ -5,7 +5,7 @@ once before any new skill is accepted. Source contract:
 [contracts/skill-suite-audit.md](contracts/skill-suite-audit.md).
 
 **Inventory rule**: Every `**/SKILL.md` under the two source roots appears exactly once.
-Counted: 7 tutor skills + 9 Speckit skills = 16.
+Counted: 8 tutor skills + 9 Speckit skills = 17.
 
 ## Tutor Skills (`skills/`)
 
@@ -42,10 +42,11 @@ language-teaching pedagogy, and do not overlap tutor trigger scopes. Treated as
 | `skills/tutor-reading/SKILL.md` | tutor-reading | Use when the learner wants to read a passage and answer comprehension questions, or reconstruct a text transcript drill (text-only, no audio). Not for free writing, vocabulary review, or guided lessons. | created + reviewed (compliant) | [skill-rewrite-evidence.md](skill-rewrite-evidence.md) |
 | `skills/tutor-lesson/SKILL.md` | tutor-lesson | Use when the learner wants a guided micro-lesson on one weak tag or one chosen topic (one explanation plus one practice step). Not for reading comprehension, free writing, vocabulary review, or progress reports. | created + reviewed (compliant) | [skill-rewrite-evidence.md](skill-rewrite-evidence.md) |
 | `skills/tutor-judge/SKILL.md` | tutor-judge | Grades a learner answer and returns only a FeedbackEnvelope JSON object using the supplied allowed_error_tags. | created + reviewed (compliant) | [skill-rewrite-evidence.md](skill-rewrite-evidence.md) |
+| `skills/tutor-book/SKILL.md` | tutor-book | Use when the learner has their OWN book or text in front of them and wants on-the-spot lookups of words, sentences, or passages they don't understand, or to ask about the text they are reading. Looked-up words are saved and added to vocabulary spaced-repetition review. tutor-reading is for comprehension Q&A on tutor-generated passages; tutor-vocab is for standalone vocab drills. | created + reviewed (compliant) | [../../docs/superpowers/specs/2026-06-22-tutor-book-reading-design.md](../../docs/superpowers/specs/2026-06-22-tutor-book-reading-design.md) |
 
 ## Findings
 
-- All 7 tutor skills are **compliant**: thin, `tutor ... --json` only, pedagogy
+- All 8 tutor skills are **compliant**: thin, `tutor ... --json` only, pedagogy
   delegated to Python contracts/tests, concrete trigger-oriented descriptions, valid
   lowercase-hyphen names. **No rewrite required** (T022 yields no changes).
 - All 9 Speckit skills are vendored and **not_in_scope**; no tutor-pedagogy duplication
